@@ -1,0 +1,62 @@
+# VGG16 model with Willow Object dataset
+
+MODEL_NAME: vgg16_pca
+DATASET_NAME: willow
+
+DATASET_FULL_NAME: WillowObject
+
+MODULE: PCA.model
+
+BACKBONE: VGG16_bn
+
+BATCH_SIZE: 8
+
+RANDOM_SEED: 123
+
+# available GPU ids
+GPUS:
+  - 0
+#  - 1
+
+# Pairwise data configuration
+PAIR:
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+  GT_GRAPH_CONSTRUCT: tri
+  REF_GRAPH_CONSTRUCT: tri
+
+# Willow object class dataset configuration
+WILLOW:
+  TRAIN_NUM: 20  # number of images for training set
+  TRAIN_OFFSET: 0  # the starting index of training set
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 10
+  NUM_EPOCHS: 30
+
+  # learning rate
+  LR: 1.0e-4
+  MOMENTUM: 0.9
+  LR_DECAY: 0.1
+  LR_STEP:  # (in epochs)
+    - 10
+    - 20
+
+  EPOCH_ITERS: 1000  # iterations per epoch
+
+# Evaluation settings and PCK metric
+EVAL:
+  EPOCH: 30  # epoch to be tested
+  SAMPLES: 100  # number of tested pairs for each class
+
+# PCA model parameters
+PCA:
+  FEATURE_CHANNEL: 512
+  BS_ITER_NUM: 20
+  BS_EPSILON: 1.0e-10
+  VOTING_ALPHA: 200.
+  GNN_FEAT: 2048
+  GNN_LAYER: 2
