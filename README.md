@@ -18,22 +18,7 @@ This repository also include training/evaluation protocol on Pascal VOC Keypoint
     1. Download [VOC2011 dataset](http://host.robots.ox.ac.uk/pascal/VOC/voc2011/index.html) and make sure it looks like ``data/PascalVOC/VOC2011``
     1. Download [keypoint annotation for VOC2011](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/shape/poselets/voc2011_keypoints_Feb2012.tgz) and make sure it looks like ``data/PascalVOC/annotations``
     1. The train/test split is available in ``data/PascalVOC/voc2011_pairs.npz``
-1. If you want to run experiment on Willow ObjectClass dataset:
-    1. Download [Willow ObjectClass dataset](http://www.di.ens.fr/willow/research/graphlearning/WILLOW-ObjectClass_dataset.zip)
-    1. Unzip the dataset and make sure it looks like ``data/WILLOW-ObjectClass``
-    1. If you want to initialize model weights on Pascal VOC Keypoint dataset (as reported in the paper), please:
-        1. Remove cached VOC index ``rm data/cache/voc_db_*``
-        1. Uncomment L156-159 in ``data/pascal_voc.py`` to filter out overlapping images in Pascal VOC
-        1. Train model on Pascal VOC Keypoint dataset, e.g. ``python train_eval.py --cfg experiments/vgg16_pca_voc.yaml``
-        1. Copy Pascal VOC's cached weight to the corresponding directory of Willow. E.g. copy Pascal VOC's model weight at epoch 10 for willow
-        ```bash
-        cp output/vgg16_pca_voc/params/*_0010.pt output/vgg16_pca_willow/params/
-        ```
-        1. Set the ``START_EPOCH`` parameter to load the pretrained weights, e.g. in ``experiments/vgg16_pca_willow.yaml`` set
-        ```yaml
-        TRAIN:
-           START_EPOCH: 10
-        ```
+1. If you want to run experiment on Willow ObjectClass dataset, please refer to [this section](#detailed-instructions-on-willow-object-class-dataset)
 
 ## Training
 
@@ -48,6 +33,25 @@ and replace ``path/to/your/yaml`` by path to your configuration file. Default co
 Run evaluation on epoch ``k``
 
 ``python eval.py --cfg path/to/your/yaml --epoch k`` 
+
+## Detailed instructions on Willow Object Class dataset
+
+1. Download [Willow ObjectClass dataset](http://www.di.ens.fr/willow/research/graphlearning/WILLOW-ObjectClass_dataset.zip)
+1. Unzip the dataset and make sure it looks like ``data/WILLOW-ObjectClass``
+1. If you want to initialize model weights on Pascal VOC Keypoint dataset (as reported in the paper), please:
+    1. Remove cached VOC index ``rm data/cache/voc_db_*``
+    1. Uncomment L156-159 in ``data/pascal_voc.py`` to filter out overlapping images in Pascal VOC
+    1. Train model on Pascal VOC Keypoint dataset, e.g. ``python train_eval.py --cfg experiments/vgg16_pca_voc.yaml``
+    1. Copy Pascal VOC's cached weight to the corresponding directory of Willow. E.g. copy Pascal VOC's model weight at epoch 10 for willow
+    ```bash
+    cp output/vgg16_pca_voc/params/*_0010.pt output/vgg16_pca_willow/params/
+    ```
+    1. Set the ``START_EPOCH`` parameter to load the pretrained weights, e.g. in ``experiments/vgg16_pca_willow.yaml`` set
+    ```yaml
+    TRAIN:
+       START_EPOCH: 10
+    ```
+
 
 ## Benchmark
 
