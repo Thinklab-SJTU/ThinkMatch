@@ -7,7 +7,7 @@ It contains our implementation of following deep graph matching methods:
 * **GMN** Andrei Zanfir and Cristian Sminchisescu, "Deep Learning of Graph Matching." CVPR 2018.
 * **PCA-GM** Runzhong Wang, Junchi Yan and Xiaokang Yang, "Learning Combinatorial Embedding Networks for Deep Graph Matching." ICCV 2019.
 
-And training/evaluation protocol on Pascal VOC Keypoint and Willow Object Class dataset, inline with the experiment part of our ICCV 2019 paper.
+This repository also include training/evaluation protocol on Pascal VOC Keypoint and Willow Object Class dataset, inline with the experiment part in our ICCV 2019 paper.
 
 ## Get started
 
@@ -15,11 +15,11 @@ And training/evaluation protocol on Pascal VOC Keypoint and Willow Object Class 
 1. Install ninja-build: ``apt-get install ninja-build``
 1. Install python packages: ``pip install tensorboardX scipy easydict pyyaml``
 1. If you want to run experiment on Pascal VOC Keypoint dataset:
-    1. Download VOC2011 and make sure it looks like ``data/PascalVOC/VOC2011``
-    1. Download keypoint annotation from [this link](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/shape/poselets/voc2011_keypoints_Feb2012.tgz) and make sure it looks like ``data/PascalVOC/annotations``
+    1. Download [VOC2011 dataset](http://host.robots.ox.ac.uk/pascal/VOC/voc2011/index.html) and make sure it looks like ``data/PascalVOC/VOC2011``
+    1. Download [keypoint annotation for VOC2011](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/shape/poselets/voc2011_keypoints_Feb2012.tgz) and make sure it looks like ``data/PascalVOC/annotations``
     1. The train/test split is available in ``data/PascalVOC/voc2011_pairs.npz``
 1. If you want to run experiment on Willow ObjectClass dataset:
-    1. Download Willow ObjectClass dataset from [this link](http://www.di.ens.fr/willow/research/graphlearning/WILLOW-ObjectClass_dataset.zip)
+    1. Download [Willow ObjectClass dataset](http://www.di.ens.fr/willow/research/graphlearning/WILLOW-ObjectClass_dataset.zip)
     1. Unzip the dataset and make sure it looks like ``data/WILLOW-ObjectClass``
     1. If you want to initialize model weights on Pascal VOC Keypoint dataset (as reported in the paper), please:
         1. Remove cached VOC index ``rm data/cache/voc_db_*``
