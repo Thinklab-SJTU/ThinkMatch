@@ -53,7 +53,7 @@ Run evaluation on epoch ``k``
 
 We report performance on Pascal VOC Keypoint and Willow Object Class datasets. These are consistent with the numbers reported in our paper.
 
-**Pascal VOC Keypoint** (mean accuracy on last column)
+**Pascal VOC Keypoint** (mean accuracy is on the last column)
 
 | method | aero | bike | bird | boat | bottle | bus  | car  | cat  | chair | cow  | table | dog  | horse | mbike | person | plant | sheep | sofa | train | tv   | mean     |
 | ------ | ---- | ---- | ---- | ---- | ------ | ---- | ---- | ---- | ----- | ---- | ----- | ---- | ----- | ----- | ------ | ----- | ----- | ---- | ----- | ---- | -------- |
