@@ -31,7 +31,7 @@ PAIR:
 TRAIN:
   # start, end epochs
   START_EPOCH: 0
-  NUM_EPOCHS: 10
+  NUM_EPOCHS: 20
 
   LOSS_FUNC: perm
 
@@ -40,7 +40,7 @@ TRAIN:
   MOMENTUM: 0.9
   LR_DECAY: 0.1
   LR_STEP:  # (in epochs)
-    - 5
+    - 10
 
   EPOCH_ITERS: 2000  # iterations per epoch
 
@@ -56,6 +56,6 @@ PCA:
   FEATURE_CHANNEL: 512
   BS_ITER_NUM: 20
   BS_EPSILON: 1.0e-10
-  VOTING_ALPHA: 200.
+  VOTING_ALPHA: 20.
   GNN_FEAT: 2048
   GNN_LAYER: 2

@@ -75,8 +75,10 @@ class Net(CNN):
 
             if i == self.gnn_layer - 2:
                 cross_graph = getattr(self, 'cross_graph_{}'.format(i))
-                emb1 = cross_graph(torch.cat((emb1, torch.bmm(s, emb2)), dim=-1))
-                emb2 = cross_graph(torch.cat((emb2, torch.bmm(s.transpose(1, 2), emb1)), dim=-1))
+                emb1_new = cross_graph(torch.cat((emb1, torch.bmm(s, emb2)), dim=-1))
+                emb2_new = cross_graph(torch.cat((emb2, torch.bmm(s.transpose(1, 2), emb1)), dim=-1))
+                emb1 = emb1_new
+                emb2 = emb2_new
 
         d, _ = self.displacement_layer(s, P_src, P_tgt)
         return s, d

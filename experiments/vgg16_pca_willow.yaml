@@ -34,7 +34,7 @@ WILLOW:
 # Training settings
 TRAIN:
   # start, end epochs
-  START_EPOCH: 10
+  START_EPOCH: 20
   NUM_EPOCHS: 30
 
   # learning rate
@@ -57,6 +57,6 @@ PCA:
   FEATURE_CHANNEL: 512
   BS_ITER_NUM: 20
   BS_EPSILON: 1.0e-10
-  VOTING_ALPHA: 200.
+  VOTING_ALPHA: 20.
   GNN_FEAT: 2048
   GNN_LAYER: 2
