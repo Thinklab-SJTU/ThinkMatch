@@ -16,7 +16,7 @@ This repository also include training/evaluation protocol on Pascal VOC Keypoint
 1. Install python packages: ``pip install tensorboardX scipy easydict pyyaml``
 1. If you want to run experiment on Pascal VOC Keypoint dataset:
     1. Download [VOC2011 dataset](http://host.robots.ox.ac.uk/pascal/VOC/voc2011/index.html) and make sure it looks like ``data/PascalVOC/VOC2011``
-    1. Download [keypoint annotation for VOC2011](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/shape/poselets/voc2011_keypoints_Feb2012.tgz) and make sure it looks like ``data/PascalVOC/annotations``
+    1. Download keypoint annotation for VOC2011 from [Berkeley server](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/shape/poselets/voc2011_keypoints_Feb2012.tgz) or [google drive](https://drive.google.com/open?id=1D5o8rmnY1-DaDrgAXSygnflX5c-JyUWR) and make sure it looks like ``data/PascalVOC/annotations``
     1. The train/test split is available in ``data/PascalVOC/voc2011_pairs.npz``
 1. If you want to run experiment on Willow ObjectClass dataset, please refer to [this section](#detailed-instructions-on-willow-object-class-dataset)
 
