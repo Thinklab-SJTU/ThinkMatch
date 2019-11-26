@@ -80,10 +80,11 @@ Suffix *VOC* means model trained on VOC dataset, and suffix *Willow* means model
 
 If you find this repository helpful to your research, please consider citing:
 ```text
-@article{wangICCV19pcagm,
+@InProceedings{Wang_2019_ICCV,
 author = {Wang, Runzhong and Yan, Junchi and Yang, Xiaokang},
 title = {Learning Combinatorial Embedding Networks for Deep Graph Matching},
-journal = {arXiv preprint arXiv:1904.00597},
+booktitle = {The IEEE International Conference on Computer Vision (ICCV)},
+month = {October},
 year = {2019}
 }
 ```
