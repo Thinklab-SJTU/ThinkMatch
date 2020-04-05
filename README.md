@@ -13,7 +13,7 @@ This repository also include training/evaluation protocol on Pascal VOC Keypoint
 In this codebase inline with our ICCV 2019 paper, a keypoint matching problem in images is considered. 
 Given two images with their labeled keypoint positions, our models are required to predict the correspondence between keypoints in two images, which is solved by deep graph matching.
 Especially, the following settings are made:
-* The matched two graphs contains equally number of inliers.
+* The matched two graphs contain equally number of inliers.
 * The graph structure is unknown to the model, only keypoint positions are available.
 * The predicted correspondence is bijective and one-to-one correspondence of nodes in two graphs. The correspondence can be represented by a permutation matrix.
 
