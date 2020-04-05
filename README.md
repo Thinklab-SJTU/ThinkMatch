@@ -9,6 +9,23 @@ It contains our implementation of following deep graph matching methods:
 
 This repository also include training/evaluation protocol on Pascal VOC Keypoint and Willow Object Class dataset, inline with the experiment part in our ICCV 2019 paper.
 
+## Problem setting
+In this codebase inline with our ICCV 2019 paper, a keypoint matching problem in images is considered. 
+Given two images with their labeled keypoint positions, our models are required to predict the correspondence between keypoints in two images, which is solved by deep graph matching.
+Especially, the following settings are made:
+* The matched two graphs contains only inliers.
+* The graph structure is unknown to the model, only keypoint positions are available.
+* The predicted correspondence is bijective and one-to-one correspondence of nodes in two graphs. The correspondence can be represented by a permutation matrix.
+
+
+#### Preprocessing steps on Pascal VOC Keypoint dataset:
+Here we describe our preprocessing steps on Pascal VOC Keypoint dataset for fair comparison and to ease future research.
+1. Filter out instances with label 'difficult', 'occluded' and 'truncated', together with 'people' after 2008. 
+1. Randomly select two instances from the same category.
+1. Crop these two instances from the background images using bounding box annotation.
+1. Filter out non-overlapping keypoints (i.e. outliers) in two instances respectively and leave only inliers. **If the resulting inlier number is less than 3, omit it** (because the problem is too trivial).
+1. Build graph structures from keypoint positions for two graphs independently (in PCA-GM, it is Delaunay triangulation).
+
 ## Get started
 
 1. Install and configure pytorch 1.1+ (with GPU support)
