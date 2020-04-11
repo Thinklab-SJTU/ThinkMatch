@@ -26,7 +26,7 @@ def parse_args(description):
     if args.batch_size is not None:
         cfg_from_list(['BATCH_SIZE', args.batch_size])
     if args.epoch is not None:
-        cfg_from_list(['TRAIN.START_EPOCH', args.epoch, 'EVAL.EPOCH', args.epoch, 'VISUAL.EPOCH', args.epoch])
+        cfg_from_list(['TRAIN.START_EPOCH', args.epoch, 'EVAL.EPOCH', args.epoch])
     if args.model is not None:
         cfg_from_list(['MODEL_NAME', args.model])
     if args.dataset is not None:
