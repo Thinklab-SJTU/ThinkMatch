@@ -190,9 +190,10 @@ if __name__ == '__main__':
     dataset_len = {'train': cfg.TRAIN.EPOCH_ITERS * cfg.BATCH_SIZE, 'test': cfg.EVAL.SAMPLES}
     image_dataset = {
         x: GMDataset(cfg.DATASET_FULL_NAME,
-                     sets=x,
-                     length=dataset_len[x],
-                     cls=cfg.TRAIN.CLASS if x == 'train' else None,
+                    
+                     dataset_len[x],
+                     cfg.TRAIN.CLASS if x == 'train' else None,
+		     sets=x,
                      obj_resize=cfg.PAIR.RESCALE)
         for x in ('train', 'test')}
     dataloader = {x: get_dataloader(image_dataset[x], fix_seed=(x == 'test'))
