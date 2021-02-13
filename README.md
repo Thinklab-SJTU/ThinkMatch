@@ -104,4 +104,13 @@ booktitle = {The IEEE International Conference on Computer Vision (ICCV)},
 month = {October},
 year = {2019}
 }
+
+@ARTICLE{Wang_2020_TPAMI,  
+author={R. {Wang} and J. {Yan} and X. {Yang}},  
+journal={IEEE Transactions on Pattern Analysis and Machine Intelligence},   
+title={Combinatorial Learning of Robust Deep Graph Matching: an Embedding based Approach},   
+year={2020},  
+volume={},  number={},  pages={1-1},  
+doi={10.1109/TPAMI.2020.3005590}
+}
 ```
