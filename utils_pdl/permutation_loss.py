@@ -1,7 +1,7 @@
-# here we just use cuda:0 ...
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
+from pdl_device_trans import place2int
 
 
 class CrossEntropyLoss(nn.layer):
@@ -26,6 +26,6 @@ class CrossEntropyLoss(nn.layer):
                 pred_perm[b, :pred_ns[b], :gt_ns[b]],
                 gt_perm[b, :pred_ns[b], :gt_ns[b]],
                 reduction='sum')
-            n_sum += pred_ns[b].astype(n_sum.dtype).cuda(device_id=0)
+            n_sum += pred_ns[b].astype(n_sum.dtype).cuda(device_id=place2int(pred_perm.place))
 
         return loss / n_sum

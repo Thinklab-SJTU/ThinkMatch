@@ -1,5 +1,5 @@
 import paddle
-# line 14: set_device() needs a better subsitute
+from pdl_device_trans import place2str
 
 
 def pck(x, x_gt, perm_mat, dist_threshs, ns):
@@ -12,8 +12,8 @@ def pck(x, x_gt, perm_mat, dist_threshs, ns):
     :param ns: number of exact pairs.
     :return: pck, matched num of pairs, total num of pairs
     """
-    device = x.place 
-    paddle.set_device("gpu:0")
+    device = place2str(x.place )
+    paddle.set_device(device)
 
     batch_num = x.shape[0]
     thresh_num = dist_threshs.shape[1]

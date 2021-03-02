@@ -1,5 +1,6 @@
 import paddle
 import paddle.nn as nn
+from pdl_device_trans import place2str
 
 class Sinkhorn(nn.Layer):
     """
@@ -18,7 +19,8 @@ class Sinkhorn(nn.Layer):
         batch_size = s.shape[0]
 
         # global function that sets all tensors' device to the device of "s"
-        paddle.set_device(s.place)
+        device_str = place2str(s.place)
+        paddle.set_device(device_str)
         if dummy_row:
             dummy_shape = list(s.shape)
             dummy_shape[1] = s.shape[2] - s.shape[1]
