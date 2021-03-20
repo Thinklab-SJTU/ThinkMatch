@@ -6,8 +6,8 @@ This repository contains PyTorch and PaddlePaddle implementation of our ICCV 201
 
 It contains our implementation of following deep graph matching methods: 
 
-* **GMN** Andrei Zanfir and Cristian Sminchisescu, "Deep Learning of Graph Matching." CVPR 2018.
-* **PCA-GM** Runzhong Wang, Junchi Yan and Xiaokang Yang, "Learning Combinatorial Embedding Networks for Deep Graph Matching." ICCV 2019.
+- [ ] **GMN** Andrei Zanfir and Cristian Sminchisescu, "Deep Learning of Graph Matching." CVPR 2018.
+- [x] **PCA-GM** Runzhong Wang, Junchi Yan and Xiaokang Yang, "Learning Combinatorial Embedding Networks for Deep Graph Matching." ICCV 2019.
 
 This repository also include training/evaluation protocol on Pascal VOC Keypoint and Willow Object Class dataset, inline with the experiment part in our ICCV 2019 paper.
 
