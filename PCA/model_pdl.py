@@ -2,16 +2,16 @@
 import paddle
 import paddle.nn as nn
 
-from utils.sinkhorn import Sinkhorn
-from utils.voting_layer import Voting
-from GMN.displacement_layer import Displacement
-from utils.feature_align import feature_align
-from PCA.gconv import Siamese_Gconv
-from PCA.affinity_layer import Affinity
+from utils_pdl.sinkhorn import Sinkhorn
+from utils_pdl.voting_layer import Voting
+from GMN.displacement_layer_pdl import Displacement
+from utils_pdl.feature_align import feature_align
+from PCA.gconv_pdl import Siamese_Gconv
+from PCA.affinity_layer_pdl import Affinity
 
 from utils.config import cfg
 
-import utils.backbone
+import utils_pdl.backbone
 CNN = eval('utils.backbone.{}'.format(cfg.BACKBONE))
 
 
