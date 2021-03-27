@@ -1,5 +1,5 @@
 import paddle
-from pdl_device_trans import place2str
+from .pdl_device_trans import place2str
 
 
 def pck(x, x_gt, perm_mat, dist_threshs, ns):

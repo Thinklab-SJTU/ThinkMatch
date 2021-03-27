@@ -2,7 +2,7 @@ import paddle
 import paddle.nn as nn
 
 
-class RobustLoss(nn.layer):
+class RobustLoss(nn.Layer):
     """
     RobustLoss Criterion computes a robust loss function.
     L = Sum(Phi(d_i - d_i^gt)),

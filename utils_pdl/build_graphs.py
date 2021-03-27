@@ -5,7 +5,7 @@ from scipy.spatial.qhull import QhullError
 
 import itertools
 import numpy as np
-from pdl_device_trans import place2int
+from .pdl_device_trans import place2int
 
 def build_graphs(P_np: np.ndarray, n: int, n_pad: int=None, edge_pad: int=None, stg: str='fc'):
     """

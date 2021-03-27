@@ -1,10 +1,10 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from pdl_device_trans import place2int
+from .pdl_device_trans import place2int
 
 
-class CrossEntropyLoss(nn.layer):
+class CrossEntropyLoss(nn.Layer):
     """
     Cross entropy loss between two permutations.
     """

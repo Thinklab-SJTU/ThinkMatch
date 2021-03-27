@@ -1,7 +1,6 @@
 import paddle
 from paddle import Tensor
-from paddle.autograd import Function
-from utils.sparse import bilinear_diag_paddle
+from utils.sparse import bilinear_diag_torch
 from sparse_paddle import CSRMatrix3d, CSCMatrix3d
 import scipy.sparse as ssp
 import numpy as np
@@ -74,7 +73,7 @@ def kronecker_sparse(arr1: np.ndarray, arr2: np.ndarray):
     return ss
 
 
-class RebuildFGM(Function):
+class RebuildFGM(paddle.nn.Layer):
     """
     Rebuild sparse affinity matrix in the formula of CVPR12's paper "Factorized Graph Matching"
     """

@@ -9,8 +9,9 @@ import random
 from data.pascal_voc import PascalVOC
 from data.willow_obj import WillowObject
 from utils_pdl.build_graphs import build_graphs
-from utils_pdl.fgm import kronecker_sparse
-from sparse_torch import CSRMatrix3d
+# Now only implement PCA
+#from utils_pdl.fgm import kronecker_sparse
+#from sparse_torch import CSRMatrix3d
 
 from utils.config import cfg
 
@@ -163,7 +164,7 @@ def worker_init_rand(worker_id):
 
 
 def get_dataloader(dataset, fix_seed=True, shuffle=False):
-    assert fix_seed == True, "Paddle version now do NOT support unfixed seed"
+    fix_seed = True #"Paddle version now do NOT support unfixed seed"
     return paddle.io.DataLoader(
         dataset, batch_size=cfg.BATCH_SIZE, shuffle=shuffle, num_workers=cfg.DATALOADER_NUM, collate_fn=collate_fn,
          worker_init_fn=worker_init_fix if fix_seed else worker_init_rand
