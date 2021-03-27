@@ -1,13 +1,13 @@
 # PCA-GM
-## Paddle-Version
-To find the original work, click [here](https://github.com/Thinklab-SJTU/PCA-GM/tree/c426792d0fd566807c8fbf9ea056d7291e717263)
+## Paddle-Version ( UNFINISHED )
+To find the original work( powered by pytorch), click [here](https://github.com/Thinklab-SJTU/PCA-GM/tree/c426792d0fd566807c8fbf9ea056d7291e717263)
 
-This repository contains PyTorch and PaddlePaddle implementation of our ICCV 2019 paper (for oral presentation): [Learning Combinatorial Embedding Networks for Deep Graph Matching.](http://openaccess.thecvf.com/content_ICCV_2019/papers/Wang_Learning_Combinatorial_Embedding_Networks_for_Deep_Graph_Matching_ICCV_2019_paper.pdf)
+This repository contains PaddlePaddle implementation of our ICCV 2019 paper (for oral presentation): [Learning Combinatorial Embedding Networks for Deep Graph Matching.](http://openaccess.thecvf.com/content_ICCV_2019/papers/Wang_Learning_Combinatorial_Embedding_Networks_for_Deep_Graph_Matching_ICCV_2019_paper.pdf)
 
 It contains our implementation of following deep graph matching methods: 
 
 - [ ] **GMN** Andrei Zanfir and Cristian Sminchisescu, "Deep Learning of Graph Matching." CVPR 2018.
-- [x] **PCA-GM** Runzhong Wang, Junchi Yan and Xiaokang Yang, "Learning Combinatorial Embedding Networks for Deep Graph Matching." ICCV 2019.
+- [ ] **PCA-GM** Runzhong Wang, Junchi Yan and Xiaokang Yang, "Learning Combinatorial Embedding Networks for Deep Graph Matching." ICCV 2019.
 
 This repository also include training/evaluation protocol on Pascal VOC Keypoint and Willow Object Class dataset, inline with the experiment part in our ICCV 2019 paper.
 
@@ -43,7 +43,7 @@ Here we describe our preprocessing steps on Pascal VOC Keypoint dataset for fair
 
 Run training and evaluation
 
-``python train_eval.py --cfg path/to/your/yaml`` 
+``python train_eval_pdl.py --cfg path/to/your/yaml`` 
 
 and replace ``path/to/your/yaml`` by path to your configuration file. Default configuration files are stored in``experiments/``.
 
@@ -51,7 +51,7 @@ and replace ``path/to/your/yaml`` by path to your configuration file. Default co
 
 Run evaluation on epoch ``k``
 
-``python eval.py --cfg path/to/your/yaml --epoch k`` 
+``python eval_pdl.py --cfg path/to/your/yaml --epoch k`` 
 
 ## Detailed instructions on Willow Object Class dataset
 
