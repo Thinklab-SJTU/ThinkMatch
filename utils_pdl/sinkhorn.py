@@ -1,6 +1,6 @@
 import paddle
 import paddle.nn as nn
-from pdl_device_trans import place2str
+from .pdl_device_trans import place2str
 
 class Sinkhorn(nn.Layer):
     """
@@ -30,11 +30,11 @@ class Sinkhorn(nn.Layer):
                 s[b, nrows[b]:new_nrows[b], :ncols[b]] = self.epsilon
             nrows = new_nrows
 
-        row_norm_ones = paddle.zeros(batch_size, s.shape[1], s.shape[1])  # size: row x row
-        col_norm_ones = paddle.zeros(batch_size, s.shape[2], s.shape[2])  # size: col x col
+        row_norm_ones = paddle.zeros((batch_size, s.shape[1], s.shape[1]))  # size: row x row
+        col_norm_ones = paddle.zeros((batch_size, s.shape[2], s.shape[2]))  # size: col x col
         for b in range(batch_size):
-            row_slice = slice(0, nrows[b] if nrows is not None else s.shape[2])
-            col_slice = slice(0, ncols[b] if ncols is not None else s.shape[1])
+            row_slice = slice(0, int(nrows[b]) if nrows is not None else int(s.shape[2]))
+            col_slice = slice(0, int(ncols[b]) if ncols is not None else int(s.shape[1]))
             row_norm_ones[b, row_slice, row_slice] = 1
             col_norm_ones[b, col_slice, col_slice] = 1
 
@@ -57,8 +57,8 @@ class Sinkhorn(nn.Layer):
 
             tmp = paddle.zeros_like(s)
             for b in range(batch_size):
-                row_slice = slice(0, nrows[b] if nrows is not None else s.shape[2])
-                col_slice = slice(0, ncols[b] if ncols is not None else s.shape[1])
+                row_slice = slice(0, int(nrows[b]) if nrows is not None else s.shape[2])
+                col_slice = slice(0, int(ncols[b]) if ncols is not None else s.shape[1])
                 tmp[b, row_slice, col_slice] = 1 / sum[b, row_slice, col_slice]
             s = s * tmp
 

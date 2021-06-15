@@ -1,6 +1,6 @@
 import paddle
 from paddle import Tensor
-from pdl_device_trans import place2int 
+from .pdl_device_trans import place2int 
 
 
 def feature_align(raw_feature: Tensor, P: Tensor, ns_t: Tensor, ori_size: tuple, device=None):
@@ -23,7 +23,7 @@ def feature_align(raw_feature: Tensor, P: Tensor, ns_t: Tensor, ori_size: tuple,
     #for idx in range(batch_num):
     #    n_max = max(ns_t[idx], n_max)
 
-    ori_size = paddle.to_tensor(ori_size, dtype='float32', device=device)
+    ori_size = paddle.to_tensor(ori_size, dtype='float32', place=device)
     F = paddle.zeros([batch_num, channel_num, n_max], dtype='float32').cuda(place2int(device))
     for idx, feature in enumerate(raw_feature):
         n = ns_t[idx]

@@ -49,8 +49,8 @@ def matching_accuracy(pmat_pred, pmat_gt, ns):
 
     pmat_gt = paddle.to_tensor(pmat_gt, place=device)
 
-    assert paddle.all((pmat_pred == 0) + (pmat_pred == 1)), 'pmat_pred can noly contain 0/1 elements.'
-    assert paddle.all((pmat_gt == 0) + (pmat_gt == 1)), 'pmat_gt should noly contain 0/1 elements.'
+    assert ((pmat_pred == 0).numpy() + (pmat_pred == 1).numpy()).all(), 'pmat_pred can noly contain 0/1 elements.'
+    assert ((pmat_gt == 0).numpy() + (pmat_gt == 1).numpy()).all(), 'pmat_gt should noly contain 0/1 elements.'
     assert paddle.all(paddle.sum(pmat_pred, axis=-1) <= 1) and paddle.all(paddle.sum(pmat_pred, axis=-2) <= 1)
     assert paddle.all(paddle.sum(pmat_gt, axis=-1) <= 1) and paddle.all(paddle.sum(pmat_gt, axis=-2) <= 1)
 

@@ -21,6 +21,6 @@ def hungarian(s: paddle.Tensor, n1=None, n2=None):
         row, col = opt.linear_sum_assignment(perm_mat[b, :n1b, :n2b])
         perm_mat[b] = np.zeros_like(perm_mat[b])
         perm_mat[b, row, col] = 1
-    perm_mat = paddle.to_tensor(permat, place=device)
+    perm_mat = paddle.to_tensor(perm_mat, place=device)
 
     return perm_mat

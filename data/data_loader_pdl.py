@@ -10,8 +10,8 @@ from data.pascal_voc import PascalVOC
 from data.willow_obj import WillowObject
 from utils_pdl.build_graphs import build_graphs
 # Now only implement PCA
-#from utils_pdl.fgm import kronecker_sparse
-#from sparse_torch import CSRMatrix3d
+from utils_pdl.fgm import kronecker_sparse
+from sparse_torch import CSRMatrix3d
 
 from utils.config import cfg
 
@@ -97,8 +97,16 @@ def collate_fn(data: list):
         for t in inp:
             pad_pattern = np.zeros(2 * len(max_shape), dtype=np.int64)
             pad_pattern[::-2] = max_shape - np.array(t.shape)
-            pad_pattern = tuple(pad_pattern.tolist())
-            padded_ts.append(F.pad(t, pad_pattern, 'constant', 0))
+            pad_pattern = pad_pattern.tolist()
+            if(len(pad_pattern) == 0):
+                padded_ts.append(t.reshape((1,1,t.shape[0])))
+            elif len(pad_pattern) == 4:
+                tt = t.reshape((1,1,t.shape[0],-1))
+                tt = F.pad(tt, pad_pattern, 'constant', 0)
+                padded_ts.append(tt.reshape((1,tt.shape[2],-1)))
+            elif len(pad_pattern) == 6:
+                tt = t.reshape((1,1,t.shape[0],t.shape[1],-1))
+                padded_ts.append(F.pad(tt, pad_pattern, 'constant', 0, data_format='NCDHW').squeeze())
 
         return padded_ts
 
@@ -116,7 +124,10 @@ def collate_fn(data: list):
                 ret[k] = stack(vs)
         elif type(inp[0]) == paddle.Tensor:
             new_t = pad_tensor(inp)
-            ret = paddle.stack(new_t, 0)
+            if len(new_t) == 0:
+                ret = paddle.to_tensor(0)
+            else:
+                ret = paddle.stack(new_t, 0)
         elif type(inp[0]) == np.ndarray:
             new_t = pad_tensor([paddle.to_tensor(x) for x in inp])
             ret = paddle.stack(new_t, 0)
@@ -134,8 +145,8 @@ def collate_fn(data: list):
             G1_gt, G2_gt = ret['Gs']
             H1_gt, H2_gt = ret['Hs']
             sparse_dtype = np.float32
-            K1G = [kronecker_sparse(x, y).astype(sparse_dtype) for x, y in zip(G2_gt, G1_gt)]  # 1 as source graph, 2 as target graph
-            K1H = [kronecker_sparse(x, y).astype(sparse_dtype) for x, y in zip(H2_gt, H1_gt)]
+            K1G = [kronecker_sparse(x.squeeze(), y.squeeze()).astype(sparse_dtype) for x, y in zip(G2_gt, G1_gt)]  # 1 as source graph, 2 as target graph
+            K1H = [kronecker_sparse(x.squeeze(), y.squeeze()).astype(sparse_dtype) for x, y in zip(H2_gt, H1_gt)]
             K1G = CSRMatrix3d(K1G)
             K1H = CSRMatrix3d(K1H).transpose()
 

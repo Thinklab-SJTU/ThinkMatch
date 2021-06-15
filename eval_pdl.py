@@ -32,7 +32,7 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
 
     lap_solver = hungarian
 
-    accs = paddle.zeros(len(classes))
+    accs = paddle.zeros((len(classes)))
 
     for i, cls in enumerate(classes):
         if verbose:

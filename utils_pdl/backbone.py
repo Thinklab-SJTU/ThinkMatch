@@ -16,24 +16,25 @@ class VGG16_base(nn.Layer):
         Get pretrained VGG16 models for feature extraction.
         :return: feature sequence
         """
-        model = models.vgg16(pretrained=True, batch_norm=batch_norm)
+        model = models.vgg16(pretrained=False, batch_norm=batch_norm)
 
         conv_list = node_list = edge_list = []
 
         # get the output of relu4_2(node features) and relu5_1(edge features)
         cnt_m, cnt_r = 1, 0
         for layer, module in enumerate(model.sublayers()):
-            if isinstance(module, nn.layer.conv.Conv2D):
+            if( layer == 0 ): continue 
+            if isinstance(module, nn.Conv2D):
                 cnt_r += 1
-            if isinstance(module, nn.layer.pooling.MaxPool2D):
+            if isinstance(module, nn.MaxPool2D):
                 cnt_r = 0
                 cnt_m += 1
             conv_list += [module]
 
-            if cnt_m == 4 and cnt_r == 2 and isinstance(module, nn.layer.activation.ReLU):
+            if cnt_m == 4 and cnt_r == 2 and isinstance(module, nn.ReLU):
                 node_list = conv_list
                 conv_list = []
-            elif cnt_m == 5 and cnt_r == 1 and isinstance(module, nn.layer.activation.ReLU):
+            elif cnt_m == 5 and cnt_r == 1 and isinstance(module, nn.ReLU):
                 edge_list = conv_list
                 break
 
@@ -56,7 +57,7 @@ class VGG16(VGG16_base):
         super(VGG16, self).__init__(False)
 
 
-class NoBackbone(nn.Module):
+class NoBackbone(nn.Layer):
     def __init__(self, batch_norm=True):
         super(NoBackbone, self).__init__()
         self.node_layers, self.edge_layers = None, None

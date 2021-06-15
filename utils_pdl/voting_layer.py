@@ -28,7 +28,8 @@ class Voting(nn.Layer):
                 ret_s[b, 0:n, :] = \
                     self.softmax(self.alpha * s[b, 0:n, :])
             else:
-                ret_s[b, 0:n, 0:ncol_gt[b]] =\
-                    self.softmax(self.alpha * s[b, 0:n, 0:ncol_gt[b]])
+                tmp = int(ncol_gt[b].numpy())
+                ret_s[b, 0:int(n), 0:tmp] =\
+                    self.softmax(self.alpha * s[b, 0:int(n), 0:tmp])
 
         return ret_s

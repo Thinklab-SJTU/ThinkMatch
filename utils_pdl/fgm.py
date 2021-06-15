@@ -1,7 +1,7 @@
 import paddle
 from paddle import Tensor
 from utils.sparse import bilinear_diag_torch
-from sparse_paddle import CSRMatrix3d, CSCMatrix3d
+from sparse_torch import CSRMatrix3d, CSCMatrix3d
 import scipy.sparse as ssp
 import numpy as np
 

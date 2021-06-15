@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from visualdl import LogWriter
 
-from data.data_loader_pdl import GMDataset, get_dataloader
+from data.data_loader import GMDataset, get_dataloader
 from GMN.displacement_layer_pdl import Displacement
 from utils_pdl.offset_loss import RobustLoss
 from utils_pdl.permutation_loss import CrossEntropyLoss
@@ -70,20 +70,20 @@ def train_eval_model(model,
         # Iterate over data.
         for inputs in dataloader['train']:
             if 'images' in inputs:
-                data1, data2 = [paddle.to_tensor(data=_) for _ in inputs['images']]
+                data1, data2 = [paddle.to_tensor(data=_.numpy()) for _ in inputs['images']]
                 inp_type = 'img'
             elif 'features' in inputs:
-                data1, data2 = [paddle.to_tensor(data=_) for _ in inputs['features']]
+                data1, data2 = [paddle.to_tensor(data=_.numpy()) for _ in inputs['features']]
                 inp_type = 'feat'
             else:
                 raise ValueError('no valid data key (\'images\' or \'features\') found from dataloader!')
-            P1_gt, P2_gt = [paddle.to_tensor(data=_) for _ in inputs['Ps']]
-            n1_gt, n2_gt = [paddle.to_tensor(data=_) for _ in inputs['ns']]
-            e1_gt, e2_gt = [paddle.to_tensor(data=_) for _ in inputs['es']]
-            G1_gt, G2_gt = [paddle.to_tensor(data=_) for _ in inputs['Gs']]
-            H1_gt, H2_gt = [paddle.to_tensor(data=_) for _ in inputs['Hs']]
-            KG, KH = [paddle.to_tensor(data=_) for _ in inputs['Ks']]
-            perm_mat = paddle.to_tensor(inputs['gt_perm_mat'])
+            P1_gt, P2_gt = [paddle.to_tensor(data=_.numpy()) for _ in inputs['Ps']]
+            n1_gt, n2_gt = [paddle.to_tensor(data=_.numpy()) for _ in inputs['ns']]
+            e1_gt, e2_gt = [paddle.to_tensor(data=_.numpy()) for _ in inputs['es']]
+            G1_gt, G2_gt = [paddle.to_tensor(data=_.numpy()) for _ in inputs['Gs']]
+            H1_gt, H2_gt = [paddle.to_tensor(data=_.numpy()) for _ in inputs['Hs']]
+            KG, KH = [paddle.to_tensor(data=_.numpy()) for _ in inputs['Ks']]
+            perm_mat = paddle.to_tensor(inputs['gt_perm_mat'].numpy())
 
             iter_num = iter_num + 1
 
@@ -133,13 +133,13 @@ def train_eval_model(model,
             """
 
             # statistics
-            running_loss += loss.item() * perm_mat.size(0)
-            epoch_loss += loss.item() * perm_mat.size(0)
+            running_loss += loss.item() * perm_mat.shape[0]
+            epoch_loss += loss.item() * perm_mat.shape[0]
 
             if iter_num % cfg.STATISTIC_STEP == 0:
-                running_speed = cfg.STATISTIC_STEP * perm_mat.size(0) / (time.time() - running_since)
+                running_speed = cfg.STATISTIC_STEP * perm_mat.shape[0]/ (time.time() - running_since)
                 print('Epoch {:<4} Iteration {:<4} {:>4.2f}sample/s Loss={:<8.4f}'
-                      .format(epoch, iter_num, running_speed, running_loss / cfg.STATISTIC_STEP / perm_mat.size(0)))
+                      .format(epoch, iter_num, running_speed, running_loss / cfg.STATISTIC_STEP / perm_mat.shape[0]))
                 """
                 tfboard_writer.add_scalars(
                     'speed',

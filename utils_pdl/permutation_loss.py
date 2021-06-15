@@ -16,8 +16,8 @@ class CrossEntropyLoss(nn.Layer):
 
         pred_perm = pred_perm.astype("float32")
 
-        assert paddle.all((pred_perm >= 0) * (pred_perm <= 1))
-        assert paddle.all((gt_perm >= 0) * (gt_perm <= 1))
+        assert ((pred_perm.numpy() >= 0) * (pred_perm.numpy() <= 1)).all()
+        assert ((gt_perm.numpy() >= 0) * (gt_perm.numpy() <= 1)).all()
 
         loss = paddle.to_tensor(0., place=pred_perm.place)
         n_sum = paddle.zeros_like(loss)

@@ -12,7 +12,7 @@ from PCA.affinity_layer_pdl import Affinity
 from utils.config import cfg
 
 import utils_pdl.backbone
-CNN = eval('utils.backbone.{}'.format(cfg.BACKBONE))
+CNN = eval('utils_pdl.backbone.{}'.format(cfg.BACKBONE))
 
 
 class Net(CNN):
@@ -64,8 +64,8 @@ class Net(CNN):
             raise ValueError('unknown type string {}'.format(type))
 
         # adjacency matrices
-        A_src = paddle.bmm(G_src, H_src.transpose((0,2,1))
-        A_tgt = paddle.bmm(G_tgt, H_tgt.transpose((0,2,1))
+        A_src = paddle.bmm(G_src, H_src.transpose((0,2,1)))
+        A_tgt = paddle.bmm(G_tgt, H_tgt.transpose((0,2,1)))
 
         emb1, emb2 = paddle.concat((U_src, F_src), axis=1).transpose((0,2,1)), paddle.concat((U_tgt, F_tgt), axis=1).transpose((0,2,1))
 
