@@ -1,7 +1,7 @@
 MODEL_NAME: vgg16_gmn
-DATASET_NAME: voc
+DATASET_NAME: cub
 
-DATASET_FULL_NAME: PascalVOC
+DATASET_FULL_NAME: CUB2011
 
 MODULE: models.GMN.model
 
@@ -17,49 +17,51 @@ GPUS:
   - 0
 #  - 1
 
-# Problem configuration
-PROBLEM:
-  TYPE: 2GM
+# Pairwise data configuration
+PAIR:
   RESCALE:  # rescaled image size
     - 256
     - 256
+  CANDIDATE_SHAPE:  # target candidate grid
+    - 16
+    - 16
+  GT_GRAPH_CONSTRUCT: tri
+  REF_GRAPH_CONSTRUCT: fc
+  REF_OUTLIER: True
+  GT_OUTLIER: True
 
-# Graph construction settings
-GRAPH:
-  SRC_GRAPH_CONSTRUCT: tri
-  TGT_GRAPH_CONSTRUCT: fc
-  SYM_ADJACENCY: True
+CUB2011:
+  CLASS_SPLIT: all
 
 # Training settings
 TRAIN:
   # start, end epochs
   START_EPOCH: 0
-  NUM_EPOCHS: 10
+  NUM_EPOCHS: 15
 
   LOSS_FUNC: offset
 
   # learning rate
-  LR: 1.0e-3 #2.0e-4
+  LR: 2.0e-4
   MOMENTUM: 0.9
   LR_DECAY: 0.1
   LR_STEP:  # (in epochs)
-    - 2
+    - 10
 
-  EPOCH_ITERS: 2000  # iterations per epoch
+  EPOCH_ITERS: 500  # iterations per epoch
 
   CLASS: none
 
 # Evaluation settings
 EVAL:
-  EPOCH: 10  # epoch to be tested
-  SAMPLES: 1000  # number of tested pairs for each class
+  EPOCH: 30  # epoch to be tested
+  SAMPLES: 10  # number of tested pairs for each class
 
 # GMN model parameters
 GMN:
   FEATURE_CHANNEL: 512
   PI_ITER_NUM: 25
-  PI_STOP_THRESH: 1.0e-3
+  PI_STOP_THRESH: 0. #2.0e-7
   BS_ITER_NUM: 20
   BS_EPSILON: 1.0e-10
   VOTING_ALPHA: 200.
-  GM_SOLVER: SM

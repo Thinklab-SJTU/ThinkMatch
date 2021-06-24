@@ -1,7 +1,7 @@
 MODEL_NAME: vgg16_gmn
-DATASET_NAME: voc
+DATASET_NAME: imcpt
 
-DATASET_FULL_NAME: PascalVOC
+DATASET_FULL_NAME: IMC_PT_SparseGM
 
 MODULE: models.GMN.model
 
@@ -23,6 +23,8 @@ PROBLEM:
   RESCALE:  # rescaled image size
     - 256
     - 256
+  SRC_OUTLIER: True
+  TGT_OUTLIER: True
 
 # Graph construction settings
 GRAPH:

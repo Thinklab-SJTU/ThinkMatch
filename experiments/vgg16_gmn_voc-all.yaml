@@ -1,5 +1,5 @@
 MODEL_NAME: vgg16_gmn
-DATASET_NAME: voc
+DATASET_NAME: voc-all
 
 DATASET_FULL_NAME: PascalVOC
 
@@ -23,6 +23,8 @@ PROBLEM:
   RESCALE:  # rescaled image size
     - 256
     - 256
+  SRC_OUTLIER: True
+  TGT_OUTLIER: True
 
 # Graph construction settings
 GRAPH:

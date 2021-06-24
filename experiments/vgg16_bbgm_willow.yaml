@@ -1,19 +1,24 @@
-MODEL_NAME: vgg16_pca
+MODEL_NAME: vgg16_bbgm
 DATASET_NAME: willow
 
 DATASET_FULL_NAME: WillowObject
 
-MODULE: models.PCA.model
+MODULE: models.BBGM.model
 
-BACKBONE: VGG16_bn
+BACKBONE: VGG16_bn_final
 
 BATCH_SIZE: 8
+DATALOADER_NUM: 2
+FP16: False
 
 RANDOM_SEED: 123
+
+STATISTIC_STEP: 100
 
 # available GPU ids
 GPUS:
   - 0
+#  - 1
 
 # Problem configuration
 PROBLEM:
@@ -37,27 +42,36 @@ WillowObject:
 TRAIN:
   # start, end epochs
   START_EPOCH: 0
-  NUM_EPOCHS: 30
+  NUM_EPOCHS: 5
+
+  LOSS_FUNC: hamming
+
+  OPTIMIZER: Adam
 
   # learning rate
-  LR: 1.0e-3
+  LR: 2.e-3
+  SEPARATE_BACKBONE_LR: True
+  BACKBONE_LR: 2.e-5
   MOMENTUM: 0.9
-  LR_DECAY: 0.1
-  LR_STEP:
-    - 10  # (in epochs)
+  LR_DECAY: 0.5
+  LR_STEP:  # (in epochs)
+    - 1
 
-  EPOCH_ITERS: 200  # iterations per epoch
+  EPOCH_ITERS: 100  # iterations per epoch
+
+  CLASS: none
 
 # Evaluation settings
 EVAL:
-  EPOCH: 30  # epoch to be tested
+  EPOCH: 2  # epoch to be tested
   SAMPLES: 100  # number of tested pairs for each class
 
-# PCA model parameters
-PCA:
-  FEATURE_CHANNEL: 512
-  SK_ITER_NUM: 20
-  SK_EPSILON: 1.0e-10
-  SK_TAU: 0.05
-  GNN_FEAT: 2048
-  GNN_LAYER: 2
+# model parameters
+BBGM:
+  FEATURE_CHANNEL: 1024
+  SOLVER_NAME: LPMP
+  LAMBDA_VAL: 80.0
+  SOLVER_PARAMS:
+    timeout: 1000
+    primalComputationInterval: 10
+    maxIter: 100

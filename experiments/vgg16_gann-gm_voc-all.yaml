@@ -1,14 +1,15 @@
-MODEL_NAME: vgg16_pca
-DATASET_NAME: voc
+MODEL_NAME: vgg16_gann-gm
+DATASET_NAME: voc-all
 
 DATASET_FULL_NAME: PascalVOC
 
-MODULE: models.PCA.model
+MODULE: models.GANN.model
 
 BACKBONE: VGG16_bn
 
-BATCH_SIZE: 8
-DATALOADER_NUM: 2
+BATCH_SIZE: 1
+DATALOADER_NUM: 0
+FP16: False
 
 RANDOM_SEED: 123
 
@@ -23,11 +24,13 @@ PROBLEM:
   RESCALE:  # rescaled image size
     - 256
     - 256
+  SRC_OUTLIER: True
+  TGT_OUTLIER: True
 
 # Graph construction settings
 GRAPH:
-  SRC_GRAPH_CONSTRUCT: tri
-  TGT_GRAPH_CONSTRUCT: tri
+  SRC_GRAPH_CONSTRUCT: fc
+  TGT_GRAPH_CONSTRUCT: fc
   SYM_ADJACENCY: True
 
 # Training settings
@@ -43,25 +46,32 @@ TRAIN:
   MOMENTUM: 0.9
   LR_DECAY: 0.1
   LR_STEP:  # (in epochs)
-    - 2
-    - 6
     - 10
 
-  EPOCH_ITERS: 2000  # iterations per epoch
+  EPOCH_ITERS: 500  # iterations per epoch
 
   CLASS: none
 
 # Evaluation settings
 EVAL:
-  EPOCH: 30  # epoch to be tested
+  EPOCH: 20  # epoch to be tested
   SAMPLES: 1000  # number of tested pairs for each class
 
-# PCA model parameters
-PCA:
-  FEATURE_CHANNEL: 512
-  SK_ITER_NUM: 20
-  SK_EPSILON: 1.0e-10
-  CROSS_ITER: False
+# model parameters
+GANN:
+  FEATURE_CHANNEL: 1024
+  SK_ITER_NUM: 50
   SK_TAU: 0.05
-  GNN_FEAT: 2048
-  GNN_LAYER: 2
+  SK_EPSILON: 1.0e-10
+  UNIV_SIZE: 23
+  MGM_ITER:
+    - 500
+  INIT_TAU:
+    - 0.05
+  GAMMA: 0.8
+  CONVERGE_TOL: 1.0e-3
+  MIN_TAU:
+    - 0.005
+  SCALE_FACTOR: 2.
+  QUAD_WEIGHT: 0.005
+  NORM_QUAD_TERM: True

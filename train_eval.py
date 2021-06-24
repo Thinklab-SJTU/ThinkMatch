@@ -1,21 +1,20 @@
-import torch
 import torch.optim as optim
 import time
+import xlwt
 from datetime import datetime
 from pathlib import Path
 from tensorboardX import SummaryWriter
 
-from data.data_loader import GMDataset, get_dataloader
-from GMN.displacement_layer import Displacement
-from utils.offset_loss import RobustLoss
-from utils.permutation_loss import CrossEntropyLoss
-from utils.evaluation_metric import matching_accuracy
-from parallel import DataParallel
-from utils.model_sl import load_model, save_model
+from src.dataset.data_loader import GMDataset, get_dataloader
+from models.GMN.displacement_layer import Displacement
+from src.loss_func import *
+from src.evaluation_metric import matching_accuracy
+from src.parallel import DataParallel
+from src.utils.model_sl import load_model, save_model
 from eval import eval_model
-from utils.hungarian import hungarian
+from src.utils.data_to_cuda import data_to_cuda
 
-from utils.config import cfg
+from src.utils.config import cfg
 
 
 def train_eval_model(model,
@@ -24,29 +23,33 @@ def train_eval_model(model,
                      dataloader,
                      tfboard_writer,
                      num_epochs=25,
-                     resume=False,
-                     start_epoch=0):
+                     start_epoch=0,
+                     xls_wb=None):
     print('Start training...')
 
     since = time.time()
     dataset_size = len(dataloader['train'].dataset)
     displacement = Displacement()
-    lap_solver = hungarian
 
     device = next(model.parameters()).device
     print('model on device: {}'.format(device))
+
+    alphas = torch.tensor(cfg.EVAL.PCK_ALPHAS, dtype=torch.float32, device=device)  # for evaluation
 
     checkpoint_path = Path(cfg.OUTPUT_PATH) / 'params'
     if not checkpoint_path.exists():
         checkpoint_path.mkdir(parents=True)
 
-    if resume:
-        assert start_epoch != 0
+    model_path, optim_path = '',''
+    if start_epoch > 0:
         model_path = str(checkpoint_path / 'params_{:04}.pt'.format(start_epoch))
-        print('Loading model parameters from {}'.format(model_path))
-        load_model(model, model_path)
-
         optim_path = str(checkpoint_path / 'optim_{:04}.pt'.format(start_epoch))
+    if len(cfg.PRETRAINED_PATH) > 0:
+        model_path = cfg.PRETRAINED_PATH
+    if len(model_path) > 0:
+        print('Loading model parameters from {}'.format(model_path))
+        load_model(model, model_path, strict=False)
+    if len(optim_path) > 0:
         print('Loading optimizer state from {}'.format(optim_path))
         optimizer.load_state_dict(torch.load(optim_path))
 
@@ -70,21 +73,8 @@ def train_eval_model(model,
 
         # Iterate over data.
         for inputs in dataloader['train']:
-            if 'images' in inputs:
-                data1, data2 = [_.cuda() for _ in inputs['images']]
-                inp_type = 'img'
-            elif 'features' in inputs:
-                data1, data2 = [_.cuda() for _ in inputs['features']]
-                inp_type = 'feat'
-            else:
-                raise ValueError('no valid data key (\'images\' or \'features\') found from dataloader!')
-            P1_gt, P2_gt = [_.cuda() for _ in inputs['Ps']]
-            n1_gt, n2_gt = [_.cuda() for _ in inputs['ns']]
-            e1_gt, e2_gt = [_.cuda() for _ in inputs['es']]
-            G1_gt, G2_gt = [_.cuda() for _ in inputs['Gs']]
-            H1_gt, H2_gt = [_.cuda() for _ in inputs['Hs']]
-            KG, KH = [_.cuda() for _ in inputs['Ks']]
-            perm_mat = inputs['gt_perm_mat'].cuda()
+            if model.module.device != torch.device('cpu'):
+                inputs = data_to_cuda(inputs)
 
             iter_num = iter_num + 1
 
@@ -93,38 +83,77 @@ def train_eval_model(model,
 
             with torch.set_grad_enabled(True):
                 # forward
-                s_pred, d_pred = \
-                    model(data1, data2, P1_gt, P2_gt, G1_gt, G2_gt, H1_gt, H2_gt, n1_gt, n2_gt, KG, KH, inp_type)
+                outputs = model(inputs)
 
-                multi_loss = []
-                if cfg.TRAIN.LOSS_FUNC == 'offset':
-                    d_gt, grad_mask = displacement(perm_mat, P1_gt, P2_gt, n1_gt)
-                    loss = criterion(d_pred, d_gt, grad_mask)
-                elif cfg.TRAIN.LOSS_FUNC == 'perm':
-                    loss = criterion(s_pred, perm_mat, n1_gt, n2_gt)
+                if cfg.PROBLEM.TYPE == '2GM':
+                    assert 'ds_mat' in outputs
+                    assert 'perm_mat' in outputs
+                    assert 'gt_perm_mat' in outputs
+
+                    # compute loss
+                    if cfg.TRAIN.LOSS_FUNC == 'offset':
+                        d_gt, grad_mask = displacement(outputs['gt_perm_mat'], *outputs['Ps'], outputs['ns'][0])
+                        d_pred, _ = displacement(outputs['ds_mat'], *outputs['Ps'], outputs['ns'][0])
+                        loss = criterion(d_pred, d_gt, grad_mask)
+                    elif cfg.TRAIN.LOSS_FUNC in ['perm', 'ce', 'hung']:
+                        loss = criterion(outputs['ds_mat'], outputs['gt_perm_mat'], *outputs['ns'])
+                    elif cfg.TRAIN.LOSS_FUNC == 'hamming':
+                        loss = criterion(outputs['perm_mat'], outputs['gt_perm_mat'])
+                    elif cfg.TRAIN.LOSS_FUNC == 'plain':
+                        loss = torch.sum(outputs['loss'])
+                    else:
+                        raise ValueError('Unsupported loss function {} for problem type {}'.format(cfg.TRAIN.LOSS_FUNC, cfg.PROBLEM.TYPE))
+
+                    # compute accuracy
+                    acc, _, __ = matching_accuracy(outputs['perm_mat'], outputs['gt_perm_mat'], outputs['ns'][0])
+
+                elif cfg.PROBLEM.TYPE in ['MGM', 'MGMC']:
+                    assert 'ds_mat_list' in outputs
+                    assert 'graph_indices' in outputs
+                    assert 'perm_mat_list' in outputs
+                    assert 'gt_perm_mat_list' in outputs
+
+                    # compute loss & accuracy
+                    if cfg.TRAIN.LOSS_FUNC in ['perm', 'ce' 'hung']:
+                        loss = torch.zeros(1, device=model.module.device)
+                        ns = outputs['ns']
+                        for s_pred, x_gt, (idx_src, idx_tgt) in \
+                                zip(outputs['ds_mat_list'], outputs['gt_perm_mat_list'], outputs['graph_indices']):
+                            l = criterion(s_pred, x_gt, ns[idx_src], ns[idx_tgt])
+                            loss += l
+                        loss /= len(outputs['ds_mat_list'])
+                    elif cfg.TRAIN.LOSS_FUNC == 'plain':
+                        loss = torch.sum(outputs['loss'])
+                    else:
+                        raise ValueError('Unsupported loss function {} for problem type {}'.format(cfg.TRAIN.LOSS_FUNC, cfg.PROBLEM.TYPE))
+
+                    # compute accuracy
+                    acc = torch.zeros(1, device=model.module.device)
+                    for x_pred, x_gt, (idx_src, idx_tgt) in \
+                            zip(outputs['perm_mat_list'], outputs['gt_perm_mat_list'], outputs['graph_indices']):
+                        a, _, __ = matching_accuracy(x_pred, x_gt, ns[idx_src])
+                        acc += torch.sum(a)
+                    acc /= len(outputs['perm_mat_list'])
                 else:
-                    raise ValueError('Unknown loss function {}'.format(cfg.TRAIN.LOSS_FUNC))
+                    raise ValueError('Unknown problem type {}'.format(cfg.PROBLEM.TYPE))
 
                 # backward + optimize
-                loss.backward()
+                if cfg.FP16:
+                    with amp.scale_loss(loss, optimizer) as scaled_loss:
+                        scaled_loss.backward()
+                else:
+                    loss.backward()
                 optimizer.step()
 
-                if cfg.MODULE == 'NGM.hypermodel':
-                    tfboard_writer.add_scalars(
-                        'weight',
-                        {'w2': model.module.weight2, 'w3': model.module.weight3},
-                        epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
-                    )
-
-                # training accuracy statistic
-                acc, _, __ = matching_accuracy(lap_solver(s_pred, n1_gt, n2_gt), perm_mat, n1_gt)
+                batch_num = inputs['batch_size']
 
                 # tfboard writer
-                loss_dict = {'loss_{}'.format(i): l.item() for i, l in enumerate(multi_loss)}
+                loss_dict = dict()
                 loss_dict['loss'] = loss.item()
                 tfboard_writer.add_scalars('loss', loss_dict, epoch * cfg.TRAIN.EPOCH_ITERS + iter_num)
+
                 accdict = dict()
-                accdict['matching accuracy'] = acc
+                accdict['matching accuracy'] = torch.mean(acc)
                 tfboard_writer.add_scalars(
                     'training accuracy',
                     accdict,
@@ -132,18 +161,25 @@ def train_eval_model(model,
                 )
 
                 # statistics
-                running_loss += loss.item() * perm_mat.size(0)
-                epoch_loss += loss.item() * perm_mat.size(0)
+                running_loss += loss.item() * batch_num
+                epoch_loss += loss.item() * batch_num
 
                 if iter_num % cfg.STATISTIC_STEP == 0:
-                    running_speed = cfg.STATISTIC_STEP * perm_mat.size(0) / (time.time() - running_since)
+                    running_speed = cfg.STATISTIC_STEP * batch_num / (time.time() - running_since)
                     print('Epoch {:<4} Iteration {:<4} {:>4.2f}sample/s Loss={:<8.4f}'
-                          .format(epoch, iter_num, running_speed, running_loss / cfg.STATISTIC_STEP / perm_mat.size(0)))
+                          .format(epoch, iter_num, running_speed, running_loss / cfg.STATISTIC_STEP / batch_num))
                     tfboard_writer.add_scalars(
                         'speed',
                         {'speed': running_speed},
                         epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
                     )
+
+                    tfboard_writer.add_scalars(
+                        'learning rate',
+                        {'lr_{}'.format(i): x['lr'] for i, x in enumerate(optimizer.param_groups)},
+                        epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
+                    )
+
                     running_loss = 0.0
                     running_since = time.time()
 
@@ -156,14 +192,15 @@ def train_eval_model(model,
         print()
 
         # Eval in each epoch
-        accs = eval_model(model, dataloader['test'])
-        acc_dict = {"{}".format(cls): single_acc for cls, single_acc in zip(dataloader['train'].dataset.classes, accs)}
+        accs = eval_model(model, alphas, dataloader['test'], xls_sheet=xls_wb.add_sheet('epoch{}'.format(epoch + 1)))
+        acc_dict = {"{}".format(cls): single_acc for cls, single_acc in zip(dataloader['test'].dataset.classes, accs)}
         acc_dict['average'] = torch.mean(accs)
         tfboard_writer.add_scalars(
             'Eval acc',
             acc_dict,
             (epoch + 1) * cfg.TRAIN.EPOCH_ITERS
         )
+        wb.save(wb.__save_path)
 
         scheduler.step()
 
@@ -175,9 +212,10 @@ def train_eval_model(model,
 
 
 if __name__ == '__main__':
-    from utils.dup_stdout_manager import DupStdoutFileManager
-    from utils.parse_args import parse_args
-    from utils.print_easydict import print_easydict
+    from src.utils.dup_stdout_manager import DupStdoutFileManager
+    from src.utils.parse_args import parse_args
+    from src.utils.print_easydict import print_easydict
+    from src.utils.count_model_params import count_parameters
 
     args = parse_args('Deep learning of graph matching training & evaluation code.')
 
@@ -191,9 +229,10 @@ if __name__ == '__main__':
     image_dataset = {
         x: GMDataset(cfg.DATASET_FULL_NAME,
                      sets=x,
+                     problem=cfg.PROBLEM.TYPE,
                      length=dataset_len[x],
-                     cls=cfg.TRAIN.CLASS if x == 'train' else None,
-                     obj_resize=cfg.PAIR.RESCALE)
+                     cls=cfg.TRAIN.CLASS if x == 'train' else cfg.EVAL.CLASS,
+                     obj_resize=cfg.PROBLEM.RESCALE)
         for x in ('train', 'test')}
     dataloader = {x: get_dataloader(image_dataset[x], fix_seed=(x == 'test'))
         for x in ('train', 'test')}
@@ -201,16 +240,48 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     model = Net()
-    model = model.cuda()
+    model = model.to(device)
 
-    if cfg.TRAIN.LOSS_FUNC == 'offset':
+    if cfg.TRAIN.LOSS_FUNC.lower() == 'offset':
         criterion = RobustLoss(norm=cfg.TRAIN.RLOSS_NORM)
-    elif cfg.TRAIN.LOSS_FUNC == 'perm':
+    elif cfg.TRAIN.LOSS_FUNC.lower() == 'perm':
+        criterion = PermutationLoss()
+    elif cfg.TRAIN.LOSS_FUNC.lower() == 'ce':
         criterion = CrossEntropyLoss()
+    elif cfg.TRAIN.LOSS_FUNC.lower() == 'focal':
+        criterion = FocalLoss(alpha=.5, gamma=0.)
+    elif cfg.TRAIN.LOSS_FUNC.lower() == 'hung':
+        criterion = PermutationLossHung()
+    elif cfg.TRAIN.LOSS_FUNC.lower() == 'hamming':
+        criterion = HammingLoss()
     else:
         raise ValueError('Unknown loss function {}'.format(cfg.TRAIN.LOSS_FUNC))
 
-    optimizer = optim.SGD(model.parameters(), lr=cfg.TRAIN.LR, momentum=cfg.TRAIN.MOMENTUM, nesterov=True)
+
+    if cfg.TRAIN.SEPARATE_BACKBONE_LR:
+        backbone_ids = [id(item) for item in model.backbone_params]
+        other_params = [param for param in model.parameters() if id(param) not in backbone_ids]
+
+        model_params = [
+            {'params': other_params},
+            {'params': model.backbone_params, 'lr': cfg.TRAIN.BACKBONE_LR}
+        ]
+    else:
+        model_params = model.parameters()
+
+    if cfg.TRAIN.OPTIMIZER.lower() == 'sgd':
+        optimizer = optim.SGD(model_params, lr=cfg.TRAIN.LR, momentum=cfg.TRAIN.MOMENTUM, nesterov=True)
+    elif cfg.TRAIN.OPTIMIZER.lower() == 'adam':
+        optimizer = optim.Adam(model_params, lr=cfg.TRAIN.LR)
+    else:
+        raise ValueError('Unknown optimizer {}'.format(cfg.TRAIN.OPTIMIZER))
+
+    if cfg.FP16:
+        try:
+            from apex import amp
+        except ImportError:
+            raise ImportError("Please install apex from https://www.github.com/nvidia/apex to enable FP16.")
+        model, optimizer = amp.initialize(model, optimizer)
 
     model = DataParallel(model, device_ids=cfg.GPUS)
 
@@ -219,10 +290,15 @@ if __name__ == '__main__':
 
     now_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     tfboardwriter = SummaryWriter(logdir=str(Path(cfg.OUTPUT_PATH) / 'tensorboard' / 'training_{}'.format(now_time)))
+    wb = xlwt.Workbook()
+    wb.__save_path = str(Path(cfg.OUTPUT_PATH) / ('train_eval_result_' + now_time + '.xls'))
 
     with DupStdoutFileManager(str(Path(cfg.OUTPUT_PATH) / ('train_log_' + now_time + '.log'))) as _:
         print_easydict(cfg)
+        print('Number of parameters: {:.2f}M'.format(count_parameters(model) / 1e6))
         model = train_eval_model(model, criterion, optimizer, dataloader, tfboardwriter,
                                  num_epochs=cfg.TRAIN.NUM_EPOCHS,
-                                 resume=cfg.TRAIN.START_EPOCH != 0,
-                                 start_epoch=cfg.TRAIN.START_EPOCH)
+                                 start_epoch=cfg.TRAIN.START_EPOCH,
+                                 xls_wb=wb)
+
+    wb.save(wb.__save_path)

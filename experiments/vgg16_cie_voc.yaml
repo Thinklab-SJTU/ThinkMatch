@@ -1,9 +1,9 @@
-MODEL_NAME: vgg16_gmn
+MODEL_NAME: vgg16_cie
 DATASET_NAME: voc
 
 DATASET_FULL_NAME: PascalVOC
 
-MODULE: models.GMN.model
+MODULE: models.CIE.model
 
 BACKBONE: VGG16_bn
 
@@ -15,7 +15,7 @@ RANDOM_SEED: 123
 # available GPU ids
 GPUS:
   - 0
-#  - 1
+  #- 1
 
 # Problem configuration
 PROBLEM:
@@ -27,23 +27,23 @@ PROBLEM:
 # Graph construction settings
 GRAPH:
   SRC_GRAPH_CONSTRUCT: tri
-  TGT_GRAPH_CONSTRUCT: fc
+  TGT_GRAPH_CONSTRUCT: tri
   SYM_ADJACENCY: True
 
 # Training settings
 TRAIN:
   # start, end epochs
   START_EPOCH: 0
-  NUM_EPOCHS: 10
+  NUM_EPOCHS: 30
 
-  LOSS_FUNC: offset
+  LOSS_FUNC: hung
 
   # learning rate
-  LR: 1.0e-3 #2.0e-4
+  LR: 1.0e-4
   MOMENTUM: 0.9
-  LR_DECAY: 0.1
+  LR_DECAY: 0.2
   LR_STEP:  # (in epochs)
-    - 2
+    - 20
 
   EPOCH_ITERS: 2000  # iterations per epoch
 
@@ -51,15 +51,14 @@ TRAIN:
 
 # Evaluation settings
 EVAL:
-  EPOCH: 10  # epoch to be tested
+  EPOCH: 23  # epoch to be tested
   SAMPLES: 1000  # number of tested pairs for each class
 
-# GMN model parameters
-GMN:
+# CIE model parameters
+CIE:
   FEATURE_CHANNEL: 512
-  PI_ITER_NUM: 25
-  PI_STOP_THRESH: 1.0e-3
-  BS_ITER_NUM: 20
-  BS_EPSILON: 1.0e-10
-  VOTING_ALPHA: 200.
-  GM_SOLVER: SM
+  SK_ITER_NUM: 20
+  SK_EPSILON: 1.0e-10
+  SK_TAU: .005
+  GNN_FEAT: 2048
+  GNN_LAYER: 2

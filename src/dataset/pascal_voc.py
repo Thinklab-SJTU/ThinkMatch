@@ -4,16 +4,8 @@ import numpy as np
 import xml.etree.ElementTree as ET
 import random
 import pickle
-import torch
-import sys
 
-from utils.config import cfg
-
-anno_path = cfg.VOC2011.KPT_ANNO_DIR
-img_path = cfg.VOC2011.ROOT_DIR + 'JPEGImages'
-ori_anno_path = cfg.VOC2011.ROOT_DIR + 'Annotations'
-set_path = cfg.VOC2011.SET_SPLIT
-cache_path = cfg.CACHE_PATH
+from src.utils.config import cfg
 
 KPT_NAMES = {
     'cat': ['L_B_Elbow', 'L_B_Paw', 'L_EarBase', 'L_Eye', 'L_F_Elbow',
@@ -89,8 +81,14 @@ class PascalVOC:
         :param sets: 'train' or 'test'
         :param obj_resize: resized object size
         """
-        self.classes = cfg.VOC2011.CLASSES
-        self.kpt_len = [len(KPT_NAMES[_]) for _ in cfg.VOC2011.CLASSES]
+        self.classes = cfg.PascalVOC.CLASSES
+        self.kpt_len = [len(KPT_NAMES[_]) for _ in cfg.PascalVOC.CLASSES]
+
+        anno_path = cfg.PascalVOC.KPT_ANNO_DIR
+        img_path = cfg.PascalVOC.ROOT_DIR + 'JPEGImages'
+        ori_anno_path = cfg.PascalVOC.ROOT_DIR + 'Annotations'
+        set_path = cfg.PascalVOC.SET_SPLIT
+        cache_path = cfg.CACHE_PATH
 
         self.classes_kpts = {cls: len(KPT_NAMES[cls]) for cls in self.classes}
 
@@ -100,7 +98,7 @@ class PascalVOC:
         self.obj_resize = obj_resize
         self.sets = sets
 
-        assert sets == 'train' or 'test', 'No match found for dataset {}'.format(sets)
+        assert sets in ('train', 'test'), 'No match found for dataset {}'.format(sets)
         cache_name = 'voc_db_' + sets + '.pkl'
         self.cache_path = Path(cache_path)
         self.cache_file = self.cache_path / cache_name
@@ -161,11 +159,13 @@ class PascalVOC:
             for x in to_del:
                 self.xml_list[cls_id].remove(x)
 
-    def get_pair(self, cls=None, shuffle=True):
+    def get_pair(self, cls=None, shuffle=True, tgt_outlier=False, src_outlier=False):
         """
         Randomly get a pair of objects from VOC-Berkeley keypoints dataset
         :param cls: None for random class, or specify for a certain set
         :param shuffle: random shuffle the keypoints
+        :param src_outlier: allow outlier in the source graph (first graph)
+        :param tgt_outlier: allow outlier in the target graph (second graph)
         :return: (pair of data, groundtruth permutation matrix)
         """
         if cls is None:
@@ -193,12 +193,113 @@ class PascalVOC:
                     break
         row_list.sort()
         col_list.sort()
-        perm_mat = perm_mat[row_list, :]
-        perm_mat = perm_mat[:, col_list]
-        anno_pair[0]['keypoints'] = [anno_pair[0]['keypoints'][i] for i in row_list]
-        anno_pair[1]['keypoints'] = [anno_pair[1]['keypoints'][j] for j in col_list]
+        if not src_outlier:
+            perm_mat = perm_mat[row_list, :]
+            anno_pair[0]['keypoints'] = [anno_pair[0]['keypoints'][i] for i in row_list]
+        if not tgt_outlier:
+            perm_mat = perm_mat[:, col_list]
+            anno_pair[1]['keypoints'] = [anno_pair[1]['keypoints'][j] for j in col_list]
 
         return anno_pair, perm_mat
+
+    def get_multi(self, cls=None, num=2, shuffle=True, filter_outlier=True):
+        """
+        Randomly get multiple objects from VOC-Berkeley keypoints dataset for multi-matching.
+        The first image is fetched with all appeared keypoints, and the rest images are fetched with only inliers.
+        :param cls: None for random class, or specify for a certain set
+        :param num: number of objects to be fetched
+        :param shuffle: random shuffle the keypoints
+        :param filter_outlier: filter out outlier keypoints among images
+        :return: (list of data, list of permutation matrices)
+        """
+        assert filter_outlier == True, 'Multi-matching on PascalVOC dataset with unfiltered outliers is not supported'
+
+        if cls is None:
+            cls = random.randrange(0, len(self.classes))
+        elif type(cls) == str:
+            cls = self.classes.index(cls)
+        assert type(cls) == int and 0 <= cls < len(self.classes)
+
+        anno_list = []
+        for xml_name in random.sample(self.xml_list[cls], num):
+            anno_dict = self.__get_anno_dict(xml_name, cls)
+            if shuffle:
+                random.shuffle(anno_dict['keypoints'])
+            anno_list.append(anno_dict)
+
+        perm_mat = [np.zeros([len(anno_list[0]['keypoints']), len(x['keypoints'])], dtype=np.float32) for x in anno_list]
+        row_list = []
+        col_lists = []
+        for i in range(num):
+            col_lists.append([])
+        for i, keypoint in enumerate(anno_list[0]['keypoints']):
+            kpt_idx = []
+            for anno_dict in anno_list:
+                kpt_name_list = [x['name'] for x in anno_dict['keypoints']]
+                if keypoint['name'] in kpt_name_list:
+                    kpt_idx.append(kpt_name_list.index(keypoint['name']))
+                else:
+                    kpt_idx.append(-1)
+            row_list.append(i)
+            for k in range(num):
+                j = kpt_idx[k]
+                if j != -1:
+                    col_lists[k].append(j)
+                    perm_mat[k][i, j] = 1
+
+        row_list.sort()
+        for col_list in col_lists:
+            col_list.sort()
+
+        for k in range(num):
+            perm_mat[k] = perm_mat[k][row_list, :]
+            perm_mat[k] = perm_mat[k][:, col_lists[k]]
+            anno_list[k]['keypoints'] = [anno_list[k]['keypoints'][j] for j in col_lists[k]]
+            perm_mat[k] = perm_mat[k].transpose()
+
+        return anno_list, perm_mat
+
+    def get_single_to_ref(self, idx, cls, shuffle=True):
+        """
+        Get a single image, against a reference model containing all ground truth keypoints.
+        :param idx: index in this class
+        :param cls: specify for a certain class
+        :param shuffle: random shuffle the keypoints
+        :return: (data, groundtruth permutation matrix)
+        """
+        if cls is None:
+            cls = random.randrange(0, len(self.classes))
+        elif type(cls) == str:
+            cls = self.classes.index(cls)
+        else:
+            cls = cls
+        assert type(cls) == int and 0 <= cls < len(self.classes)
+
+        xml_name = self.xml_list[cls][idx]
+        anno_dict = self.__get_anno_dict(xml_name, cls)
+        if shuffle:
+            random.shuffle(anno_dict['keypoints'])
+
+        ref = self.__get_ref_model(cls)
+
+        perm_mat = np.zeros((len(anno_dict['keypoints']), len(ref['keypoints'])), dtype=np.float32)
+        for i, keypoint in enumerate(anno_dict['keypoints']):
+            for j, _keypoint in enumerate(ref['keypoints']):
+                if keypoint['name'] == _keypoint['name']:
+                    perm_mat[i, j] = 1
+
+        return anno_dict, perm_mat
+
+    def __get_ref_model(self, cls):
+        """
+        Get a reference model for a certain class. The reference model contains all ground truth keypoints
+        :param cls: specify a certain class (by integer ID)
+        :return: annotation dict
+        """
+        anno_dict = dict()
+        anno_dict['keypoints'] = [{'name': x} for x in KPT_NAMES[self.classes[cls]]]
+        anno_dict['cls'] = self.classes[cls]
+        return anno_dict
 
     def __get_anno_dict(self, xml_name, cls):
         """
@@ -234,8 +335,20 @@ class PascalVOC:
         anno_dict['bounds'] = xmin, ymin, w, h
         anno_dict['ori_sizes'] = ori_sizes
         anno_dict['cls'] = self.classes[cls]
+        anno_dict['univ_size'] = len(KPT_NAMES[anno_dict['cls']])
 
         return anno_dict
+
+    @property
+    def length(self):
+        l = 0
+        for cls in self.classes:
+            l += len(self.xml_list[self.classes.index(cls)])
+        return l
+
+    def length_of(self, cls):
+        return len(self.xml_list[self.classes.index(cls)])
+
 
 if __name__ == '__main__':
     dataset = PascalVOC('train', (256, 256))

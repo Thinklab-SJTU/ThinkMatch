@@ -1,0 +1,63 @@
+MODEL_NAME: ngm
+DATASET_NAME: qaplib
+
+DATASET_FULL_NAME: QAPLIB
+
+MODULE: models.NGM.model
+
+BACKBONE: NoBackbone
+
+BATCH_SIZE: 1
+DATALOADER_NUM: 1
+
+RANDOM_SEED: 123
+
+# available GPU ids
+GPUS:
+  - 0
+#  - 1
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 0
+  NUM_EPOCHS: 5
+
+  LOSS_FUNC: obj # perm
+
+  # learning rate
+  LR: 1.0e-5 #1.0e-4 #1.0e-3
+  MOMENTUM: 0.9
+  LR_DECAY: 0.1
+  LR_STEP:  # (in epochs)
+    - 2
+
+  EPOCH_ITERS: 100  # iterations per epoch
+
+  CLASS: bur
+
+QAPLIB:
+  MAX_TRAIN_SIZE: 90
+  MAX_TEST_SIZE: 90 #150 # set 90 for 2080Ti 11GB (if you do not have large memory GPU);
+                         # set 150 for RTX8000 48GB (to reproduce results in our paper)
+
+# Evaluation settings
+EVAL:
+  EPOCH: 0  # epoch to be tested
+  SAMPLES: 120 #133  # set 120 if MAX_TEST_SIZE==90 (if you do not have large memory GPU);
+                     # set 133 if MAX_TEST_SIZE==150 (to reproduce results in our paper)
+
+# model parameters
+NGM:
+  FEATURE_CHANNEL: 1
+  SK_ITER_NUM: 20 #2000
+  SK_EPSILON: 1.0e-5
+  SK_TAU: 0.05 #0.5
+  GNN_FEAT:
+    - 16
+    - 16
+    - 16
+  GNN_LAYER: 3
+  SK_EMB: 0
+  EDGE_EMB: False
+  GUMBEL_SK: 5000 # Gumbel-Sinkhorn's tau = SK_TAU * 10
