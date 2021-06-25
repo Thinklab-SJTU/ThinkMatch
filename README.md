@@ -1,4 +1,4 @@
-# NOTICE: This repository is deprecated and out of maintainence. Please refer to our new repository [ThinkMatch](https://github.com/Thinklab-SJTU/ThinkMatch)
+# NOTICE: This branch is for archive purpose for the original implementation of PCA-GM. Please refer to the ``master`` branch for up-to-date implementations of more models.
 
 # PCA-GM
 
