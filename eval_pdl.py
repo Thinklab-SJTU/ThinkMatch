@@ -32,7 +32,7 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
 
     lap_solver = hungarian
 
-    accs = paddle.zeros((len(classes)))
+    accs = paddle.zeros([len(classes)])
 
     for i, cls in enumerate(classes):
         if verbose:
@@ -42,8 +42,8 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
         iter_num = 0
 
         ds.cls = cls
-        acc_match_num = paddle.zeros(1)
-        acc_total_num = paddle.zeros(1)
+        acc_match_num = paddle.zeros([1])
+        acc_total_num = paddle.zeros([1])
         for inputs in dataloader:
             if 'images' in inputs:
                 data1, data2 = [paddle.to_tensor(data=_) for _ in inputs['images']]
@@ -53,15 +53,15 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
                 inp_type = 'feat'
             else:
                 raise ValueError('no valid data key (\'images\' or \'features\') found from dataloader!')
-            P1_gt, P2_gt = [paddle.to_tensor(data=_) for _ in inputs['Ps']]
-            n1_gt, n2_gt = [paddle.to_tensor(data=_) for _ in inputs['ns']]
-            e1_gt, e2_gt = [paddle.to_tensor(data=_) for _ in inputs['es']]
-            G1_gt, G2_gt = [paddle.to_tensor(data=_) for _ in inputs['Gs']]
-            H1_gt, H2_gt = [paddle.to_tensor(data=_) for _ in inputs['Hs']]
-            KG, KH = [paddle.to_tensor(data=_) for _ in inputs['Ks']]
-            perm_mat = paddle.to_tensor(inputs['gt_perm_mat'])
+            P1_gt, P2_gt = [paddle.to_tensor(data=_, dtype='float32') for _ in inputs['Ps']]
+            n1_gt, n2_gt = [paddle.to_tensor(data=_, dtype='int32') for _ in inputs['ns']]
+            e1_gt, e2_gt = [paddle.to_tensor(data=_, dtype='float32') for _ in inputs['es']]
+            G1_gt, G2_gt = [paddle.to_tensor(data=_, dtype='float32') for _ in inputs['Gs']]
+            H1_gt, H2_gt = [paddle.to_tensor(data=_, dtype='float32') for _ in inputs['Hs']]
+            KG, KH = [paddle.to_tensor(data=_.numpy(), dtype='float32') for _ in inputs['Ks']]
+            perm_mat = paddle.to_tensor(inputs['gt_perm_mat'], dtype='float32')
 
-            batch_num = data1.size(0)
+            batch_num = data1.shape[0]
 
             iter_num = iter_num + 1
 
@@ -92,8 +92,8 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
 
     print('Matching accuracy')
     for cls, single_acc in zip(classes, accs):
-        print('{} = {:.4f}'.format(cls, single_acc))
-    print('average = {:.4f}'.format(paddle.mean(accs)))
+        print('{} = {}'.format(cls, single_acc))
+    print('average = {}'.format(paddle.mean(accs)))
 
     return accs
 

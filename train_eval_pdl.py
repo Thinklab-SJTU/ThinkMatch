@@ -1,11 +1,12 @@
 import paddle
 import paddle.optimizer as optim
+import numpy as np
 import time
 from datetime import datetime
 from pathlib import Path
 from visualdl import LogWriter
 
-from data.data_loader import GMDataset, get_dataloader
+from data.data_loader_pdl import GMDataset, get_dataloader
 from GMN.displacement_layer_pdl import Displacement
 from utils_pdl.offset_loss import RobustLoss
 from utils_pdl.permutation_loss import CrossEntropyLoss
@@ -57,7 +58,6 @@ def train_eval_model(model,
     for epoch in range(start_epoch, num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
-
         model.train()  # Set model to training mode
 
         print('lr = ' + ', '.join(['{:.2e}'.format(scheduler.get_lr()) ]))
@@ -77,13 +77,13 @@ def train_eval_model(model,
                 inp_type = 'feat'
             else:
                 raise ValueError('no valid data key (\'images\' or \'features\') found from dataloader!')
-            P1_gt, P2_gt = [paddle.to_tensor(data=_.numpy()) for _ in inputs['Ps']]
-            n1_gt, n2_gt = [paddle.to_tensor(data=_.numpy()) for _ in inputs['ns']]
-            e1_gt, e2_gt = [paddle.to_tensor(data=_.numpy()) for _ in inputs['es']]
-            G1_gt, G2_gt = [paddle.to_tensor(data=_.numpy()) for _ in inputs['Gs']]
-            H1_gt, H2_gt = [paddle.to_tensor(data=_.numpy()) for _ in inputs['Hs']]
-            KG, KH = [paddle.to_tensor(data=_.numpy()) for _ in inputs['Ks']]
-            perm_mat = paddle.to_tensor(inputs['gt_perm_mat'].numpy())
+            P1_gt, P2_gt = [paddle.to_tensor(data=_, dtype='float32') for _ in inputs['Ps']]
+            n1_gt, n2_gt = [paddle.to_tensor(data=_, dtype='int32') for _ in inputs['ns']]
+            e1_gt, e2_gt = [paddle.to_tensor(data=_, dtype='float32') for _ in inputs['es']]
+            G1_gt, G2_gt = [paddle.to_tensor(data=_, dtype='float32') for _ in inputs['Gs']]
+            H1_gt, H2_gt = [paddle.to_tensor(data=_, dtype='float32') for _ in inputs['Hs']]
+            KG, KH = [paddle.to_tensor(data=_.numpy(), dtype='float32') for _ in inputs['Ks']]
+            perm_mat = paddle.to_tensor(inputs['gt_perm_mat'].numpy(), dtype='float32')
 
             iter_num = iter_num + 1
 
@@ -157,18 +157,18 @@ def train_eval_model(model,
 
         print('Epoch {:<4} Loss: {:.4f}'.format(epoch, epoch_loss))
         print()
-
         # Eval in each epoch
-        accs = eval_model(model, dataloader['test'])
-        acc_dict = {"{}".format(cls): single_acc for cls, single_acc in zip(dataloader['train'].dataset.classes, accs)}
-        acc_dict['average'] = torch.mean(accs)
-        """
-        tfboard_writer.add_scalars(
-            'Eval acc',
-            acc_dict,
-            (epoch + 1) * cfg.TRAIN.EPOCH_ITERS
-        )
-        """
+        if (epoch % 3 == 2) :
+            accs = eval_model(model, dataloader['test'])
+            acc_dict = {"{}".format(cls): single_acc for cls, single_acc in zip(dataloader['train'].dataset.classes, accs)}
+            acc_dict['average'] = paddle.mean(accs)
+            """
+            tfboard_writer.add_scalars(
+                'Eval acc',
+                acc_dict,
+                (epoch + 1) * cfg.TRAIN.EPOCH_ITERS
+            )
+            """
 
         scheduler.step()
 
@@ -191,6 +191,7 @@ if __name__ == '__main__':
     Net = mod.Net
 
     #torch.manual_seed(cfg.RANDOM_SEED)
+    np.random.seed(cfg.RANDOM_SEED)
     paddle.seed(cfg.RANDOM_SEED)
 
     dataset_len = {'train': cfg.TRAIN.EPOCH_ITERS * cfg.BATCH_SIZE, 'test': cfg.EVAL.SAMPLES}

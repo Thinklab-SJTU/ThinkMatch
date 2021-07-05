@@ -10,6 +10,7 @@ from data.pascal_voc import PascalVOC
 from data.willow_obj import WillowObject
 from utils_pdl.build_graphs import build_graphs
 # Now only implement PCA
+# so following files are useless, in theory
 from utils_pdl.fgm import kronecker_sparse
 from sparse_torch import CSRMatrix3d
 
@@ -98,12 +99,14 @@ def collate_fn(data: list):
             pad_pattern = np.zeros(2 * len(max_shape), dtype=np.int64)
             pad_pattern[::-2] = max_shape - np.array(t.shape)
             pad_pattern = pad_pattern.tolist()
-            if(len(pad_pattern) == 0):
-                padded_ts.append(t.reshape((1,1,t.shape[0])))
+            #print('pad_pattern is', pad_pattern)
+            if (len(pad_pattern) == 2):
+                tt = t.reshape((1,1,t.shape[0]))
+                padded_ts.append(F.pad(tt, pad_pattern, 'constant', 0, 'NCL').squeeze())
             elif len(pad_pattern) == 4:
                 tt = t.reshape((1,1,t.shape[0],-1))
-                tt = F.pad(tt, pad_pattern, 'constant', 0)
-                padded_ts.append(tt.reshape((1,tt.shape[2],-1)))
+                tt = F.pad(tt, pad_pattern, 'constant', 0, 'NCHW')
+                padded_ts.append(tt.reshape((1,tt.shape[2],-1)).squeeze())
             elif len(pad_pattern) == 6:
                 tt = t.reshape((1,1,t.shape[0],t.shape[1],-1))
                 padded_ts.append(F.pad(tt, pad_pattern, 'constant', 0, data_format='NCDHW').squeeze())
@@ -121,11 +124,13 @@ def collate_fn(data: list):
                 ks, vs = zip(*kvs)
                 for k in ks:
                     assert k == ks[0], "Key value mismatch."
+                #if k == 'ns' : print('original ', vs)
                 ret[k] = stack(vs)
+                #if k == 'ns' : print('After stack, ', ret[k])
         elif type(inp[0]) == paddle.Tensor:
             new_t = pad_tensor(inp)
             if len(new_t) == 0:
-                ret = paddle.to_tensor(0)
+                ret = paddle.to_tensor(new_t)
             else:
                 ret = paddle.stack(new_t, 0)
         elif type(inp[0]) == np.ndarray:
