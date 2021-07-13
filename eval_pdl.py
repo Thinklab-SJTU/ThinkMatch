@@ -19,10 +19,12 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
 
     paddle.set_device('gpu:0')
 
+    '''
     if eval_epoch is not None:
         model_path = str(Path(cfg.OUTPUT_PATH) / 'params' / 'params_{:04}.pdparams'.format(eval_epoch))
         print('Loading model parameters from {}'.format(model_path))
         load_model(model, model_path)
+    '''
 
     model.eval()
 
@@ -39,6 +41,7 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
             print('Evaluating class {}: {}/{}'.format(cls, i, len(classes)))
 
         running_since = time.time()
+        no_dataloader_time = 0
         iter_num = 0
 
         ds.cls = cls
@@ -65,6 +68,7 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
 
             iter_num = iter_num + 1
 
+            infer_start_time = time.time()
             s_pred, pred = \
                 model(data1, data2, P1_gt, P2_gt, G1_gt, G2_gt, H1_gt, H2_gt, n1_gt, n2_gt, KG, KH, inp_type)
 
@@ -74,6 +78,8 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
             acc_match_num += _acc_match_num
             acc_total_num += _acc_total_num
 
+            infer_end_time = time.time()
+            no_dataloader_time += infer_end_time - infer_start_time
 
             if iter_num % cfg.STATISTIC_STEP == 0 and verbose:
                 running_speed = cfg.STATISTIC_STEP * batch_num / (time.time() - running_since)
@@ -82,7 +88,10 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
 
         accs[i] = acc_match_num / acc_total_num
         if verbose:
-            print('Class {} acc = {:.4f}'.format(cls, accs[i]))
+            print('Class {} acc = {:.4f}'.format(cls, float(accs[i].numpy())))
+            print('Which takes {:.0f}m {:.0f}s'.format(no_dataloader_time // 60, no_dataloader_time %60))
+        
+        break
 
     time_elapsed = time.time() - since
     print('Evaluation complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
@@ -92,8 +101,8 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
 
     print('Matching accuracy')
     for cls, single_acc in zip(classes, accs):
-        print('{} = {}'.format(cls, single_acc))
-    print('average = {}'.format(paddle.mean(accs)))
+        print('{} = {}'.format(cls, float(single_acc.numpy())))
+    print('average = {}'.format(float(paddle.mean(accs).numpy())))
 
     return accs
 
@@ -110,6 +119,7 @@ if __name__ == '__main__':
     Net = mod.Net
 
     paddle.seed(cfg.RANDOM_SEED)
+    paddle.set_device(device='gpu:0')
 
     image_dataset = GMDataset(cfg.DATASET_FULL_NAME,
                               sets='test',
@@ -120,6 +130,7 @@ if __name__ == '__main__':
     #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     model = Net()
+    load_model(model, 'utils_pdl/pca.pdparams')
     #model = model.to(device)
     #model = DataParallel(model, device_ids=cfg.GPUS)
 
@@ -132,3 +143,5 @@ if __name__ == '__main__':
         pcks = eval_model(model, dataloader,
                           eval_epoch=cfg.EVAL.EPOCH if cfg.EVAL.EPOCH != 0 else None,
                           verbose=True)
+
+

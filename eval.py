@@ -39,12 +39,14 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
             print('Evaluating class {}: {}/{}'.format(cls, i, len(classes)))
 
         running_since = time.time()
+        no_dataloader_time = 0
         iter_num = 0
 
         ds.cls = cls
         acc_match_num = torch.zeros(1, device=device)
         acc_total_num = torch.zeros(1, device=device)
         for inputs in dataloader:
+            infer_start_time = time.time()
             if 'images' in inputs:
                 data1, data2 = [_.cuda() for _ in inputs['images']]
                 inp_type = 'img'
@@ -75,6 +77,7 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
             acc_match_num += _acc_match_num
             acc_total_num += _acc_total_num
 
+            no_dataloader_time += time.time() - infer_start_time
 
             if iter_num % cfg.STATISTIC_STEP == 0 and verbose:
                 running_speed = cfg.STATISTIC_STEP * batch_num / (time.time() - running_since)
@@ -84,6 +87,7 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
         accs[i] = acc_match_num / acc_total_num
         if verbose:
             print('Class {} acc = {:.4f}'.format(cls, accs[i]))
+            print('Which takes {:.0f}m {:.0f}s'.format(no_dataloader_time //60, no_dataloader_time %60))
 
     time_elapsed = time.time() - since
     print('Evaluation complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
