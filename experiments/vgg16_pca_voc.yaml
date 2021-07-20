@@ -10,9 +10,9 @@ MODULE: PCA.model
 BACKBONE: VGG16_bn
 
 BATCH_SIZE: 8
-DATALOADER_NUM: 2
+DATALOADER_NUM: 4
 
-RANDOM_SEED: 123
+RANDOM_SEED: 7
 
 # available GPU ids
 GPUS:
@@ -36,7 +36,7 @@ TRAIN:
   LOSS_FUNC: perm
 
   # learning rate
-  LR: 1.0e-3
+  LR: 1.1e-3
   MOMENTUM: 0.9
   LR_DECAY: 0.1
   LR_STEP:  # (in epochs)
@@ -48,7 +48,7 @@ TRAIN:
 
 # Evaluation settings and PCK metric
 EVAL:
-  EPOCH: 10  # epoch to be tested
+  EPOCH: 20  # epoch to be tested
   SAMPLES: 1000  # number of tested pairs for each class
 
 # PCA model parameters

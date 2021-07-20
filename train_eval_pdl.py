@@ -88,77 +88,77 @@ def train_eval_model(model,
             iter_num = iter_num + 1
 
             # zero the parameter gradients
-            optimizer.clear_grad()
+            # forward
+            with paddle.set_grad_enabled(True):
+                s_pred, d_pred = \
+                    model(data1, data2, P1_gt, P2_gt, G1_gt, G2_gt, H1_gt, H2_gt, n1_gt, n2_gt, KG, KH, inp_type)
 
-        # forward
-            s_pred, d_pred = \
-                model(data1, data2, P1_gt, P2_gt, G1_gt, G2_gt, H1_gt, H2_gt, n1_gt, n2_gt, KG, KH, inp_type)
+                multi_loss = []
+                if cfg.TRAIN.LOSS_FUNC == 'offset':
+                    d_gt, grad_mask = displacement(perm_mat, P1_gt, P2_gt, n1_gt)
+                    loss = criterion(d_pred, d_gt, grad_mask)
+                elif cfg.TRAIN.LOSS_FUNC == 'perm':
+                    loss = criterion(s_pred, perm_mat, n1_gt, n2_gt)
+                else:
+                    raise ValueError('Unknown loss function {}'.format(cfg.TRAIN.LOSS_FUNC))
 
-            multi_loss = []
-            if cfg.TRAIN.LOSS_FUNC == 'offset':
-                d_gt, grad_mask = displacement(perm_mat, P1_gt, P2_gt, n1_gt)
-                loss = criterion(d_pred, d_gt, grad_mask)
-            elif cfg.TRAIN.LOSS_FUNC == 'perm':
-                loss = criterion(s_pred, perm_mat, n1_gt, n2_gt)
-            else:
-                raise ValueError('Unknown loss function {}'.format(cfg.TRAIN.LOSS_FUNC))
-
-            # backward + optimize
-            loss.backward()
-            optimizer.step()
-            """
-            if cfg.MODULE == 'NGM.hypermodel':
-                writer.add_scalars(
-                    'weight',
-                    {'w2': model.module.weight2, 'w3': model.module.weight3},
-                    epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
-                )
-            """
-
-            # training accuracy statistic
-            acc, _, __ = matching_accuracy(lap_solver(s_pred, n1_gt, n2_gt), perm_mat, n1_gt)
-
-            """
-            # tfboard writer
-            loss_dict = {'loss_{}'.format(i): l.item() for i, l in enumerate(multi_loss)}
-            loss_dict['loss'] = loss.item()
-            tfboard_writer.add_scalars('loss', loss_dict, epoch * cfg.TRAIN.EPOCH_ITERS + iter_num)
-            accdict = dict()
-            accdict['matching accuracy'] = acc
-            tfboard_writer.add_scalars(
-                'training accuracy',
-                accdict,
-                epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
-            )
-            """
-
-            # statistics
-            running_loss += loss.item() * perm_mat.shape[0]
-            epoch_loss += loss.item() * perm_mat.shape[0]
-
-            if iter_num % cfg.STATISTIC_STEP == 0:
-                running_speed = cfg.STATISTIC_STEP * perm_mat.shape[0]/ (time.time() - running_since)
-                print('Epoch {:<4} Iteration {:<4} {:>4.2f}sample/s Loss={:<8.4f}'
-                      .format(epoch, iter_num, running_speed, running_loss / cfg.STATISTIC_STEP / perm_mat.shape[0]))
+                # backward + optimize
+                loss.backward()
+                optimizer.step()
+                optimizer.clear_grad()
                 """
+                if cfg.MODULE == 'NGM.hypermodel':
+                    writer.add_scalars(
+                        'weight',
+                        {'w2': model.module.weight2, 'w3': model.module.weight3},
+                        epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
+                    )
+                """
+
+                # training accuracy statistic
+                acc, _, __ = matching_accuracy(lap_solver(s_pred, n1_gt, n2_gt), perm_mat, n1_gt)
+
+                """
+                # tfboard writer
+                loss_dict = {'loss_{}'.format(i): l.item() for i, l in enumerate(multi_loss)}
+                loss_dict['loss'] = loss.item()
+                tfboard_writer.add_scalars('loss', loss_dict, epoch * cfg.TRAIN.EPOCH_ITERS + iter_num)
+                accdict = dict()
+                accdict['matching accuracy'] = acc
                 tfboard_writer.add_scalars(
-                    'speed',
-                    {'speed': running_speed},
+                    'training accuracy',
+                    accdict,
                     epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
                 )
                 """
-                running_loss = 0.0
-                running_since = time.time()
+
+                # statistics
+                running_loss += loss.item() * perm_mat.shape[0]
+                epoch_loss += loss.item() * perm_mat.shape[0]
+
+                if iter_num % cfg.STATISTIC_STEP == 0:
+                    running_speed = cfg.STATISTIC_STEP * perm_mat.shape[0]/ (time.time() - running_since)
+                    print('Epoch {:<4} Iteration {:<4} {:>4.2f}sample/s Loss={:<8.4f}'
+                          .format(epoch, iter_num, running_speed, running_loss / cfg.STATISTIC_STEP / perm_mat.shape[0]))
+                    """
+                    tfboard_writer.add_scalars(
+                        'speed',
+                        {'speed': running_speed},
+                        epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
+                    )
+                    """
+                    running_loss = 0.0
+                    running_since = time.time()
 
         epoch_loss = epoch_loss / dataset_size
 
-        save_model(model, str(checkpoint_path / 'params_{:04}.pdparams'.format(epoch + 1)))
-        paddle.save(optimizer.state_dict(), str(checkpoint_path / 'optim_{:04}.pdopt'.format(epoch + 1)))
+        save_model(model, str(checkpoint_path / 'params_{:04}_wz_pretrain.pdparams'.format(epoch + 1)))
+        paddle.save(optimizer.state_dict(), str(checkpoint_path / 'optim_{:04}_wz_pretrain.pdopt'.format(epoch + 1)))
 
         print('Epoch {:<4} Loss: {:.4f}'.format(epoch, epoch_loss))
         print()
         # Eval in each epoch
-        if (epoch % 3 == 2) :
+        if (epoch % 3 == 1) :
             accs = eval_model(model, dataloader['test'])
             acc_dict = {"{}".format(cls): single_acc for cls, single_acc in zip(dataloader['train'].dataset.classes, accs)}
             acc_dict['average'] = paddle.mean(accs)
@@ -214,6 +214,8 @@ if __name__ == '__main__':
 
     model = Net()
     # model = model.cuda()
+    # load pretrained params in torch
+    #load_model(model, 'pretrained_vgg16_pca_voc.pdparams')
 
     if cfg.TRAIN.LOSS_FUNC == 'offset':
         criterion = RobustLoss(norm=cfg.TRAIN.RLOSS_NORM)

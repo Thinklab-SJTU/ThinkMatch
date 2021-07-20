@@ -69,29 +69,29 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
             iter_num = iter_num + 1
 
             infer_start_time = time.time()
-            s_pred, pred = \
-                model(data1, data2, P1_gt, P2_gt, G1_gt, G2_gt, H1_gt, H2_gt, n1_gt, n2_gt, KG, KH, inp_type)
+            with paddle.set_grad_enabled(False):
+                s_pred, pred = \
+                    model(data1, data2, P1_gt, P2_gt, G1_gt, G2_gt, H1_gt, H2_gt, n1_gt, n2_gt, KG, KH, inp_type)
 
-            s_pred_perm = lap_solver(s_pred, n1_gt, n2_gt)
+                s_pred_perm = lap_solver(s_pred, n1_gt, n2_gt)
 
-            _, _acc_match_num, _acc_total_num = matching_accuracy(s_pred_perm, perm_mat, n1_gt)
-            acc_match_num += _acc_match_num
-            acc_total_num += _acc_total_num
+                _, _acc_match_num, _acc_total_num = matching_accuracy(s_pred_perm, perm_mat, n1_gt)
+                acc_match_num += _acc_match_num
+                acc_total_num += _acc_total_num
 
-            infer_end_time = time.time()
-            no_dataloader_time += infer_end_time - infer_start_time
+                infer_end_time = time.time()
+                no_dataloader_time += infer_end_time - infer_start_time
 
-            if iter_num % cfg.STATISTIC_STEP == 0 and verbose:
-                running_speed = cfg.STATISTIC_STEP * batch_num / (time.time() - running_since)
-                print('Class {:<8} Iteration {:<4} {:>4.2f}sample/s'.format(cls, iter_num, running_speed))
-                running_since = time.time()
+                if iter_num % cfg.STATISTIC_STEP == 0 and verbose:
+                    running_speed = cfg.STATISTIC_STEP * batch_num / (time.time() - running_since)
+                    print('Class {:<8} Iteration {:<4} {:>4.2f}sample/s'.format(cls, iter_num, running_speed))
+                    running_since = time.time()
 
         accs[i] = acc_match_num / acc_total_num
         if verbose:
             print('Class {} acc = {:.4f}'.format(cls, float(accs[i].numpy())))
             print('Which takes {:.0f}m {:.0f}s'.format(no_dataloader_time // 60, no_dataloader_time %60))
         
-        break
 
     time_elapsed = time.time() - since
     print('Evaluation complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
@@ -131,6 +131,7 @@ if __name__ == '__main__':
 
     model = Net()
     load_model(model, 'utils_pdl/pca.pdparams')
+    #load_model(model, 'pretrained_vgg16_pca_voc.pdparams')
     #model = model.to(device)
     #model = DataParallel(model, device_ids=cfg.GPUS)
 

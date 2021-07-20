@@ -25,6 +25,7 @@ def feature_align(raw_feature: Tensor, P: Tensor, ns_t: Tensor, ori_size: tuple,
 
     ori_size = paddle.to_tensor(ori_size, dtype='float32', place=device)
     F = paddle.zeros([batch_num, channel_num, n_max], dtype='float32').cuda(place2int(device))
+    F.stop_gradient = False
     for idx, feature in enumerate(raw_feature):
         n = int(ns_t[idx].numpy())
         feat_size = paddle.to_tensor(feature.shape[1:3], dtype='float32', place=device)

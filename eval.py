@@ -18,11 +18,13 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
 
     device = next(model.parameters()).device
 
+    ''' 
     if eval_epoch is not None:
         model_path = str(Path(cfg.OUTPUT_PATH) / 'params' / 'params_{:04}.pt'.format(eval_epoch))
         print('Loading model parameters from {}'.format(model_path))
         load_model(model, model_path)
-
+    '''
+    
     was_training = model.training
     model.eval()
 
@@ -74,7 +76,7 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
             s_pred_perm = lap_solver(s_pred, n1_gt, n2_gt)
 
             _, _acc_match_num, _acc_total_num = matching_accuracy(s_pred_perm, perm_mat, n1_gt)
-            acc_match_num += _acc_match_num
+            acc_match_num += _acc_match_num 
             acc_total_num += _acc_total_num
 
             no_dataloader_time += time.time() - infer_start_time
@@ -127,6 +129,7 @@ if __name__ == '__main__':
     model = Net()
     model = model.to(device)
     model = DataParallel(model, device_ids=cfg.GPUS)
+    load_model(model, 'pretrained_params_vgg16_pca_voc.pt')
 
     if not Path(cfg.OUTPUT_PATH).exists():
         Path(cfg.OUTPUT_PATH).mkdir(parents=True)

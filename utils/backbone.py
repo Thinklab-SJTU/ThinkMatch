@@ -37,11 +37,14 @@ class VGG16_base(nn.Module):
             conv_list += [module]
 
             if cnt_m == 4 and cnt_r == 2 and isinstance(module, nn.ReLU):
+            #if cnt_m == 4 and cnt_r == 3 and isinstance(module, nn.Conv2d):
                 node_list = conv_list
                 conv_list = []
             elif cnt_m == 5 and cnt_r == 1 and isinstance(module, nn.ReLU):
+            #elif cnt_m == 5 and cnt_r == 2 and isinstance(module, nn.Conv2d):
                 edge_list = conv_list
-                break
+                conv_list = []
+                #kbreak
 
         assert len(node_list) > 0 and len(edge_list) > 0
 

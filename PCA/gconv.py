@@ -1,3 +1,4 @@
+import time
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -18,6 +19,20 @@ class Gconv(nn.Module):
         if norm is True:
             A = F.normalize(A, p=1, dim=-2)
 
+        '''
+        st = time.time()
+        ax = self.a_fc(x)
+        ux = self.u_fc(x)
+        print('Twp Linear layer cost {}s'.format(time.time() - st))
+        
+        st = time.time()
+        x = torch.bmm(A, F.relu(ax))  # has size (bs, N, num_outputs)
+        print('bmm + relu cost {}s'.format(time.time() - st))
+
+        st = time.time()
+        x += F.relu(ux)
+        print('+= relu() cost {}s'.format(time.time() - st))
+        '''
         ax = self.a_fc(x)
         ux = self.u_fc(x)
         x = torch.bmm(A, F.relu(ax)) + F.relu(ux) # has size (bs, N, num_outputs)
