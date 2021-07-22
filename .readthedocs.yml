@@ -1,0 +1,11 @@
+version: 2
+
+build:
+   image: latest
+
+python:
+   version: 3.7
+   system_packages: true
+     - requirements: docs/requirements.txt
+
+formats: []
