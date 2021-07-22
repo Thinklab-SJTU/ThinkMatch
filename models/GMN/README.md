@@ -1,6 +1,6 @@
 # GMN
 
-This folder contains our implementation of the following paper:
+Our implementation of the following paper:
 * Andrei Zanfir and Cristian Sminchisescu. "Deep Learning of Graph Matching." _CVPR 2018_.
     [[paper]](http://openaccess.thecvf.com/content_cvpr_2018/html/Zanfir_Deep_Learning_of_CVPR_2018_paper.html)
 
@@ -15,7 +15,7 @@ GMN proposes the first deep graph matching pipeline which is end-to-end trainabl
 ### PascalVOC - 2GM
 experiment config: ``experiments/vgg16_gmn_voc.yaml``
 
-pretrained model: https://drive.google.com/file/d/1X8p4XjzqGDniYirwSNqsQhBLWB5VcqN2/view?usp=sharing
+pretrained model: [google drive](https://drive.google.com/file/d/1X8p4XjzqGDniYirwSNqsQhBLWB5VcqN2/view?usp=sharing)
 
 | model                  | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | table  | dog    | horse  | mbkie  | person | plant  | sheep  | sofa   | train  | tv     | mean   |
 | ---------------------- | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
@@ -24,7 +24,7 @@ pretrained model: https://drive.google.com/file/d/1X8p4XjzqGDniYirwSNqsQhBLWB5Vc
 ### Willow Object Class - 2GM & MGM
 experiment config: ``experiments/vgg16_gmn_willow.yaml``
 
-pretrained model: https://drive.google.com/file/d/1PWM1i0oywH3hrwPdYerPazRmhApC0B4U/view?usp=sharing
+pretrained model: [google drive](https://drive.google.com/file/d/1PWM1i0oywH3hrwPdYerPazRmhApC0B4U/view?usp=sharing)
 
 | model                    | year | remark          | Car    | Duck   | Face   | Motorbike | Winebottle | mean   |
 | ------------------------ | ---- | --------------- | ------ | ------ | ------ | --------- | ---------- | ------ |

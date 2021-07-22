@@ -1,6 +1,6 @@
 # NGM
 
-This folder contains our implementation of the following paper:
+Our implementation of the following paper:
 * Runzhong Wang, Junchi Yan, Xiaokang Yang. "Neural Graph Matching Network: Learning Lawler's Quadratic Assignment Problem with Extension to Hypergraph and Multiple-graph Matching." _TPAMI 2021_.
   [[paper]](https://ieeexplore.ieee.org/document/9426408), [[project page]](http://thinklab.sjtu.edu.cn/project/NGM/index.html)
 
@@ -35,25 +35,25 @@ To summarize, here we include the following models:
   
   experiment config: ``experiments/vgg16_ngm_voc.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1jwlkkSnbHLHHIrWyBnURKvTmI5Iiz8IR/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1jwlkkSnbHLHHIrWyBnURKvTmI5Iiz8IR/view?usp=sharing)
 
 * NHGM
 
   experiment config: ``experiments/vgg16_nhgm_voc.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1FuTeQOlZXrao6eELbdIt2oFQQ3ody1Il/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1FuTeQOlZXrao6eELbdIt2oFQQ3ody1Il/view?usp=sharing)
 
 * NGM-v2
 
   experiment config: ``experiments/vgg16_ngmv2_voc.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1jyb5y16OfnNDIPfuDb17wsOjz8oH6av3/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1jyb5y16OfnNDIPfuDb17wsOjz8oH6av3/view?usp=sharing)
 
 * NHGM-v2
 
   experiment config: ``experiments/vgg16_nhgmv2_voc.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1I42Z7sW5oQdQ9Grvb9gm-lQIxbYFt0EN/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1I42Z7sW5oQdQ9Grvb9gm-lQIxbYFt0EN/view?usp=sharing)
 
 Since NMGM does not support partial matching, we do not evaluate NMGM on Pascal VOC.
 
@@ -69,37 +69,37 @@ Since NMGM does not support partial matching, we do not evaluate NMGM on Pascal 
   
   experiment config: ``experiments/vgg16_ngm_willow.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1lpZFO7I7BOz_syfnxIOC35FccZoE61rv/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1lpZFO7I7BOz_syfnxIOC35FccZoE61rv/view?usp=sharing)
   
 * NHGM
 
   experiment config: ``experiments/vgg16_nhgm_willow.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1EqKSczxHbDIaEqu8C2ZaLjced3X6OKqI/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1EqKSczxHbDIaEqu8C2ZaLjced3X6OKqI/view?usp=sharing)
 
 * NMGM
   
   experiment config: ``experiments/vgg16_nmgm_willow.yaml``
   
-  pretrained model: https://drive.google.com/file/d/1dsOmB_HiKJCE9UOSMwsALPXHNYNDxZ3d/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1dsOmB_HiKJCE9UOSMwsALPXHNYNDxZ3d/view?usp=sharing)
   
 * NGM-v2
 
   experiment config: ``experiments/vgg16_ngmv2_willow.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1ZN8oZZOEGk1Ax_pL75jMbq1Mke9WPkR7/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1ZN8oZZOEGk1Ax_pL75jMbq1Mke9WPkR7/view?usp=sharing)
   
 * NHGM-v2
 
   experiment config: ``experiments/vgg16_nhgmv2_willow.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1xEEuaeHrM9SvoS2iSmhpa0wAFPOcuzvS/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1xEEuaeHrM9SvoS2iSmhpa0wAFPOcuzvS/view?usp=sharing)
 
 * NMGM-v2
 
   experiment config: ``experiments/vgg16_nmgmv2_willow.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1UMy7i0-LSAHMB2PBtHSbqkMSSFTLMKy9/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1UMy7i0-LSAHMB2PBtHSbqkMSSFTLMKy9/view?usp=sharing)
 
 | model                    | year | remark          | Car    | Duck   | Face   | Motorbike | Winebottle | mean   |
 | ------------------------ | ---- | --------------- | ------ | ------ | ------ | --------- | ---------- | ------ |

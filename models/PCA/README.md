@@ -1,6 +1,6 @@
 # PCA-GM
 
-This folder contains our implementation of the following papers:
+Our implementation of the following papers:
 * Runzhong Wang, Junchi Yan and Xiaokang Yang. "Combinatorial Learning of Robust Deep Graph Matching: an Embedding based Approach." _TPAMI 2020_.
     [[paper]](https://ieeexplore.ieee.org/abstract/document/9128045/), [[project page]](https://thinklab.sjtu.edu.cn/IPCA_GM.html)
 * Runzhong Wang, Junchi Yan and Xiaokang Yang. "Learning Combinatorial Embedding Networks for Deep Graph Matching." _ICCV 2019_. 
@@ -25,13 +25,13 @@ The motivation of the iterative update scheme is that: better embedding features
   
   experiment config: ``experiments/vgg16_pca_voc.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1JnX3cSPvRYBSrDKVwByzp7CADgVCJCO_/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1JnX3cSPvRYBSrDKVwByzp7CADgVCJCO_/view?usp=sharing)
   
 * IPCA-GM
 
   experiment config: ``experiments/vgg16_ipca_voc.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1TGrbSQRmUkClH3Alz2OCwqjl8r8gf5yI/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1TGrbSQRmUkClH3Alz2OCwqjl8r8gf5yI/view?usp=sharing)
 
 | model                  | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | table  | dog    | horse  | mbkie  | person | plant  | sheep  | sofa   | train  | tv     | mean   |
 | ---------------------- | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
@@ -43,13 +43,13 @@ The motivation of the iterative update scheme is that: better embedding features
   
   experiment config: ``experiments/vgg16_pca_willow.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1BYFevb7C1mUW9vK-L9wOo0Omtp4V15Ub/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1BYFevb7C1mUW9vK-L9wOo0Omtp4V15Ub/view?usp=sharing)
   
 * IPCA-GM
 
   experiment config: ``experiments/vgg16_ipca_willow.yaml``
 
-  pretrained model: https://drive.google.com/file/d/1-OcLEwlKiudxs3KoKbFW56kzspqFsoWH/view?usp=sharing
+  pretrained model: [google drive](https://drive.google.com/file/d/1-OcLEwlKiudxs3KoKbFW56kzspqFsoWH/view?usp=sharing)
 
 | model                    | year | remark          | Car    | Duck   | Face   | Motorbike | Winebottle | mean   |
 | ------------------------ | ---- | --------------- | ------ | ------ | ------ | --------- | ---------- | ------ |

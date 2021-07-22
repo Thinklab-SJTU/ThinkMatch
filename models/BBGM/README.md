@@ -1,6 +1,6 @@
 # BBGM
 
-This folder contains our implementation of the following paper:
+Our implementation of the following paper:
 * Michal Rolínek, Paul Swoboda, Dominik Zietlow, Anselm Paulus, Vít Musil, Georg Martius. "Deep Graph Matching via Blackbox Differentiation of Combinatorial Solvers." _ECCV 2020_. 
     [[paper]](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123730409.pdf)
 
@@ -14,7 +14,7 @@ The resulting quadratic assignment problem is solved by a discrete [LPMP solver]
 
 experiment config: ``experiments/vgg16_bbgm_voc.yaml``
 
-pretrained model: https://drive.google.com/file/d/1RxC7daviZf3kz2Nvr76DldR_oMHfNB4h/view?usp=sharing
+pretrained model: [google drive](https://drive.google.com/file/d/1RxC7daviZf3kz2Nvr76DldR_oMHfNB4h/view?usp=sharing)
 
 | model                  | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | table  | dog    | horse  | mbkie  | person | plant  | sheep  | sofa   | train  | tv     | mean   |
 | ---------------------- | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
@@ -24,7 +24,7 @@ pretrained model: https://drive.google.com/file/d/1RxC7daviZf3kz2Nvr76DldR_oMHfN
 
 experiment config: ``experiments/vgg16_bbgm_willow.yaml``
 
-pretrained model: https://drive.google.com/file/d/1bt8wBeimM0ofm3QWEVOWWKxoIVRfFwi-/view?usp=sharing
+pretrained model: [google drive](https://drive.google.com/file/d/1bt8wBeimM0ofm3QWEVOWWKxoIVRfFwi-/view?usp=sharing)
 
 | model                    | year | remark          | Car    | Duck   | Face   | Motorbike | Winebottle | mean   |
 | ------------------------ | ---- | --------------- | ------ | ------ | ------ | --------- | ---------- | ------ |

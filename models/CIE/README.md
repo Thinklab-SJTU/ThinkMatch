@@ -1,6 +1,6 @@
 # CIE-H
 
-This folder contains our implementation of the following paper:
+Our implementation of the following paper:
  * Tianshu Yu, Runzhong Wang, Junchi Yan, Baoxin Li. "Learning deep graph matching with channel-independent embedding and Hungarian attention." _ICLR 2020_.
     [[paper]](https://openreview.net/forum?id=rJgBd2NYPH)
 
@@ -14,7 +14,7 @@ taking into account the most contributing matching pairs as hard attention durin
 
 experiment config: ``experiments/vgg16_cie_voc.yaml``
 
-pretrained model: https://drive.google.com/file/d/1oRwcnw06t1rCbrIN_7p8TJZY-XkBOFEp/view?usp=sharing
+pretrained model: [google drive](https://drive.google.com/file/d/1oRwcnw06t1rCbrIN_7p8TJZY-XkBOFEp/view?usp=sharing)
 
 | model                 | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | table  | dog    | horse  | mbkie  | person | plant  | sheep  | sofa   | train  | tv     | mean   |
 | --------------------- | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |

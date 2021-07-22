@@ -1,6 +1,6 @@
 # GANN
 
-This folder contains our implementation of the following paper:
+Our implementation of the following paper:
   * Runzhong Wang, Junchi Yan and Xiaokang Yang. "Graduated Assignment for Joint Multi-Graph Matching and Clustering with Application to Unsupervised Graph Matching Network Learning." _NeurIPS 2020_.
     [[paper]](https://papers.nips.cc/paper/2020/hash/e6384711491713d29bc63fc5eeb5ba4f-Abstract.html)
   * Runzhong Wang, Shaofei Jiang, Junchi Yan and Xiaokang Yang. "Robust Self-supervised Learning of Deep Graph Matching with Mixture of Modes." _Submitted to TPAMI_. 
@@ -20,7 +20,7 @@ GANN-MGM notably surpass supervised learning methods on the relatively small dat
 
 experiment config: ``experiments/vgg16_gann-mgm_willow.yaml``
 
-pretrained model: https://drive.google.com/file/d/15Sg6mi9nrpsD4MAjp8b138-t-17VbYsw/view?usp=sharing
+pretrained model: [google drive](https://drive.google.com/file/d/15Sg6mi9nrpsD4MAjp8b138-t-17VbYsw/view?usp=sharing)
 
 | model                    | year | remark          | Car    | Duck   | Face   | Motorbike | Winebottle | mean   |
 | ------------------------ | ---- | --------------- | ------ | ------ | ------ | --------- | ---------- | ------ |
