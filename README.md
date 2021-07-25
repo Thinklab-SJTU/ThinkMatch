@@ -9,7 +9,7 @@ To find the original work( powered by pytorch), click [here](https://github.com/
 
 This repository contains PaddlePaddle implementation of our ICCV 2019 paper (for oral presentation): [Learning Combinatorial Embedding Networks for Deep Graph Matching.](http://openaccess.thecvf.com/content_ICCV_2019/papers/Wang_Learning_Combinatorial_Embedding_Networks_for_Deep_Graph_Matching_ICCV_2019_paper.pdf)
 
-It contains our implementation of following deep graph matching methods: 
+It contains our implementation of following deep graph matching methods:
 
 **PCA-GM** Runzhong Wang, Junchi Yan and Xiaokang Yang, "Learning Combinatorial Embedding Networks for Deep Graph Matching." ICCV 2019.
 
