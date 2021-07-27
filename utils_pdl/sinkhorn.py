@@ -10,7 +10,7 @@ class Sinkhorn(nn.Layer):
     Input: input matrix s
     Output: bi-stochastic matrix s
     """
-    def __init__(self, max_iter=10, epsilon=1e-4, tau=0.50, log_forward=False):
+    def __init__(self, max_iter=10, epsilon=1e-4, tau=0.50, log_forward=True):
         super(Sinkhorn, self).__init__()
         self.max_iter = max_iter
         self.epsilon = epsilon
