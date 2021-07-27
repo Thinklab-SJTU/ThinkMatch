@@ -1,4 +1,3 @@
-# line 17 class Net(CNN) need to be modified ? 
 import paddle
 import paddle.nn as nn
 
@@ -74,7 +73,8 @@ class Net(CNN):
             emb1, emb2 = self.gnn_layer_list[i]([A_src, emb1], [A_tgt, emb2])
             # affinity layer
             s = self.aff_layer_list[i](emb1, emb2)
-            s = self.voting_layer(s, ns_src, ns_tgt)
+            # New sinkhorn no need voting
+            #s = self.voting_layer(s, ns_src, ns_tgt)
             s = self.bi_stochastic(s, ns_src, ns_tgt)
 
             if i == self.gnn_layer - 2:

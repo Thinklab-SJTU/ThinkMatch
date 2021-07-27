@@ -31,6 +31,8 @@ def feature_align(raw_feature: Tensor, P: Tensor, ns_t: Tensor, ori_size: tuple,
         feat_size = paddle.to_tensor(feature.shape[1:3], dtype='float32', place=device)
         _P = P[idx, 0:n]
         F[idx, :, 0:n] = interp_2d(feature, _P, ori_size, feat_size, out=F[idx, :, 0:n])
+        #interp_2d(feature, _P, ori_size, feat_size, out=F[idx, :, 0:n])
+        #F[idx, :, 0:n] += interp_2d(feature, _P, ori_size, feat_size)
     return F
 
 

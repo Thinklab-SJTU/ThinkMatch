@@ -83,8 +83,10 @@ def pca_convert():
     with fluid.dygraph.guard():
         model_th = tchPCA()
         model_pd = pdlPCA()
-        load_model(model_th, "output/vgg16_pca_voc/params/params_0020.pt")
-        model_path = "./pca"
+        #load_model(model_th, "output/vgg16_pca_voc/params/params_0020.pt")
+        #load_model(model_th, "pretrained_params_vgg16_pca_voc.pt")
+        load_model(model_th , 'share_param.pt')
+        model_path = "./share_param"
         print(model_th.state_dict().keys())
         print(len(model_th.state_dict().keys()))
         print(model_pd.state_dict().keys())

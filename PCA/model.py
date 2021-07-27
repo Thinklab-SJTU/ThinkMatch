@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from utils.sinkhorn import Sinkhorn
+from utils.sinkhorn_new import Sinkhorn
 from utils.voting_layer import Voting
 from GMN.displacement_layer import Displacement
 from utils.feature_align import feature_align
@@ -70,7 +70,7 @@ class Net(CNN):
             emb1, emb2 = gnn_layer([A_src, emb1], [A_tgt, emb2])
             affinity = getattr(self, 'affinity_{}'.format(i))
             s = affinity(emb1, emb2)
-            s = self.voting_layer(s, ns_src, ns_tgt)
+            #s = self.voting_layer(s, ns_src, ns_tgt)
             s = self.bi_stochastic(s, ns_src, ns_tgt)
 
             if i == self.gnn_layer - 2:
