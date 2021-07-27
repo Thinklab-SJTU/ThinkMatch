@@ -1,6 +1,6 @@
 import paddle
 import paddle.nn as nn
-from .pdl_device_trans import place2str
+from pdl_device_trans import place2str
 
 class Sinkhorn(nn.Layer):
     """
@@ -10,7 +10,7 @@ class Sinkhorn(nn.Layer):
     Input: input matrix s
     Output: bi-stochastic matrix s
     """
-    def __init__(self, max_iter=10, epsilon=1e-4, tau=0.50, log_forward=True):
+    def __init__(self, max_iter=10, epsilon=1e-4, tau=0.10, log_forward=True):
         super(Sinkhorn, self).__init__()
         self.max_iter = max_iter
         self.epsilon = epsilon
@@ -60,7 +60,7 @@ class Sinkhorn(nn.Layer):
             dummy_shape[1] = s.shape[2] - s.shape[1]
             ori_nrows = nrows
             nrows = ncols
-            s = paddle.cat((s, paddle.full(dummy_shape, -float('inf')).cuda()), dim=1)
+            s = paddle.cat((s, paddle.full(dummy_shape, -float('inf')).cuda()), axis=1)
             for b in range(batch_size):
                 s[b, ori_nrows[b]:nrows[b], :ncols[b]] = -100
                 s[b, nrows[b]:, :] = -float('inf')
@@ -82,7 +82,7 @@ class Sinkhorn(nn.Layer):
                     log_sum = paddle.logsumexp(log_s, 0, keepdim=True)
                     log_s = log_s - log_sum
 
-            ret_log_s[b, row_slice, col_slice] += log_s
+            ret_log_s[b, row_slice, col_slice] = log_s
 
         if dummy_row:
             if dummy_shape[1] > 0:
@@ -244,5 +244,5 @@ def simple_main():
     '''
 
 if __name__ == '__main__':
-    #simple_main()
-    ori_main()
+    simple_main()
+    #ori_main()
