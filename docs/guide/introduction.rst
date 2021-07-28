@@ -8,15 +8,15 @@ Graph matching techniques have been applied to the following applications:
 
 * `Bridging movie and synopses <https://openaccess.thecvf.com/content_ICCV_2019/papers/Xiong_A_Graph-Based_Framework_to_Bridge_Movies_and_Synopses_ICCV_2019_paper.pdf>`_
 
-  .. image:: ../../images/movie_synopses.png
+  .. image:: ../images/movie_synopses.png
 
 * `Image correspondence <https://arxiv.org/pdf/1911.11763.pdf>`_
 
-  .. image:: ../../images/superglue.png
+  .. image:: ../images/superglue.png
 
 * `Molecules matching <https://openaccess.thecvf.com/content/CVPR2021/papers/Wang_Combinatorial_Learning_of_Graph_Edit_Distance_via_Dynamic_Embedding_CVPR_2021_paper.pdf>`_
 
-  .. image:: ../../images/molecules.png
+  .. image:: ../images/molecules.png
 
 * and more...
 

@@ -1,4 +1,5 @@
 import sys
+import os
 import torch
 from torch.autograd import Function
 import numpy as np
@@ -6,12 +7,13 @@ import scipy.sparse as ssp
 
 from src.sparse_torch import CSRMatrix3d, CSCMatrix3d
 
-from torch.utils.cpp_extension import load
-bilinear_diag = load(name='bilinear_diag', sources=['src/extension/bilinear_diag/bilinear_diag.cpp',
-                                                    'src/extension/bilinear_diag/bilinear_diag_cuda.cu'],
-                     extra_include_paths=[
-                         '/usr/include/python{}.{}/'.format(sys.version_info.major, sys.version_info.minor)]
-                     )
+if 'SPHINX' not in os.environ:
+    from torch.utils.cpp_extension import load
+    bilinear_diag = load(name='bilinear_diag', sources=['src/extension/bilinear_diag/bilinear_diag.cpp',
+                                                        'src/extension/bilinear_diag/bilinear_diag_cuda.cu'],
+                         extra_include_paths=[
+                             '/usr/include/python{}.{}/'.format(sys.version_info.major, sys.version_info.minor)]
+                         )
 
 
 def to_sparse(x, dense_dim=1):

@@ -95,7 +95,7 @@ def train_eval_model(model,
                     if cfg.TRAIN.LOSS_FUNC == 'perm' or cfg.TRAIN.LOSS_FUNC == 'hung':
                         loss = criterion(s_pred, perm_mat, n1_gt, n2_gt)
                     elif cfg.TRAIN.LOSS_FUNC == 'obj':
-                        loss = criterion(s_pred, affmtx, n1_gt)
+                        loss = criterion(s_pred, affmtx)
                     elif cfg.TRAIN.LOSS_FUNC == 'plain':
                         loss = torch.sum(pred['loss'])
                     else:

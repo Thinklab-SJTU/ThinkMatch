@@ -50,6 +50,7 @@ def scatter_kwargs(inputs, kwargs, target_gpus, dim=0):
 
 
 def scatter_sparse_matrix(target_gpus, obj):
+    """Scatter for customized sparse matrix"""
     def get_device(i):
         return torch.device('cuda:{}'.format(i)) if i != -1 else torch.device('cpu')
     step = len(obj) // len(target_gpus)
@@ -58,8 +59,7 @@ def scatter_sparse_matrix(target_gpus, obj):
 
 def gather(outputs, target_device, dim=0):
     """
-    Gathers tensors from different GPUs on a specified device
-      (-1 means the CPU).
+    Gathers tensors from different GPUs on a specified device (-1 means the CPU).
     """
     def gather_map(outputs):
         out = outputs[0]

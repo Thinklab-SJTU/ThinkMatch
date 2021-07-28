@@ -7,46 +7,61 @@ import scipy.sparse as ssp
 import numpy as np
 
 
-def construct_aff_mat(Me: Tensor, Mp: Tensor, KG: CSRMatrix3d, KH: CSCMatrix3d, KGt: CSRMatrix3d=None, KHt: CSCMatrix3d=None):
+def construct_aff_mat(Ke: Tensor, Kp: Tensor, KroG: CSRMatrix3d, KroH: CSCMatrix3d,
+                      KroGt: CSRMatrix3d=None, KroHt: CSCMatrix3d=None) -> Tensor:
+    r"""
+    Construct the complete affinity matrix with edge-wise affinity matrix :math:`\mathbf{K}_e`, node-wise matrix
+    :math:`\mathbf{K}_p` and graph connectivity matrices :math:`\mathbf{G}_1, \mathbf{H}_1, \mathbf{G}_2, \mathbf{H}_2`
+
+    .. math ::
+        \mathbf{K}=\mathrm{diag}(\mathrm{vec}(\mathbf{K}_p)) +
+        (\mathbf{G}_2 \otimes_{\mathcal{K}} \mathbf{G}_1) \mathrm{diag}(\mathrm{vec}(\mathbf{K}_e))
+        (\mathbf{H}_2 \otimes_{\mathcal{K}} \mathbf{H}_1)^\top
+
+    where :math:`\mathrm{diag}(\cdot)` means building a diagonal matrix based on the given vector,
+    and :math:`\mathrm{vec}(\cdot)` means column-wise vectorization.
+    :math:`\otimes_{\mathcal{K}}` denotes Kronecker product.
+
+    This function supports batched operations. This formulation is developed by `"F. Zhou and F. Torre. Factorized
+    Graph Matching. TPAMI 2015." <http://www.f-zhou.com/gm/2015_PAMI_FGM_Draft.pdf>`_
+
+    :param Ke: :math:`(b\times n_{e_1}\times n_{e_2})` edge-wise affinity matrix.
+     :math:`n_{e_1}`: number of edges in graph 1, :math:`n_{e_2}`: number of edges in graph 2
+    :param Kp: :math:`(b\times n_1\times n_2)` node-wise affinity matrix.
+     :math:`n_1`: number of nodes in graph 1, :math:`n_2`: number of nodes in graph 2
+    :param KroG: :math:`(b\times n_1n_2 \times n_{e_1}n_{e_2})` kronecker product of
+     :math:`\mathbf{G}_2 (b\times n_2 \times n_{e_2})`, :math:`\mathbf{G}_1 (b\times n_1 \times n_{e_1})`
+    :param KroH: :math:`(b\times n_1n_2 \times n_{e_1}n_{e_2})` kronecker product of
+     :math:`\mathbf{H}_2 (b\times n_2 \times n_{e_2})`, :math:`\mathbf{H}_1 (b\times n_1 \times n_{e_1})`
+    :param KroGt: transpose of KroG (should be CSR, optional)
+    :param KroHt: transpose of KroH (should be CSC, optional)
+    :return: affinity matrix :math:`\mathbf K`
+
+    .. note ::
+        This function is optimized with sparse CSR and CSC matrices with GPU support for both forward and backward
+        computation with PyTorch. To use this function, you need to install ``ninja-build``, ``gcc-7``, ``nvcc`` (which
+        comes along with CUDA development tools) to successfully compile our customized CUDA code for CSR and CSC
+        matrices. The compiler is automatically called upon requirement.
+
+    For a graph matching problem with 5 nodes and 4 nodes,
+    the connection of :math:`\mathbf K` and :math:`\mathbf{K}_p, \mathbf{K}_e` is illustrated as
+
+    .. image :: ../../images/factorized_graph_matching.png
+
+    where :math:`\mathbf K (20 \times 20)` is the complete affinity matrix, :math:`\mathbf{K}_p (5 \times 4)` is the
+    node-wise affinity matrix, :math:`\mathbf{K}_e(16 \times 10)` is the edge-wise affinity matrix.
     """
-    Construct full affinity matrix with edge matrix Me, point matrix Mp and graph structures G1, H1, G2, H2
-    :param Me: edge affinity matrix
-    :param Mp: point affinity matrix
-    :param KG: kronecker product of G2, G1
-    :param KH: kronecker product of H2, H1
-    :param KGt: transpose of KG (should be CSR, optional)
-    :param KHt: transpose of KH (should be CSC, optional)
-    :return: M
-    """
-    '''
-    if device is None:
-        device = Me.device
-    batch_num = Me.shape[0]
-    feat_size = G1.shape[1] * G2.shape[1]
-    '''
-
-    M = RebuildFGM.apply(Me, Mp, KG, KH, KGt, KHt)
-
-    '''
-        K1 = kronecker_torch(G2, G1).to(device)
-        K2 = kronecker_torch(H2, H1).to(device)
-        Me = Me.to(device)
-        Mp = Mp.to(device)
-        M = torch.empty(batch_num, feat_size, feat_size, dtype=torch.float32, device=device)
-        for i in range(batch_num):
-            M[i, :, :] = torch.mm(torch.mm(K1[i, :, :], torch.diag(Me[i, :, :].t().contiguous().view(-1))), K2[i, :, :].t())
-            M[i, :, :] += torch.diag(Mp[i, :, :].t().contiguous().view(-1))
-    '''
-    return M
+    return RebuildFGM.apply(Ke, Kp, KroG, KroH, KroGt, KroHt)
 
 
-def kronecker_torch(t1: Tensor, t2: Tensor):
-    """
-    Compute the kronecker product of t1 (*) t2.
+def kronecker_torch(t1: Tensor, t2: Tensor) -> Tensor:
+    r"""
+    Compute the kronecker product of :math:`\mathbf{T}_1` and :math:`\mathbf{T}_2`.
     This function is implemented in torch API and is not efficient for sparse {0, 1} matrix.
+
     :param t1: input tensor 1
     :param t2: input tensor 2
-    :return: t1 (*) t2
+    :return: kronecker product of :math:`\mathbf{T}_1` and :math:`\mathbf{T}_2`
     """
     batch_num = t1.shape[0]
     t1dim1, t1dim2 = t1.shape[1], t1.shape[2]
@@ -66,13 +81,14 @@ def kronecker_torch(t1: Tensor, t2: Tensor):
     return tt
 
 
-def kronecker_sparse(arr1: np.ndarray, arr2: np.ndarray):
-    """
-    Compute the kronecker product of t1 (*) t2.
+def kronecker_sparse(arr1: np.ndarray, arr2: np.ndarray) -> np.ndarray:
+    r"""
+    Compute the kronecker product of :math:`\mathbf{T}_1` and :math:`\mathbf{T}_2`.
     This function is implemented in scipy.sparse API and runs on cpu.
+
     :param arr1: input array 1
     :param arr2: input array 2
-    :return: list of t1 (*) t2 (for tensors in a batch)
+    :return: kronecker product of :math:`\mathbf{T}_1` and :math:`\mathbf{T}_2`
     """
     s1 = ssp.coo_matrix(arr1)
     s2 = ssp.coo_matrix(arr2)
@@ -81,65 +97,49 @@ def kronecker_sparse(arr1: np.ndarray, arr2: np.ndarray):
 
 
 class RebuildFGM(Function):
-    """
-    Rebuild sparse affinity matrix in the formula of CVPR12's paper "Factorized Graph Matching"
+    r"""
+    Rebuild sparse affinity matrix in the formula of the paper `"Factorized Graph Matching, in
+    TPAMI 2015" <http://www.f-zhou.com/gm/2015_PAMI_FGM_Draft.pdf>`_
+
+    See :func:`~src.factorize_graph_matching.construct_aff_mat` for detailed reference.
     """
     @staticmethod
-    def forward(ctx, Me: Tensor, Mp: Tensor, K1: CSRMatrix3d, K2: CSCMatrix3d, K1t: CSRMatrix3d=None, K2t: CSCMatrix3d=None):
-        ctx.save_for_backward(Me, Mp)
-        if K1t is not None and K2t is not None:
-            ctx.K = K1t, K2t
+    def forward(ctx, Ke: Tensor, Kp: Tensor, Kro1: CSRMatrix3d, Kro2: CSCMatrix3d,
+                Kro1T: CSRMatrix3d=None, Kro2T: CSCMatrix3d=None) -> Tensor:
+        """
+        Forward function to compute the affinity matrix :math:`\mathbf K`.
+        """
+        ctx.save_for_backward(Ke, Kp)
+        if Kro1T is not None and Kro2T is not None:
+            ctx.K = Kro1T, Kro2T
         else:
-            ctx.K = K1.transpose(keep_type=True), K2.transpose(keep_type=True)
-        batch_num = Me.shape[0]
+            ctx.K = Kro1.transpose(keep_type=True), Kro2.transpose(keep_type=True)
+        batch_num = Ke.shape[0]
 
-        #print('rebuild fgm')
-        #print('K1.shape', K1.shape)
-        #print('K2.shape', K2.shape)
+        Kro1Ke = Kro1.dotdiag(Ke.transpose(1, 2).contiguous().view(batch_num, -1))
+        Kro1KeKro2 = Kro1Ke.dot(Kro2, dense=True)
 
-        K1Me = K1.dotdiag(Me.transpose(1, 2).contiguous().view(batch_num, -1))
-        K1MeK2 = K1Me.dot(K2, dense=True)
-
-        M = torch.empty_like(K1MeK2)
+        K = torch.empty_like(Kro1KeKro2)
         for b in range(batch_num):
-            M[b] = K1MeK2[b] + torch.diag(Mp[b].transpose(0, 1).contiguous().view(-1))
+            K[b] = Kro1KeKro2[b] + torch.diag(Kp[b].transpose(0, 1).contiguous().view(-1))
 
-        return M
-        '''
-        print('-' * 10)
-
-        batch, row, col, data = np.array([]), np.array([]), np.array([]), np.array([])
-        for i in range(batch_num):
-            diagMe = ssp.diags(Me[i, :, :].t().contiguous().view(-1).cpu().numpy(), format='coo')
-            diagMp = ssp.diags(Mp[i, :, :].t().contiguous().view(-1).cpu().numpy(), format='coo')
-
-            # sparse matrix API in scipy.sparse
-            _M = K1.get_batch_ssp(i).dot(diagMe).dot(K2.get_batch_ssp(i)) + diagMp
-            _M = _M.tocoo()
-
-            batch = np.append(batch, np.ones(_M.nnz) * i)
-            row = np.append(row, _M.row)
-            col = np.append(col, _M.col)
-            data = np.append(data, _M.data)
-        coo = np.array([batch, row, col])
-        M = torch.sparse_coo_tensor(coo, data, torch.Size([batch_num, 5888, 5888]),
-                                    dtype=torch.float32, device=M.device)
-        Md = M.to_dense()
-        print('M nnz', torch.sum(Md != 0).cpu().numpy())
-        return Md  # Sparse seems not work in backprop
-        '''
+        return K
 
     @staticmethod
-    def backward(ctx, dM):
-        device = dM.device
-        Me, Mp = ctx.saved_tensors
-        K1t, K2t = ctx.K
-        dMe = dMp = None
+    def backward(ctx, dK):
+        r"""
+        Backward function from the affinity matrix :math:`\mathbf K` to node-wise affinity matrix :math:`\mathbf K_e`
+        and edge-wize affinity matrix :math:`\mathbf K_e`.
+        """
+        device = dK.device
+        Ke, Kp = ctx.saved_tensors
+        Kro1t, Kro2t = ctx.K
+        dKe = dKp = None
         if ctx.needs_input_grad[0]:
-            dMe = bilinear_diag_torch(K1t, dM.contiguous(), K2t)
-            dMe = dMe.view(Me.shape[0], Me.shape[2], Me.shape[1]).transpose(1, 2)
+            dKe = bilinear_diag_torch(Kro1t, dK.contiguous(), Kro2t)
+            dKe = dKe.view(Ke.shape[0], Ke.shape[2], Ke.shape[1]).transpose(1, 2)
         if ctx.needs_input_grad[1]:
-            dMp = torch.diagonal(dM, dim1=-2, dim2=-1)
-            dMp = dMp.view(Mp.shape[0], Mp.shape[2], Mp.shape[1]).transpose(1, 2)
+            dKp = torch.diagonal(dK, dim1=-2, dim2=-1)
+            dKp = dKp.view(Kp.shape[0], Kp.shape[2], Kp.shape[1]).transpose(1, 2)
 
-        return dMe, dMp, None, None, None, None
+        return dKe, dKp, None, None, None, None

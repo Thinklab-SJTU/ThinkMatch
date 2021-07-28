@@ -1,10 +1,7 @@
-import torch
-import torch.nn as nn
 import torch.nn.functional as F
 
 from src.lap_solvers.sinkhorn import Sinkhorn
 from src.lap_solvers.hungarian import hungarian
-from models.GMN.displacement_layer import Displacement
 from src.build_graphs import reshape_edge_feature
 from src.feature_align import feature_align
 from src.factorize_graph_matching import construct_aff_mat
@@ -26,7 +23,6 @@ class Net(CNN):
         self.feat_affinity_layer3 = InnerpAffinity(cfg.NGM.FEATURE_CHANNEL)
         self.tau = cfg.NGM.SK_TAU
         self.bi_stochastic = Sinkhorn(max_iter=cfg.NGM.SK_ITER_NUM, tau=self.tau, epsilon=cfg.NGM.SK_EPSILON)
-        self.displacement_layer = Displacement()
         self.l2norm = nn.LocalResponseNorm(cfg.NGM.FEATURE_CHANNEL * 2, alpha=cfg.NGM.FEATURE_CHANNEL * 2, beta=0.5, k=0)
 
         self.gnn_layer = cfg.NGM.GNN_LAYER

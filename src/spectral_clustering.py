@@ -1,41 +1,42 @@
 import numpy as np
 import torch
+from torch import Tensor
+from typing import Union, Tuple
 
-def initialize(X, num_clusters, method='plus'):
-    """
-    initialize cluster centers
-    :param X: (torch.tensor) matrix
-    :param num_clusters: (int) number of clusters
-    :param method: plus (default) or random for different initialization strategies
-    :return: (np.array) initial state
+def initialize(X: Tensor, num_clusters: int, method: str='plus') -> np.array:
+    r"""
+    Initialize cluster centers.
+
+    :param X: matrix
+    :param num_clusters: number of clusters
+    :param method: denotes different initialization strategies: ``'plus'`` (default) or ``'random'``
+    :return: initial state
+
+    .. note::
+        We support two initialization strategies: random initialization by setting ``method='random'``, or `kmeans++
+        <https://en.wikipedia.org/wiki/K-means%2B%2B>`_ by setting ``method='plus'``.
     """
     if method == 'plus':
-        init_func = initialize_plus
+        init_func = _initialize_plus
     elif method == 'random':
-        init_func = initialize_random
+        init_func = _initialize_random
     else:
         raise NotImplementedError
     return init_func(X, num_clusters)
 
 
-def initialize_random(X, num_clusters):
+def _initialize_random(X, num_clusters):
     """
-    initialize cluster centers
-    :param X: (torch.tensor) matrix
-    :param num_clusters: (int) number of clusters
-    :return: (np.array) initial state
+    Initialize cluster centers randomly. See :func:`src.spectral_clustering.initialize` for details.
     """
     num_samples = len(X)
     indices = np.random.choice(num_samples, num_clusters, replace=False)
     initial_state = X[indices]
     return initial_state
 
-def initialize_plus(X, num_clusters):
+def _initialize_plus(X, num_clusters):
     """
-    initialize cluster centers by k-means++
-    :param X: (torch.tensor) matrix
-    :param num_clusters: (int) number of clusters
-    :return: (np.array) initial state
+    Initialize cluster centers by k-means++. See :func:`src.spectral_clustering.initialize` for details.
     """
     num_samples = len(X)
     centroid_index = np.zeros(num_clusters)
@@ -44,7 +45,7 @@ def initialize_plus(X, num_clusters):
             choice_prob = np.full(num_samples, 1 / num_samples)
         else:
             centroid_X = X[centroid_index[:i]]
-            dis = pairwise_distance(X, centroid_X)
+            dis = _pairwise_distance(X, centroid_X)
             dis_to_nearest_centroid = torch.min(dis, dim=1).values
             choice_prob = dis_to_nearest_centroid / torch.sum(dis_to_nearest_centroid)
             choice_prob = choice_prob.detach().cpu().numpy()
@@ -55,31 +56,28 @@ def initialize_plus(X, num_clusters):
     return initial_state
 
 def kmeans(
-        X,
-        num_clusters,
-        init_x='plus',
-        distance='euclidean',
-        tol=1e-4,
+        X: Tensor,
+        num_clusters: int,
+        init_x: Union[Tensor, str]='plus',
+        distance: str='euclidean',
+        tol: float=1e-4,
         device=torch.device('cpu'),
-        max_iter=1000
-):
-    """
-    perform kmeans
-    :param X: (torch.tensor) matrix
+) -> Tuple[Tensor, Tensor]:
+    r"""
+    Perform kmeans on given data matrix :math:`\mathbf X`.
+
+    :param X: :math:`(n\times d)` input data matrix. :math:`n`: number of samples. :math:`d`: feature dimension
     :param num_clusters: (int) number of clusters
     :param init_x: how to initiate x (provide a initial state of x or define a init method) [default: 'plus']
-    :param distance: (str) distance [options: 'euclidean', 'cosine'] [default: 'euclidean']
-    :param tol: (float) threshold [default: 0.0001]
-    :param device: (torch.device) device [default: cpu]
-    :param max_iter: maximum number of iterations
-    :return: (torch.tensor, torch.tensor) cluster ids, cluster centers
+    :param distance: distance [options: 'euclidean', 'cosine'] [default: 'euclidean']
+    :param tol: convergence threshold [default: 0.0001]
+    :param device: computing device [default: cpu]
+    :return: cluster ids, cluster centers
     """
-    #print('running k-means on {}..')
-
     if distance == 'euclidean':
-        pairwise_distance_function = pairwise_distance
+        pairwise_distance_function = _pairwise_distance
     elif distance == 'cosine':
-        pairwise_distance_function = pairwise_cosine
+        pairwise_distance_function = _pairwise_cosine
     else:
         raise NotImplementedError
 
@@ -96,7 +94,6 @@ def kmeans(
         initial_state = init_x
 
     iteration = 0
-    #tqdm_meter = tqdm(desc='[running kmeans]')
     while True:
         dis = pairwise_distance_function(X, initial_state)
 
@@ -118,13 +115,6 @@ def kmeans(
         # increment iteration
         iteration = iteration + 1
 
-        # update tqdm meter
-        #tqdm_meter.set_postfix(
-        #    iteration='{iteration}',
-        #    center_shift='{center_shift ** 2:0.6f}',
-        #    tol='{tol:0.6f}'
-        #)
-        #tqdm_meter.update()
         if center_shift ** 2 < tol:
             break
 
@@ -136,25 +126,24 @@ def kmeans(
 
 
 def kmeans_predict(
-        X,
-        cluster_centers,
-        distance='euclidean',
+        X: Tensor,
+        cluster_centers: Tensor,
+        distance: str='euclidean',
         device=torch.device('cpu')
-):
-    """
-    predict using cluster centers
-    :param X: (torch.tensor) matrix
-    :param cluster_centers: (torch.tensor) cluster centers
-    :param distance: (str) distance [options: 'euclidean', 'cosine'] [default: 'euclidean']
-    :param device: (torch.device) device [default: 'cpu']
-    :return: (torch.tensor) cluster ids
-    """
-    #print('predicting on {device}..')
+) -> Tensor:
+    r"""
+    Kmeans prediction using existing cluster centers.
 
+    :param X: matrix
+    :param cluster_centers: cluster centers
+    :param distance: distance [options: 'euclidean', 'cosine'] [default: 'euclidean']
+    :param device: computing device [default: 'cpu']
+    :return: cluster ids
+    """
     if distance == 'euclidean':
-        pairwise_distance_function = pairwise_distance
+        pairwise_distance_function = _pairwise_distance
     elif distance == 'cosine':
-        pairwise_distance_function = pairwise_cosine
+        pairwise_distance_function = _pairwise_cosine
     else:
         raise NotImplementedError
 
@@ -170,7 +159,8 @@ def kmeans_predict(
     return choice_cluster.cpu()
 
 
-def pairwise_distance(data1, data2, device=torch.device('cpu')):
+def _pairwise_distance(data1, data2, device=torch.device('cpu')):
+    """Compute pairwise Euclidean distance"""
     # transfer to device
     data1, data2 = data1.to(device), data2.to(device)
 
@@ -186,7 +176,8 @@ def pairwise_distance(data1, data2, device=torch.device('cpu')):
     return dis
 
 
-def pairwise_cosine(data1, data2, device=torch.device('cpu')):
+def _pairwise_cosine(data1, data2, device=torch.device('cpu')):
+    """Compute pairwise cosine distance"""
     # transfer to device
     data1, data2 = data1.to(device), data2.to(device)
 
@@ -207,7 +198,21 @@ def pairwise_cosine(data1, data2, device=torch.device('cpu')):
     return cosine_dis
 
 
-def spectral_clustering(sim_matrix, cluster_num, init=None, return_state=False, normalized=False):
+def spectral_clustering(sim_matrix: Tensor, cluster_num: int, init: Tensor=None,
+                        return_state: bool=False, normalized: bool=False):
+    r"""
+    Perform spectral clustering based on given similarity matrix.
+
+    This function firstly computes the leading eigenvectors of the given similarity matrix, and then utilizes the
+    eigenvectors as features and performs k-means clustering based on these features.
+
+    :param sim_matrix: :math:`(n\times n)` input similarity matrix. :math:`n`: number of instances
+    :param cluster_num: number of clusters
+    :param init: the initialization technique or initial features for k-means
+    :param return_state: whether return state features (can be further used for prediction)
+    :param normalized: whether to normalize the similarity matrix by its degree
+    :return: the belonging of each instance to clusters, state features (if ``return_state==True``)
+    """
     degree = torch.diagflat(torch.sum(sim_matrix, dim=-1))
     if normalized:
         aff_matrix = (degree - sim_matrix) / torch.diag(degree).unsqueeze(1)
@@ -216,15 +221,12 @@ def spectral_clustering(sim_matrix, cluster_num, init=None, return_state=False, 
     e, v = torch.symeig(aff_matrix, eigenvectors=True)
     topargs = torch.argsort(torch.abs(e), descending=False)[1:cluster_num]
     v = v[:, topargs]
-    #v = v / v.norm(dim=0, keepdim=True)
 
-    #print(topargs)
-    #print(v)
     if cluster_num == 2:
         choice_cluster = (v > 0).to(torch.int).squeeze(1)
     else:
         choice_cluster, initial_state = kmeans(v, cluster_num, init if init is not None else 'plus',
-                                           tol=1e-6, distance='euclidean')
+                                               distance='euclidean', tol=1e-6)
 
     choice_cluster = choice_cluster.to(sim_matrix.device)
 

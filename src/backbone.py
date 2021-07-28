@@ -4,6 +4,10 @@ from torchvision import models
 
 
 class VGG16_base(nn.Module):
+    r"""
+    The base class of VGG16. It downloads the pretrained weight by torchvision API, and maintain the layers needed for
+    deep graph matching models.
+    """
     def __init__(self, batch_norm=True, final_layers=False):
         super(VGG16_base, self).__init__()
         self.node_layers, self.edge_layers, self.final_layers = self.get_backbone(batch_norm)
@@ -21,6 +25,7 @@ class VGG16_base(nn.Module):
     def get_backbone(batch_norm):
         """
         Get pretrained VGG16 models for feature extraction.
+
         :return: feature sequence
         """
         if batch_norm:
@@ -62,26 +67,41 @@ class VGG16_base(nn.Module):
     
 
 class VGG16_bn_final(VGG16_base):
+    r"""
+    VGG16 with batch normalization and final layers.
+    """
     def __init__(self):
         super(VGG16_bn_final, self).__init__(True, True)
 
 
 class VGG16_bn(VGG16_base):
+    r"""
+    VGG16 with batch normalization, without final layers.
+    """
     def __init__(self):
         super(VGG16_bn, self).__init__(True, False)
 
 
 class VGG16_final(VGG16_base):
+    r"""
+    VGG16 without batch normalization, with final layers.
+    """
     def __init__(self):
         super(VGG16_final, self).__init__(False, True)
 
 
 class VGG16(VGG16_base):
+    r"""
+    VGG16 without batch normalization or final layers.
+    """
     def __init__(self):
         super(VGG16, self).__init__(False, False)
 
 
 class NoBackbone(nn.Module):
+    r"""
+    A model with no CNN backbone for non-image data.
+    """
     def __init__(self, *args, **kwargs):
         super(NoBackbone, self).__init__()
         self.node_layers, self.edge_layers = None, None

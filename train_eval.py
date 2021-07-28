@@ -6,9 +6,9 @@ from pathlib import Path
 from tensorboardX import SummaryWriter
 
 from src.dataset.data_loader import GMDataset, get_dataloader
-from models.GMN.displacement_layer import Displacement
+from src.displacement_layer import Displacement
 from src.loss_func import *
-from src.evaluation_metric import matching_accuracy
+from src.evaluation_metric import matching_recall
 from src.parallel import DataParallel
 from src.utils.model_sl import load_model, save_model
 from eval import eval_model
@@ -33,8 +33,6 @@ def train_eval_model(model,
 
     device = next(model.parameters()).device
     print('model on device: {}'.format(device))
-
-    alphas = torch.tensor(cfg.EVAL.PCK_ALPHAS, dtype=torch.float32, device=device)  # for evaluation
 
     checkpoint_path = Path(cfg.OUTPUT_PATH) / 'params'
     if not checkpoint_path.exists():
@@ -105,7 +103,7 @@ def train_eval_model(model,
                         raise ValueError('Unsupported loss function {} for problem type {}'.format(cfg.TRAIN.LOSS_FUNC, cfg.PROBLEM.TYPE))
 
                     # compute accuracy
-                    acc, _, __ = matching_accuracy(outputs['perm_mat'], outputs['gt_perm_mat'], outputs['ns'][0])
+                    acc = matching_recall(outputs['perm_mat'], outputs['gt_perm_mat'], outputs['ns'][0])
 
                 elif cfg.PROBLEM.TYPE in ['MGM', 'MGMC']:
                     assert 'ds_mat_list' in outputs
@@ -131,7 +129,7 @@ def train_eval_model(model,
                     acc = torch.zeros(1, device=model.module.device)
                     for x_pred, x_gt, (idx_src, idx_tgt) in \
                             zip(outputs['perm_mat_list'], outputs['gt_perm_mat_list'], outputs['graph_indices']):
-                        a, _, __ = matching_accuracy(x_pred, x_gt, ns[idx_src])
+                        a = matching_recall(x_pred, x_gt, ns[idx_src])
                         acc += torch.sum(a)
                     acc /= len(outputs['perm_mat_list'])
                 else:
@@ -192,7 +190,7 @@ def train_eval_model(model,
         print()
 
         # Eval in each epoch
-        accs = eval_model(model, alphas, dataloader['test'], xls_sheet=xls_wb.add_sheet('epoch{}'.format(epoch + 1)))
+        accs = eval_model(model, dataloader['test'], xls_sheet=xls_wb.add_sheet('epoch{}'.format(epoch + 1)))
         acc_dict = {"{}".format(cls): single_acc for cls, single_acc in zip(dataloader['test'].dataset.classes, accs)}
         acc_dict['average'] = torch.mean(accs)
         tfboard_writer.add_scalars(
@@ -243,13 +241,13 @@ if __name__ == '__main__':
     model = model.to(device)
 
     if cfg.TRAIN.LOSS_FUNC.lower() == 'offset':
-        criterion = RobustLoss(norm=cfg.TRAIN.RLOSS_NORM)
+        criterion = OffsetLoss(norm=cfg.TRAIN.RLOSS_NORM)
     elif cfg.TRAIN.LOSS_FUNC.lower() == 'perm':
         criterion = PermutationLoss()
     elif cfg.TRAIN.LOSS_FUNC.lower() == 'ce':
         criterion = CrossEntropyLoss()
     elif cfg.TRAIN.LOSS_FUNC.lower() == 'focal':
-        criterion = FocalLoss(alpha=.5, gamma=0.)
+        criterion = FocalLoss(gamma=0.)
     elif cfg.TRAIN.LOSS_FUNC.lower() == 'hung':
         criterion = PermutationLossHung()
     elif cfg.TRAIN.LOSS_FUNC.lower() == 'hamming':

@@ -1,13 +1,11 @@
-"""
-DataParallel wrapper with customized scatter/gather functions
-"""
-
-import torch
 import torch.nn as nn
 from .scatter_gather import scatter_kwargs, gather
 
 
 class DataParallel(nn.DataParallel):
+    """
+    DataParallel wrapper with customized scatter/gather functions
+    """
     def __init__(self, *args, **kwargs):
         super(DataParallel, self).__init__(*args, **kwargs)
 

@@ -1,16 +1,53 @@
 import torch
 import torch.nn as nn
+from torch import Tensor
 
 
 class Sinkhorn(nn.Module):
-    """
+    r"""
     Sinkhorn algorithm turns the input matrix into a bi-stochastic matrix.
-    Parameter: maximum iterations max_iter
-               a small number for numerical stability epsilon
-    Input: input matrix s
-    Output: bi-stochastic matrix s
+
+    Sinkhorn algorithm firstly applies an ``exp`` function with temperature :math:`\tau`:
+
+    .. math::
+        \mathbf{S}_{i,j} = \exp \left(\frac{\mathbf{s}_{i,j}}{\tau}\right)
+
+    And then turns the matrix into doubly-stochastic matrix by iterative row- and column-wise normalization:
+
+    .. math::
+        \mathbf{S} &= \mathbf{S} \oslash (\mathbf{1}_{n_2} \mathbf{1}_{n_2}^\top \cdot \mathbf{S}) \\
+        \mathbf{S} &= \mathbf{S} \oslash (\mathbf{S} \cdot \mathbf{1}_{n_2} \mathbf{1}_{n_2}^\top)
+
+    where :math:`\oslash` means element-wise division, :math:`\mathbf{1}_n` means a column-vector with length :math:`n`
+    whose elements are all :math:`1`\ s.
+
+    :param max_iter: maximum iterations (default: ``10``)
+    :param tau: the hyper parameter :math:`\tau` controlling the temperature (default: ``1``)
+    :param epsilon: a small number for numerical stability (default: ``1e-4``)
+    :param log_forward: apply log-scale computation for better numerical stability (default: ``True``)
+    :param batched_operation: apply batched_operation for better efficiency (but may cause issues for back-propagation,
+     default: ``False``)
+
+    .. note::
+        ``tau`` is an important hyper parameter to be set for Sinkhorn algorithm. ``tau`` controls the distance between
+        the predicted doubly-stochastic matrix, and the discrete permutation matrix computed by Hungarian algorithm (see
+        :func:`~src.lap_solvers.hungarian.hungarian`). Given a small ``tau``, Sinkhorn performs more closely to
+        Hungarian, at the cost of slower convergence speed and reduced numerical stability.
+
+    .. note::
+        We recommend setting ``log_forward=True`` because it is more numerically stable. It provides more precise
+        gradient in back propagation and helps the model to converge better and faster.
+
+    .. warning::
+        If you set ``log_forward=False``, this function behaves a little bit differently: it does not include the
+        ``exp`` part.
+
+    .. note::
+        Setting ``batched_operation=True`` may be preferred when you are doing inference with this module and do not
+        need the gradient.
     """
-    def __init__(self, max_iter=10, tau=1., epsilon=1e-4, log_forward=True, batched_operation=False):
+    def __init__(self, max_iter: int=10, tau: float=1., epsilon: float=1e-4,
+                 log_forward: bool=True, batched_operation: bool=False):
         super(Sinkhorn, self).__init__()
         self.max_iter = max_iter
         self.tau = tau
@@ -21,14 +58,35 @@ class Sinkhorn(nn.Module):
         self.batched_operation = batched_operation # batched operation may cause instability in backward computation,
                                                    # but will boost computation.
 
-    def forward(self, *input, **kwinput):
-        if self.log_forward:
-            return self.forward_log(*input, **kwinput)
-        else:
-            return self.forward_ori(*input, **kwinput) # deprecated
+    def forward(self, s: Tensor, nrows: Tensor=None, ncols: Tensor=None, dummy_row: bool=False) -> Tensor:
+        r"""
+        :param s: :math:`(b\times n_1 \times n_2)` input 3d tensor. :math:`b`: batch size
+        :param nrows: :math:`(b)` number of objects in dim1
+        :param ncols: :math:`(b)` number of objects in dim2
+        :param dummy_row: whether to add dummy rows (rows whose elements are all 0) to pad the matrix to square matrix.
+         default: ``False``
+        :return: :math:`(b\times n_1 \times n_2)` the computed doubly-stochastic matrix
 
-    def forward_log(self, s, nrows=None, ncols=None, dummy_row=False, dtype=torch.float32):
-        # computing sinkhorn with row/column normalization in the log space.
+        .. note::
+            We support batched instances with different number of nodes, therefore ``nrows`` and ``ncols`` are
+            required to specify the exact number of objects of each dimension in the batch. If not specified, we assume
+            the batched matrices are not padded.
+
+        .. note::
+            The original Sinkhorn algorithm only works for square matrices. To handle cases where the graphs to be
+            matched have different number of nodes, it is a common practice to add dummy rows to construct a square
+            matrix. After the row and column normalizations, the padded rows are discarded.
+
+        .. note::
+            We assume row number <= column number. If not, the input matrix will be transposed.
+        """
+        if self.log_forward:
+            return self.forward_log(s, nrows, ncols, dummy_row)
+        else:
+            return self.forward_ori(s, nrows, ncols, dummy_row) # deprecated
+
+    def forward_log(self, s, nrows=None, ncols=None, dummy_row=False):
+        """Compute sinkhorn with row/column normalization in the log space."""
         if len(s.shape) == 2:
             s = s.unsqueeze(0)
             matrix_input = True
@@ -127,9 +185,14 @@ class Sinkhorn(nn.Module):
         #    col_slice = slice(0, ncols[b])
         #    log_s = s[b, row_slice, col_slice]
 
-    def forward_ori(self, s, nrows=None, ncols=None, dummy_row=False, dtype=torch.float32):
-        # computing sinkhorn with row/column normalization.
-        # This function is deprecated because forward_log is more numerically stable.
+    def forward_ori(self, s, nrows=None, ncols=None, dummy_row=False):
+        r"""
+        Computing sinkhorn with row/column normalization.
+
+        .. warning::
+            This function is deprecated because :meth:`~src.lap_solvers.sinkhorn.Sinkhorn.forward_log` is more
+            numerically stable.
+        """
         if len(s.shape) == 2:
             s = s.unsqueeze(0)
             matrix_input = True
@@ -207,17 +270,54 @@ class Sinkhorn(nn.Module):
 
 class GumbelSinkhorn(nn.Module):
     """
-    GumbelSinkhorn Layer turns the input matrix into a bi-stochastic matrix.
-    Parameter: maximum iterations max_iter
-               a small number for numerical stability epsilon
-    Input: input matrix s
-    Output: bi-stochastic matrix s
+    Gumbel Sinkhorn Layer turns the input matrix into a bi-stochastic matrix.
+    See details in `"Mena et al. Learning Latent Permutations with Gumbel-Sinkhorn Networks. ICLR 2018"
+    <https://arxiv.org/abs/1802.08665>`_
+
+    :param max_iter: maximum iterations (default: ``10``)
+    :param tau: the hyper parameter :math:`\tau` controlling the temperature (default: ``1``)
+    :param epsilon: a small number for numerical stability (default: ``1e-4``)
+    :param batched_operation: apply batched_operation for better efficiency (but may cause issues for back-propagation,
+     default: ``False``)
+
+    .. note::
+        This module only supports log-scale Sinkhorn operation.
     """
     def __init__(self, max_iter=10, tau=1., epsilon=1e-4, batched_operation=False):
         super(GumbelSinkhorn, self).__init__()
         self.sinkhorn = Sinkhorn(max_iter, tau, epsilon, batched_operation=batched_operation)
 
-    def forward(self, s, nrows=None, ncols=None, sample_num=5, dummy_row=False, dtype=torch.float32):
+    def forward(self, s: Tensor, nrows: Tensor=None, ncols: Tensor=None,
+                sample_num=5, dummy_row=False, dtype=torch.float32) -> Tensor:
+        r"""
+        :param s: :math:`(b\times n_1 \times n_2)` input 3d tensor. :math:`b`: batch size
+        :param nrows: :math:`(b)` number of objects in dim1
+        :param ncols: :math:`(b)` number of objects in dim2
+        :param sample_num: number of samples
+        :param dummy_row: whether to add dummy rows (rows whose elements are all 0) to pad the matrix to square matrix.
+         default: ``False``
+        :return: :math:`(b m\times n_1 \times n_2)` the computed doubly-stochastic matrix. :math:`m`: number of samples
+         (``sample_num``)
+
+        The samples are stacked at the fist dimension of the output tensor. You may reshape the output tensor ``s`` as:
+
+        ::
+
+            s = torch.reshape(s, (-1, sample_num, s.shape[1], s.shape[2]))
+
+        .. note::
+            We support batched instances with different number of nodes, therefore ``nrows`` and ``ncols`` are
+            required to specify the exact number of objects of each dimension in the batch. If not specified, we assume
+            the batched matrices are not padded.
+
+        .. note::
+            The original Sinkhorn algorithm only works for square matrices. To handle cases where the graphs to be
+            matched have different number of nodes, it is a common practice to add dummy rows to construct a square
+            matrix. After the row and column normalizations, the padded rows are discarded.
+
+        .. note::
+            We assume row number <= column number. If not, the input matrix will be transposed.
+        """
         def sample_gumbel(t_like, eps=1e-20):
             """
             randomly sample standard gumbel variables

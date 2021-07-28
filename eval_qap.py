@@ -85,8 +85,8 @@ def eval_model(model, alphas, dataloader, eval_epoch=None, verbose=False):
 
             fwd_time = time.time() - fwd_since
 
-            obj_score = objective_score(x_pred, ori_affmtx, n1_gt)
-            opt_obj_score = objective_score(perm_mat, ori_affmtx, n1_gt)
+            obj_score = objective_score(x_pred, ori_affmtx)
+            opt_obj_score = objective_score(perm_mat, ori_affmtx)
             ori_obj_score = solution
 
             for n, x, y, z in zip(name, obj_score, opt_obj_score, ori_obj_score):

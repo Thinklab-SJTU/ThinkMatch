@@ -6,21 +6,37 @@ from scipy.spatial.qhull import QhullError
 import itertools
 import numpy as np
 
+from typing import Tuple
 
-def build_graphs(P_np: np.ndarray, n: int, n_pad: int=None, edge_pad: int=None, stg: str='fc', sym=True):
-    """
-    Build graph matrix G,H from point set P. This function supports only cpu operations in numpy.
-    G, H is constructed from adjacency matrix A: A = G * H^T
-    :param P_np: point set containing point coordinates
+
+def build_graphs(P_np: np.ndarray, n: int, n_pad: int=None, edge_pad: int=None, stg: str='fc', sym: bool=True,
+                 thre: int=0) -> Tuple[np.ndarray, np.ndarray, np.ndarray, int]:
+    r"""
+    Build graph matrix :math:`\mathbf G, \mathbf H` from point set :math:`\mathbf P`.
+    This function supports only cpu operations in numpy.
+    :math:`\mathbf G, \mathbf H` are constructed from adjacency matrix :math:`\mathbf A`:
+    :math:`\mathbf A = \mathbf G \cdot \mathbf H^\top`
+
+    :param P_np: :math:`(n\times 2)` point set containing point coordinates
     :param n: number of exact points in the point set
     :param n_pad: padded node length
     :param edge_pad: padded edge length
-    :param stg: strategy to build graphs.
-                'tri', apply Delaunay triangulation or not.
-                'near', fully-connected manner, but edges which are longer than max(w, h) is removed
-                'fc'(default), a fully-connected graph is constructed
-    :param sym: True for a symmetric adjacency, False for half adjacency (A contains only the upper half).
-    :return: A, G, H, edge_num
+    :param stg: strategy to build graphs. Options: ``fc``, ``near``, ``tri``
+    :param sym: True for a symmetric adjacency, False for half adjacency (A contains only the upper half)
+    :param thre: The threshold value of 'near' strategy
+    :return: :math:`A`, :math:`G`, :math:`H`, edge_num
+
+    The possible options for ``stg``:
+    ::
+
+        'fc'(default): construct a fully-connected graph
+        'near': construct a fully-connected graph, but edges longer than ``thre`` are removed
+        'tri': apply Delaunay triangulation
+
+    An illustration of :math:`\mathbf G, \mathbf H` with their connections to the graph, the adjacency matrix,
+    the incident matrix is
+
+    .. image:: ../../images/build_graphs_GH.png
     """
 
     assert stg in ('fc', 'tri', 'near'), 'No strategy named {} found.'.format(stg)
@@ -28,7 +44,7 @@ def build_graphs(P_np: np.ndarray, n: int, n_pad: int=None, edge_pad: int=None, 
     if stg == 'tri':
         A = delaunay_triangulate(P_np[0:n, :])
     elif stg == 'near':
-        A = fully_connect(P_np[0:n, :], thre=0.5*256)
+        A = fully_connect(P_np[0:n, :], thre=thre)
     else:
         A = fully_connect(P_np[0:n, :])
     edge_num = int(np.sum(A, axis=(0, 1)))
@@ -58,11 +74,12 @@ def build_graphs(P_np: np.ndarray, n: int, n_pad: int=None, edge_pad: int=None, 
     return A, G, H, edge_num
 
 
-def delaunay_triangulate(P: np.ndarray):
-    """
+def delaunay_triangulate(P: np.ndarray) -> np.ndarray:
+    r"""
     Perform delaunay triangulation on point set P.
-    :param P: point set
-    :return: adjacency matrix A
+
+    :param P: :math:`(n\times 2)` point set
+    :return: adjacency matrix :math:`A`
     """
     n = P.shape[0]
     if n < 3:
@@ -83,12 +100,13 @@ def delaunay_triangulate(P: np.ndarray):
     return A
 
 
-def fully_connect(P: np.ndarray, thre=None):
-    """
-    Fully connect a graph.
-    :param P: point set
+def fully_connect(P: np.ndarray, thre=None) -> np.ndarray:
+    r"""
+    Return the adjacency matrix of a fully-connected graph.
+
+    :param P: :math:`(n\times 2)` point set
     :param thre: edges that are longer than this threshold will be removed
-    :return: adjacency matrix A
+    :return: adjacency matrix :math:`A`
     """
     n = P.shape[0]
     A = np.ones((n, n)) - np.eye(n)
@@ -101,12 +119,15 @@ def fully_connect(P: np.ndarray, thre=None):
     return A
 
 
-def make_grids(start, stop, num):
-    """
-    Make grids. This function supports only cpu operations in numpy.
-    :param start: start index in all dimentions
-    :param stop: stop index in all dimentions
-    :param num: number of grids in each dimention
+def make_grids(start, stop, num) -> np.ndarray:
+    r"""
+    Make grids.
+
+    This function supports only cpu operations in numpy.
+
+    :param start: start index in all dimensions
+    :param stop: stop index in all dimensions
+    :param num: number of grids in each dimension
     :return: point set P
     """
     length = np.prod(num)
@@ -120,14 +141,22 @@ def make_grids(start, stop, num):
     return P
 
 
-def reshape_edge_feature(F: Tensor, G: Tensor, H: Tensor, device=None):
-    """
-    Reshape edge feature matrix into X, where features are arranged in the order in G, H.
-    :param F: raw edge feature matrix
-    :param G: factorized adjacency matrix, where A = G * H^T
-    :param H: factorized adjacancy matrix, where A = G * H^T
+def reshape_edge_feature(F: Tensor, G: Tensor, H: Tensor, device=None) -> Tensor:
+    r"""
+    Given point-level features extracted from images, reshape it into edge feature matrix :math:`X`,
+    where features are arranged by the order of :math:`G`, :math:`H`.
+
+    .. math::
+        \mathbf{X}_{e_{ij}} = concat(\mathbf{F}_i, \mathbf{F}_j)
+
+    where :math:`e_{ij}` means an edge connecting nodes :math:`i, j`
+
+    :param F: :math:`(b\times d \times n)` extracted point-level feature matrix.
+     :math:`b`: batch size. :math:`d`: feature dimension. :math:`n`: number of nodes.
+    :param G: :math:`(b\times n \times e)` factorized adjacency matrix, where :math:`\mathbf A = \mathbf G \cdot \mathbf H^\top`. :math:`e`: number of edges.
+    :param H: :math:`(b\times n \times e)` factorized adjacency matrix, where :math:`\mathbf A = \mathbf G \cdot \mathbf H^\top`
     :param device: device. If not specified, it will be the same as the input
-    :return: X
+    :return: edge feature matrix X :math:`(b \times 2d \times e)`
     """
     if device is None:
         device = F.device
