@@ -351,6 +351,10 @@ def simple_main():
     inp = paddle.to_tensor([[[1., 0, 1.],
                          [1., 0, 3.],
                          [2., 0, 1.],
+                         [4., 0, 2.]],
+                        [[1., 0, 1.],
+                         [1., 0, 3.],
+                         [2., 0, 1.],
                          [4., 0, 2.]]], stop_gradient=False, dtype='float32')
     outp = bs(inp, (3, 4))
 
@@ -368,6 +372,6 @@ def simple_main():
     '''
 
 if __name__ == '__main__':
-    #simple_main()
+    simple_main()
     #ori_main()
-    main2()
+    #main2()

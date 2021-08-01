@@ -10,7 +10,7 @@ class Sinkhorn(nn.Module):
     Input: input matrix s
     Output: bi-stochastic matrix s
     """
-    def __init__(self, max_iter=10, tau=0.05, epsilon=1e-4, log_forward=True, batched_operation=False):
+    def __init__(self, max_iter=10, tau=0.5, epsilon=1e-4, log_forward=True, batched_operation=False):
         super(Sinkhorn, self).__init__()
         self.max_iter = max_iter
         self.tau = tau
@@ -433,8 +433,12 @@ def main2():
         print(autograd.grad(loss, bi_stochastic)[0])
 
 def simple_main():
-    bs = Sinkhorn(max_iter=10, epsilon=1e-4, tau=0.05)
+    bs = Sinkhorn(max_iter=10, epsilon=1e-4, tau=1.)
     inp = torch.tensor([[[1., 0, 1.],
+                         [1., 0, 3.],
+                         [2., 0, 1.],
+                         [4., 0, 2.]],
+                        [[1., 0, 1.],
                          [1., 0, 3.],
                          [2., 0, 1.],
                          [4., 0, 2.]]], requires_grad=True, dtype=torch.float32)
@@ -455,5 +459,6 @@ def simple_main():
     '''
 
 if __name__ == '__main__':
+    simple_main()
     #ori_main()
-    main2()
+    #main2()
