@@ -18,7 +18,18 @@ pretrained model: [google drive](https://drive.google.com/file/d/1oRwcnw06t1rCbr
 
 | model                 | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | table  | dog    | horse  | mbkie  | person | plant  | sheep  | sofa   | train  | tv     | mean   |
 | --------------------- | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
-| [CIE-H](/models/CIE)   | 2020 | 0.5250 | 0.6858 | 0.7015 | 0.5706 | 0.8207 | 0.7700 | 0.7073 | 0.7313 | 0.4383 | 0.6994 | 0.6237 | 0.7018 | 0.7031 | 0.6641 | 0.4763 | 0.8525 | 0.7172 | 0.6400 | 0.8385 | 0.9168 | 0.6892 |
+| [CIE-H](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#cie-h) | 2020 | 0.5250 | 0.6858 | 0.7015 | 0.5706 | 0.8207 | 0.7700 | 0.7073 | 0.7313 | 0.4383 | 0.6994 | 0.6237 | 0.7018 | 0.7031 | 0.6641 | 0.4763 | 0.8525 | 0.7172 | 0.6400 | 0.8385 | 0.9168 | 0.6892 |
+
+### Willow Object Class - 2GM
+
+experiment config: ``experiments/vgg16_cie_willow.yaml``
+
+pretrained model: [google drive](https://drive.google.com/file/d/1aUdNTWlFxk-sf-bj08ADUoo9CSIQjzDb/view?usp=sharing)
+
+| model                    | year | remark          | Car    | Duck   | Face   | Motorbike | Winebottle | mean   |
+| ------------------------ | ---- | --------------- | ------ | ------ | ------ | --------- | ---------- | ------ |
+| [CIE-H](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#cie-h) | 2020 | -               | 0.8581 | 0.8206 | 0.9994 | 0.8836    | 0.8871     | 0.8898 |
+
 
 ## File Organization
 ```

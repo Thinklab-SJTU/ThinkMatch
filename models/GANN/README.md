@@ -24,7 +24,7 @@ pretrained model: [google drive](https://drive.google.com/file/d/15Sg6mi9nrpsD4M
 
 | model                    | year | remark          | Car    | Duck   | Face   | Motorbike | Winebottle | mean   |
 | ------------------------ | ---- | --------------- | ------ | ------ | ------ | --------- | ---------- | ------ |
-| [GANN-MGM](/models/GANN) | 2020 | self-supervised | 0.9600 | 0.9642 | 1.0000 | 1.0000    | 0.9879     | 0.9906 |
+| [GANN-MGM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#gann) | 2020 | self-supervised | 0.9600 | 0.9642 | 1.0000 | 1.0000    | 0.9879     | 0.9906 |
 
 ## File Organization
 ```
