@@ -1,5 +1,7 @@
 # Think Match
 
+[![Documentation Status](https://readthedocs.org/projects/thinkmatch/badge/?version=latest)](https://thinkmatch.readthedocs.io/en/latest/?badge=latest)
+
 _ThinkMatch_ is developed and maintained by [ThinkLab](http://thinklab.sjtu.edu.cn) at Shanghai Jiao Tong University.
 This repository is developed for the following purposes:
 * **Providing modules** for developing deep graph matching algorithms to facilitate future research.
@@ -29,7 +31,6 @@ In this repository, we mainly focus on image keypoint matching because it is a p
 Readers are referred to the following survey for more technical details about graph matching:
 * Junchi Yan, Xu-Cheng Yin, Weiyao Lin, Cheng Deng, Hongyuan Zha, Xiaokang Yang. "A Short Survey of Recent Advances in Graph Matching."
 _ICMR 2016_.
-
 ## Deep Graph Matching Algorithms
 _ThinkMatch_ currently contains pytorch source code of the following deep graph matching methods:
 
@@ -67,10 +68,10 @@ _ThinkMatch_ currently contains pytorch source code of the following deep graph 
 | [NGM](/models/NGM)     | 2019 | 0.5010 | 0.6350 | 0.5790 | 0.5340 | 0.7980 | 0.7710 | 0.7360 | 0.6820 | 0.4110 | 0.6640 | 0.4080 | 0.6030 | 0.6190 | 0.6350 | 0.4560 | 0.7710 | 0.6930 | 0.6550 | 0.7920 | 0.8820 | 0.6413 |
 | [NHGM](/models/NGM)    | 2019 | 0.5240 | 0.6220 | 0.5830 | 0.5570 | 0.7870 | 0.7770 | 0.7440 | 0.7070 | 0.4200 | 0.6460 | 0.5380 | 0.6100 | 0.6190 | 0.6080 | 0.4680 | 0.7910 | 0.6680 | 0.5510 | 0.8090 | 0.8870 | 0.6458 |
 | [IPCA-GM](/models/PCA) | 2020 | 0.5378 | 0.6622 | 0.6714 | 0.6120 | 0.8039 | 0.7527 | 0.7255 | 0.7252 | 0.4455 | 0.6524 | 0.5430 | 0.6724 | 0.6790 | 0.6421 | 0.4793 | 0.8435 | 0.7079 | 0.6398 | 0.8380 | 0.9083 | 0.6770 |
-| [CIE-H](/models/CIE)   | 2020 | 0.4994 | 0.6313 | 0.7065 | 0.5298 | 0.8243 | 0.7536 | 0.6766 | 0.7230 | 0.4235 | 0.6688 | 0.6990 | 0.6952 | 0.7074 | 0.6196 | 0.4667 | 0.8504 | 0.7000 | 0.6175 | 0.8023 | 0.9178 | 0.6756 |
+| [CIE-H](/models/CIE)   | 2020 | 0.5250 | 0.6858 | 0.7015 | 0.5706 | 0.8207 | 0.7700 | 0.7073 | 0.7313 | 0.4383 | 0.6994 | 0.6237 | 0.7018 | 0.7031 | 0.6641 | 0.4763 | 0.8525 | 0.7172 | 0.6400 | 0.8385 | 0.9168 | 0.6892 |
 | [BBGM](/models/BBGM)   | 2020 | 0.6187 | 0.7106 | 0.7969 | 0.7896 | 0.8740 | 0.9401 | 0.8947 | 0.8022 | 0.5676 | 0.7914 | 0.6458 | 0.7892 | 0.7615 | 0.7512 | 0.6519 | 0.9818 | 0.7729 | 0.7701 | 0.9494 | 0.9393 | 0.7899 |
-| [NGM-v2](/models/NGM)   | 2021 | 0.6184 | 0.7118 | 0.7762 | 0.7875 | 0.8733 | 0.9363 | 0.8770 | 0.7977 | 0.5535 | 0.7781 | 0.8952 | 0.7880 | 0.8011 | 0.7923 | 0.6258 | 0.9771 | 0.7769 | 0.7574 | 0.9665 | 0.9323 | 0.8011 |
-| [NHGM-v2](/models/NGM)  | 2021 | 0.5995 | 0.7154 | 0.7724 | 0.7902 | 0.8773 | 0.9457 | 0.8903 | 0.8181 | 0.5995 | 0.8129 | 0.8695 | 0.7811 | 0.7645 | 0.7750 | 0.6440 | 0.9872 | 0.7778 | 0.7538 | 0.9787 | 0.9280 | 0.8040 |
+| [NGM-v2](/models/NGM)  | 2021 | 0.6184 | 0.7118 | 0.7762 | 0.7875 | 0.8733 | 0.9363 | 0.8770 | 0.7977 | 0.5535 | 0.7781 | 0.8952 | 0.7880 | 0.8011 | 0.7923 | 0.6258 | 0.9771 | 0.7769 | 0.7574 | 0.9665 | 0.9323 | 0.8011 |
+| [NHGM-v2](/models/NGM) | 2021 | 0.5995 | 0.7154 | 0.7724 | 0.7902 | 0.8773 | 0.9457 | 0.8903 | 0.8181 | 0.5995 | 0.8129 | 0.8695 | 0.7811 | 0.7645 | 0.7750 | 0.6440 | 0.9872 | 0.7778 | 0.7538 | 0.9787 | 0.9280 | 0.8040 |
 
 ### Willow Object Class - 2GM & MGM
 
@@ -122,7 +123,7 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
 1. Install building tools for LPMP:
     ```bash
     apt-get install -y findutils libhdf5-serial-dev git wget libssl-dev
-
+    
     wget https://github.com/Kitware/CMake/releases/download/v3.19.1/cmake-3.19.1.tar.gz && tar zxvf cmake-3.19.1.tar.gz
     cd cmake-3.19.1 && ./bootstrap && make && make install
     ```
@@ -135,7 +136,7 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
    apt-get update
    apt-get install -y software-properties-common
    add-apt-repository ppa:ubuntu-toolchain-r/test
-
+   
    apt-get install -y gcc-9 g++-9
    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9
    ```

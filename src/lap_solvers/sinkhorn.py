@@ -288,7 +288,7 @@ class GumbelSinkhorn(nn.Module):
         self.sinkhorn = Sinkhorn(max_iter, tau, epsilon, batched_operation=batched_operation)
 
     def forward(self, s: Tensor, nrows: Tensor=None, ncols: Tensor=None,
-                sample_num=5, dummy_row=False, dtype=torch.float32) -> Tensor:
+                sample_num=5, dummy_row=False) -> Tensor:
         r"""
         :param s: :math:`(b\times n_1 \times n_2)` input 3d tensor. :math:`b`: batch size
         :param nrows: :math:`(b)` number of objects in dim1
@@ -329,7 +329,7 @@ class GumbelSinkhorn(nn.Module):
         s_rep = s_rep + sample_gumbel(s_rep)
         nrows_rep = torch.repeat_interleave(nrows, sample_num, dim=0)
         ncols_rep = torch.repeat_interleave(ncols, sample_num, dim=0)
-        s_rep = self.sinkhorn(s_rep, nrows_rep, ncols_rep, dummy_row, dtype)
+        s_rep = self.sinkhorn(s_rep, nrows_rep, ncols_rep, dummy_row)
         #s_rep = torch.reshape(s_rep, (-1, sample_num, s_rep.shape[1], s_rep.shape[2]))
         return s_rep
 
