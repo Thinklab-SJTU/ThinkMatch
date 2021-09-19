@@ -6,11 +6,11 @@ import numpy as np
 import random
 from data.pascal_voc import PascalVOC
 from data.willow_obj import WillowObject
-from utils.build_graphs import build_graphs
-from utils.fgm import kronecker_sparse
-from sparse_torch import CSRMatrix3d
+from src.utils.build_graphs import build_graphs
+from src.utils.fgm import kronecker_sparse
+from src.sparse_torch import CSRMatrix3d
 
-from utils.config import cfg
+from src.utils.config import cfg
 
 
 class GMDataset(Dataset):

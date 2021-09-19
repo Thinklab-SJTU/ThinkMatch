@@ -7,7 +7,7 @@ import pickle
 import torch
 import sys
 
-from utils.config import cfg
+from src.utils.config import cfg
 
 anno_path = cfg.VOC2011.KPT_ANNO_DIR
 img_path = cfg.VOC2011.ROOT_DIR + 'JPEGImages'

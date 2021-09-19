@@ -7,16 +7,16 @@ from pathlib import Path
 from visualdl import LogWriter
 
 from data.data_loader_pdl import GMDataset, get_dataloader
-from GMN.displacement_layer_pdl import Displacement
-from utils_pdl.offset_loss import RobustLoss
-from utils_pdl.permutation_loss import CrossEntropyLoss
-from utils_pdl.evaluation_metric import matching_accuracy
+from models.GMN.displacement_layer_pdl import Displacement
+from src.utils_pdl.offset_loss import RobustLoss
+from src.utils_pdl.permutation_loss import CrossEntropyLoss
+from src.utils_pdl.evaluation_metric import matching_accuracy
 #from parallel import DataParallel
-from utils_pdl.model_sl import load_model, save_model
+from src.utils_pdl.model_sl import load_model, save_model
 from eval_pdl import eval_model
-from utils_pdl.hungarian import hungarian
+from src.lap_solvers_pdl.hungarian import hungarian
 
-from utils.config import cfg
+from src.utils.config import cfg
 
 
 def train_eval_model(model,
@@ -180,9 +180,9 @@ def train_eval_model(model,
 
 
 if __name__ == '__main__':
-    from utils.dup_stdout_manager import DupStdoutFileManager
-    from utils.parse_args import parse_args
-    from utils.print_easydict import print_easydict
+    from src.utils.dup_stdout_manager import DupStdoutFileManager
+    from src.utils.parse_args import parse_args
+    from src.utils.print_easydict import print_easydict
 
     args = parse_args('Deep learning of graph matching training & evaluation code.')
 

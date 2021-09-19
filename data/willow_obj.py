@@ -2,7 +2,7 @@ from pathlib import Path
 import scipy.io as sio
 from PIL import Image
 import numpy as np
-from utils.config import cfg
+from src.utils.config import cfg
 from data.base_dataset import BaseDataset
 import random
 

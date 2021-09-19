@@ -109,3 +109,9 @@ venv.bak/
 # Some test files
 dataset_test_dpl.py
 pdl_vgg_test.py
+
+# Files based on Pytorch
+train_eval.py
+eval.py
+rubbish_log/
+

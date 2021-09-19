@@ -1,16 +1,15 @@
-# 70 with grad
 import paddle
 import time
 from datetime import datetime
 from pathlib import Path
 
-from utils_pdl.hungarian import hungarian
+from src.lap_solvers_pdl.hungarian import hungarian
 from data.data_loader_pdl import GMDataset, get_dataloader
-from utils_pdl.evaluation_metric import matching_accuracy
+from src.utils_pdl.evaluation_metric import matching_accuracy
 #from parallel import DataParallel
-from utils_pdl.model_sl import load_model
+from src.utils_pdl.model_sl import load_model
 
-from utils.config import cfg
+from src.utils.config import cfg
 
 
 def eval_model(model, dataloader, eval_epoch=None, verbose=False):
@@ -108,9 +107,9 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
 
 
 if __name__ == '__main__':
-    from utils.dup_stdout_manager import DupStdoutFileManager
-    from utils.parse_args import parse_args
-    from utils.print_easydict import print_easydict
+    from src.utils.dup_stdout_manager import DupStdoutFileManager
+    from src.utils.parse_args import parse_args
+    from src.utils.print_easydict import print_easydict
 
     args = parse_args('Deep learning of graph matching evaluation code.')
 
@@ -130,7 +129,7 @@ if __name__ == '__main__':
     #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     model = Net()
-    load_model(model, 'utils_pdl/pca.pdparams')
+    load_model(model, 'src/utils_pdl/pca.pdparams')
     #load_model(model, 'pretrained_vgg16_pca_voc.pdparams')
     #model = model.to(device)
     #model = DataParallel(model, device_ids=cfg.GPUS)
