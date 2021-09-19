@@ -103,8 +103,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# parameters in paddle
-.pdparams
+# parameters in paddle and torch
+*.pdparams
+*.pt
 
 # Some test files
 dataset_test_dpl.py
