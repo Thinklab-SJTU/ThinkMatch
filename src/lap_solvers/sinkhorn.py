@@ -101,6 +101,7 @@ class Sinkhorn(nn.Module):
             transposed = False
         else:
             s = s.transpose(1, 2)
+            nrows, ncols = ncols, nrows
             transposed = True
 
         if nrows is None:
