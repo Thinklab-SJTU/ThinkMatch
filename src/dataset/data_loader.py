@@ -16,23 +16,36 @@ from itertools import combinations, product
 
 
 class GMDataset(Dataset):
-    def __init__(self, name, length, cls=None, problem='2GM', **args):
+    def __init__(self, name, bm, length, using_all_graphs=False, cls=None, problem='2GM'):
         self.name = name
-        self.ds = eval(self.name)(**args)
-        self.length = length  # NOTE images pairs are sampled randomly, so there is no exact definition of dataset size
-                              # length here represents the iterations between two checkpoints
-        self.obj_size = self.ds.obj_resize
+        self.bm = bm
+        self.using_all_graphs = using_all_graphs
+        self.obj_size = self.bm.obj_resize
+        self.test = True if self.bm.sets == 'test' else False
         self.cls = None if cls in ['none', 'all'] else cls
 
         if self.cls is None:
-            if problem == 'MGMC':
-                self.classes = list(combinations(self.ds.classes, cfg.PROBLEM.NUM_CLUSTERS))
+            if problem == 'MGM3':
+                self.classes = list(combinations(self.bm.classes, cfg.PROBLEM.NUM_CLUSTERS))
             else:
-                self.classes = self.ds.classes
+                self.classes = self.bm.classes
         else:
             self.classes = [self.cls]
 
         self.problem_type = problem
+        if problem != 'MGM3':
+            self.img_num_list = self.bm.compute_img_num(self.classes)
+        else:
+            self.img_num_list = self.bm.compute_img_num(self.classes[0])
+
+        if self.problem_type == '2GM':
+            self.id_combination, self.length = self.bm.get_id_combination(self.cls)
+            self.length_list = []
+            for cls in self.classes:
+                cls_length = self.bm.compute_length(cls)
+                self.length_list.append(cls_length)
+        else:
+            self.length = length
 
     def __len__(self):
         return self.length
@@ -42,7 +55,7 @@ class GMDataset(Dataset):
             return self.get_pair(idx, self.cls)
         elif self.problem_type == 'MGM':
             return self.get_multi(idx, self.cls)
-        elif self.problem_type == 'MGMC':
+        elif self.problem_type == 'MGM3':
             return self.get_multi_cluster(idx)
         else:
             raise NameError("Unknown problem type: {}".format(self.problem_type))
@@ -70,18 +83,19 @@ class GMDataset(Dataset):
         return pyg_graph
 
     def get_pair(self, idx, cls):
-        #anno_pair, perm_mat = self.ds.get_pair(self.cls if self.cls is not None else
+        #anno_pair, perm_mat = self.bm.get_pair(self.cls if self.cls is not None else
         #                                       (idx % (cfg.BATCH_SIZE * len(self.classes))) // cfg.BATCH_SIZE)
-        try:
-            anno_pair, perm_mat = self.ds.get_pair(cls, tgt_outlier=cfg.PROBLEM.TGT_OUTLIER, src_outlier=cfg.PROBLEM.SRC_OUTLIER)
-        except TypeError:
-            anno_pair, perm_mat = self.ds.get_pair(cls)
-        if min(perm_mat.shape[0], perm_mat.shape[1]) <= 2 or perm_mat.size >= cfg.PROBLEM.MAX_PROB_SIZE > 0:
-            return self.get_pair(idx, cls)
+        cls_num = random.randrange(0, len(self.classes))
+        ids = list(self.id_combination[cls_num][idx % self.length_list[cls_num]])
+        anno_pair, perm_mat_, id_list = self.bm.get_data(ids)
+        perm_mat = perm_mat_[(0, 1)].toarray()
+        while min(perm_mat.shape[0], perm_mat.shape[1]) <= 2 or perm_mat.size >= cfg.PROBLEM.MAX_PROB_SIZE > 0:
+            anno_pair, perm_mat_, id_list = self.bm.rand_get_data(cls)
+            perm_mat = perm_mat_[(0, 1)].toarray()
 
         cls = [anno['cls'] for anno in anno_pair]
-        P1 = [(kp['x'], kp['y']) for kp in anno_pair[0]['keypoints']]
-        P2 = [(kp['x'], kp['y']) for kp in anno_pair[1]['keypoints']]
+        P1 = [(kp['x'], kp['y']) for kp in anno_pair[0]['kpts']]
+        P2 = [(kp['x'], kp['y']) for kp in anno_pair[1]['kpts']]
 
         n1, n2 = len(P1), len(P2)
         univ_size = [anno['univ_size'] for anno in anno_pair]
@@ -110,10 +124,11 @@ class GMDataset(Dataset):
                     'As': [torch.Tensor(x) for x in [A1, A2]],
                     'pyg_graphs': [pyg_graph1, pyg_graph2],
                     'cls': [str(x) for x in cls],
+                    'id_list': id_list,
                     'univ_size': [torch.tensor(int(x)) for x in univ_size],
                     }
 
-        imgs = [anno['image'] for anno in anno_pair]
+        imgs = [anno['img'] for anno in anno_pair]
         if imgs[0] is not None:
             trans = transforms.Compose([
                     transforms.ToTensor(),
@@ -121,31 +136,52 @@ class GMDataset(Dataset):
                     ])
             imgs = [trans(img) for img in imgs]
             ret_dict['images'] = imgs
-        elif 'feat' in anno_pair[0]['keypoints'][0]:
-            feat1 = np.stack([kp['feat'] for kp in anno_pair[0]['keypoints']], axis=-1)
-            feat2 = np.stack([kp['feat'] for kp in anno_pair[1]['keypoints']], axis=-1)
+        elif 'feat' in anno_pair[0]['kpts'][0]:
+            feat1 = np.stack([kp['feat'] for kp in anno_pair[0]['kpts']], axis=-1)
+            feat2 = np.stack([kp['feat'] for kp in anno_pair[1]['kpts']], axis=-1)
             ret_dict['features'] = [torch.Tensor(x) for x in [feat1, feat2]]
 
         return ret_dict
 
     def get_multi(self, idx, cls):
-        if (self.ds.sets == 'test' and cfg.PROBLEM.TEST_ALL_GRAPHS) or (self.ds.sets == 'train' and cfg.PROBLEM.TRAIN_ALL_GRAPHS):
-            num_graphs = self.ds.len(cls)
+        if self.problem_type == 'MGM' and self.using_all_graphs:
+            if cls == None:
+                cls = random.randrange(0, len(self.classes))
+                num_graphs = self.img_num_list[cls]
+                cls = self.classes[cls]
+            elif type(cls) == str:
+                cls_num = self.classes.index(cls)
+                num_graphs = self.img_num_list[cls_num]
+            else:
+                num_graphs = self.img_num_list[cls]
+                cls = self.classes[cls]
+
+        elif self.problem_type == 'MGM3' and self.using_all_graphs:
+            if cls == None:
+                cls = random.randrange(0, len(self.classes[0]))
+                num_graphs = self.img_num_list[cls]
+                cls = self.classes[cls]
+            elif type(cls) == str:
+                cls_num = self.classes[0].index(cls)
+                num_graphs = self.img_num_list[cls_num]
+            else:
+                num_graphs = self.img_num_list[cls]
+                cls = self.classes[cls]
         else:
             num_graphs = cfg.PROBLEM.NUM_GRAPHS
-        anno_list, perm_mat_list = self.ds.get_multi(cls, num=num_graphs)
 
-        assert isinstance(perm_mat_list, list)
-        refetch = False
-        for pm in perm_mat_list:
-            if pm.shape[0] <= 2 or pm.shape[1] <= 2 or pm.size >= cfg.PROBLEM.MAX_PROB_SIZE > 0:
-                refetch = True
-                break
-        if refetch:
-            return self.get_multi(idx, cls)
+        refetch = True
+        while refetch:
+            refetch = False
+            anno_list, perm_mat_dict, id_list = self.bm.rand_get_data(cls, num=num_graphs)
+            perm_mat_dict = {key: val.toarray() for key, val in perm_mat_dict.items()}
+            for pm in perm_mat_dict.values():
+                if pm.shape[0] <= 2 or pm.shape[1] <= 2 or pm.size >= cfg.PROBLEM.MAX_PROB_SIZE > 0:
+                    refetch = True
+                    break
 
         cls = [anno['cls'] for anno in anno_list]
-        Ps = [[(kp['x'], kp['y']) for kp in anno_dict['keypoints']] for anno_dict in anno_list]
+        Ps = [[(kp['x'], kp['y']) for kp in anno_dict['kpts']] for anno_dict in anno_list]
 
         ns = [len(P) for P in Ps]
         univ_size = [anno['univ_size'] for anno in anno_list]
@@ -158,19 +194,11 @@ class GMDataset(Dataset):
         As_tgt = []
         Gs_tgt = []
         Hs_tgt = []
-        for P, n, perm_mat in zip(Ps, ns, perm_mat_list):
+        for P, n in zip(Ps, ns):
             # In multi-graph matching (MGM), when a graph is regarded as target graph, its topology may be different
             # from when it is regarded as source graph. These are represented by suffix "tgt".
-            if cfg.GRAPH.TGT_GRAPH_CONSTRUCT == 'same' and len(Gs) > 0:
-                G = perm_mat.dot(Gs[0])
-                H = perm_mat.dot(Hs[0])
-                A = G.dot(H.transpose())
-                G_tgt = G
-                H_tgt = H
-                A_tgt = G_tgt.dot(H_tgt.transpose())
-            else:
-                A, G, H, _ = build_graphs(P, n, stg=cfg.GRAPH.SRC_GRAPH_CONSTRUCT)
-                A_tgt, G_tgt, H_tgt, _ = build_graphs(P, n, stg=cfg.GRAPH.TGT_GRAPH_CONSTRUCT)
+            A, G, H, _ = build_graphs(P, n, stg=cfg.GRAPH.SRC_GRAPH_CONSTRUCT)
+            A_tgt, G_tgt, H_tgt, _ = build_graphs(P, n, stg=cfg.GRAPH.TGT_GRAPH_CONSTRUCT)
             As.append(A)
             Gs.append(G)
             Hs.append(H)
@@ -184,7 +212,7 @@ class GMDataset(Dataset):
         ret_dict = {
             'Ps': [torch.Tensor(x) for x in Ps],
             'ns': [torch.tensor(x) for x in ns],
-            'gt_perm_mat': perm_mat_list,
+            'gt_perm_mat': perm_mat_dict,
             'Gs': [torch.Tensor(x) for x in Gs],
             'Hs': [torch.Tensor(x) for x in Hs],
             'As': [torch.Tensor(x) for x in As],
@@ -194,10 +222,11 @@ class GMDataset(Dataset):
             'pyg_graphs': pyg_graphs,
             'pyg_graphs_tgt': pyg_graphs_tgt,
             'cls': [str(x) for x in cls],
+            'id_list': id_list,
             'univ_size': [torch.tensor(int(x)) for x in univ_size],
         }
 
-        imgs = [anno['image'] for anno in anno_list]
+        imgs = [anno['img'] for anno in anno_list]
         if imgs[0] is not None:
             trans = transforms.Compose([
                 transforms.ToTensor(),
@@ -205,8 +234,8 @@ class GMDataset(Dataset):
             ])
             imgs = [trans(img) for img in imgs]
             ret_dict['images'] = imgs
-        elif 'feat' in anno_list[0]['keypoints'][0]:
-            feats = [np.stack([kp['feat'] for kp in anno_dict['keypoints']], axis=-1) for anno_dict in anno_list]
+        elif 'feat' in anno_list[0]['kpts'][0]:
+            feats = [np.stack([kp['feat'] for kp in anno_dict['kpts']], axis=-1) for anno_dict in anno_list]
             ret_dict['features'] = [torch.Tensor(x) for x in feats]
 
         return ret_dict
@@ -312,6 +341,9 @@ def collate_fn(data: list):
             ret = pyg.data.Batch.from_data_list(inp)
         elif type(inp[0]) == str:
             ret = inp
+        elif type(inp[0]) == tuple:
+            ret = inp
+
         else:
             raise ValueError('Cannot handle type {}'.format(type(inp[0])))
         return ret
@@ -333,7 +365,7 @@ def collate_fn(data: list):
             K1H = CSRMatrix3d(K1H).transpose()
 
             ret['KGHs'] = K1G, K1H
-        elif cfg.PROBLEM.TYPE in ['MGM', 'MGMC'] and 'Gs_tgt' in ret and 'Hs_tgt' in ret:
+        elif cfg.PROBLEM.TYPE in ['MGM', 'MGM3'] and 'Gs_tgt' in ret and 'Hs_tgt' in ret:
             ret['KGHs'] = dict()
             for idx_1, idx_2 in product(range(len(ret['Gs'])), repeat=2):
                 # 1 as source graph, 2 as target graph

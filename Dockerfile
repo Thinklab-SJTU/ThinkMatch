@@ -12,7 +12,7 @@ RUN apt-get install -y ninja-build findutils libhdf5-serial-dev git wget libssl-
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.19.1/cmake-3.19.1.tar.gz && tar zxvf cmake-3.19.1.tar.gz
 RUN cd cmake-3.19.1 && ./bootstrap && make && make install
 
-RUN /opt/conda/bin/pip install tensorboardX scipy easydict pyyaml xlrd xlwt pynvml
+RUN /opt/conda/bin/pip install tensorboardX scipy easydict pyyaml xlrd xlwt pynvml pygmtools
 RUN /opt/conda/bin/python -m pip install git+https://git@github.com/rogerwwww/lpmp.git
 
 ENV CUDA=cu101 TORCH=1.6.0

@@ -12,6 +12,8 @@ DATALOADER_NUM: 2
 
 RANDOM_SEED: 123
 
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_cie_willow.pt
+
 # available GPU ids
 GPUS:
   - 0
@@ -23,6 +25,7 @@ PROBLEM:
   RESCALE:  # rescaled image size
     - 256
     - 256
+  FILTER: 'intersection'
 
 # Graph construction settings
 GRAPH:
@@ -44,7 +47,7 @@ TRAIN:
   LOSS_FUNC: hung
 
   # learning rate
-  LR: 1.0e-4
+  LR: 1.2e-4 # 1.0e-4
   MOMENTUM: 0.9
   LR_DECAY: 0.2
   LR_STEP:  # (in epochs)

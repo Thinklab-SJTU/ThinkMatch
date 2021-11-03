@@ -7,6 +7,8 @@ MODULE: models.NGM.hypermodel
 
 BACKBONE: VGG16_bn
 
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_nhgm_willow.pt
+
 BATCH_SIZE: 8
 DATALOADER_NUM: 2
 
@@ -23,6 +25,7 @@ PROBLEM:
   RESCALE:  # rescaled image size
     - 256
     - 256
+  FILTER: 'intersection'
 
 # Graph construction settings
 GRAPH:
@@ -39,7 +42,7 @@ TRAIN:
   LOSS_FUNC: perm
 
   # learning rate
-  LR: 1.0e-3
+  LR: 2.0e-3 #1.0e-3
   MOMENTUM: 0.9
   LR_DECAY: 0.1
   LR_STEP:  # (in epochs)

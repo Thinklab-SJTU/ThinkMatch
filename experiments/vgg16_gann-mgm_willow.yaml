@@ -13,6 +13,8 @@ FP16: False
 
 RANDOM_SEED: 123
 
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_gann-mgm_willow.pt
+
 # available GPU ids
 GPUS:
   - 0
@@ -26,6 +28,7 @@ PROBLEM:
     - 256
   NUM_GRAPHS: 8
   TEST_ALL_GRAPHS: True
+  FILTER: 'unfiltered'
 
 # Graph construction settings
 GRAPH:
@@ -46,7 +49,7 @@ TRAIN:
   LOSS_FUNC: perm
 
   # learning rate
-  LR: 1.0e-3
+  LR: 9.5e-4 # 1.0e-3
   MOMENTUM: 0.9
   LR_DECAY: 0.1
   LR_STEP:  # (in epochs)

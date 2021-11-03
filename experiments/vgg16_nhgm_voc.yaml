@@ -13,6 +13,8 @@ FP16: False
 
 RANDOM_SEED: 123
 
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_nhgm_voc.pt
+
 # available GPU ids
 GPUS:
   - 0
@@ -24,6 +26,7 @@ PROBLEM:
   RESCALE:  # rescaled image size
     - 256
     - 256
+  FILTER: 'intersection'
 
 # Graph construction settings
 GRAPH:
@@ -40,7 +43,7 @@ TRAIN:
   LOSS_FUNC: perm
 
   # learning rate
-  LR: 1.0e-2
+  LR: 2.0e-2 #1.0e-2
   MOMENTUM: 0.9
   LR_DECAY: 0.1
   LR_STEP:  # (in epochs)

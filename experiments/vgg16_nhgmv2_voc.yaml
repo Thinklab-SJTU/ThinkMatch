@@ -7,14 +7,14 @@ MODULE: models.NGM.hypermodel_v2
 
 BACKBONE: VGG16_bn_final
 
-PRETRAINED_PATH: pretrained_weights/pretrained_params_vgg16_ngmv2_voc.pt  # init model for training
-# PRETRAINED_PATH: pretrained_weights/pretrained_params_vgg16_nhgmv2_voc.pt  # test with pretrained model
-
 BATCH_SIZE: 8
 DATALOADER_NUM: 2
 FP16: False
 
 RANDOM_SEED: 123
+
+PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_ngmv2_voc.pt  # init model for training
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_nhgmv2_voc.pt  # test with pretrained model
 
 # available GPU ids
 GPUS:
@@ -27,6 +27,7 @@ PROBLEM:
   RESCALE:  # rescaled image size
     - 256
     - 256
+  FILTER: 'intersection'
 
 # Graph construction settings
 GRAPH:

@@ -27,8 +27,7 @@ PAIR:
     - 16
   GT_GRAPH_CONSTRUCT: tri
   REF_GRAPH_CONSTRUCT: fc
-  REF_OUTLIER: True
-  GT_OUTLIER: True
+  FILTER: 'unfiltered'
 
 CUB2011:
   CLASS_SPLIT: all

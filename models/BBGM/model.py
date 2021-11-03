@@ -54,8 +54,7 @@ class Net(CNN):
         if cfg.PROBLEM.TYPE == '2GM' and 'gt_perm_mat' in data_dict:
             gt_perm_mats = [data_dict['gt_perm_mat']]
         elif cfg.PROBLEM.TYPE == 'MGM' and 'gt_perm_mat' in data_dict:
-            perm_mat_list = data_dict['gt_perm_mat']
-            gt_perm_mats = [torch.bmm(pm_src, pm_tgt.transpose(1, 2)) for pm_src, pm_tgt in lexico_iter(perm_mat_list)]
+            gt_perm_mats = data_dict['gt_perm_mat'].values()
         else:
             raise ValueError('Ground truth information is required during training.')
 
@@ -149,7 +148,6 @@ class Net(CNN):
             data_dict.update({
                 'perm_mat_list': matchings,
                 'graph_indices': indices,
-                'gt_perm_mat_list': gt_perm_mats
             })
 
         return data_dict

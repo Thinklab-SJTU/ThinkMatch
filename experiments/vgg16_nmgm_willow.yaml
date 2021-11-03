@@ -25,6 +25,7 @@ PROBLEM:
     - 256
     - 256
   NUM_GRAPHS: 10
+  FILTER: 'intersection'
 
 GRAPH:
   SRC_GRAPH_CONSTRUCT: tri

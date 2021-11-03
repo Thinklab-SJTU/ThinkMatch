@@ -28,6 +28,7 @@ PROBLEM:
   NUM_CLUSTERS: 3
   TRAIN_ALL_GRAPHS: False
   TEST_ALL_GRAPHS: False
+  FILTER: 'unfiltered'
 
 # Graph construction settings
 GRAPH:

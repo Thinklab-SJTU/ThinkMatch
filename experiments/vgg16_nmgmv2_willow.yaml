@@ -7,13 +7,14 @@ MODULE: models.NGM.model_v2
 
 BACKBONE: VGG16_bn_final
 
-# PRETRAINED_PATH: pretrained_weights/pretrained_params_vgg16_nmgmv2_willow.pt
-
 BATCH_SIZE: 2
 DATALOADER_NUM: 0
 FP16: False
 
 RANDOM_SEED: 123
+
+PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_ngmv2_willow.pt
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_nmgmv2_willow.pt
 
 STATISTIC_STEP: 10
 
@@ -29,6 +30,7 @@ PROBLEM:
     - 256
     - 256
   NUM_GRAPHS: 10
+  FILTER: 'intersection'
 
 # Graph construction settings
 GRAPH:
@@ -52,9 +54,9 @@ TRAIN:
   OPTIMIZER: Adam
 
   # learning rate
-  LR: 2.e-3
+  LR: 2.e-3 # 8.e-4
   SEPARATE_BACKBONE_LR: True
-  BACKBONE_LR: 2.e-5
+  BACKBONE_LR: 2.e-5 # 8.e-6
   MOMENTUM: 0.9
   LR_DECAY: 0.5
   LR_STEP:  # (in epochs)

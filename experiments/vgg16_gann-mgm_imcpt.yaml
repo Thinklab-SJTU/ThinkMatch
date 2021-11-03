@@ -18,6 +18,8 @@ GPUS:
   - 0
 #  - 1
 
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_gann-mgm_imcpt.pt
+
 # Problem configuration
 PROBLEM:
   TYPE: MGM
@@ -27,6 +29,7 @@ PROBLEM:
   NUM_GRAPHS: 5
   TRAIN_ALL_GRAPHS: False
   TEST_ALL_GRAPHS: False
+  FILTER: 'unfiltered'
 
 # Graph construction settings
 GRAPH:

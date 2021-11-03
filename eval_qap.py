@@ -13,7 +13,7 @@ from src.utils.data_to_cuda import data_to_cuda
 from src.utils.config import cfg
 
 
-def eval_model(model, alphas, dataloader, eval_epoch=None, verbose=False):
+def eval_model(model, dataloader, eval_epoch=None, verbose=False):
     print('Start evaluation...')
     since = time.time()
 
@@ -31,7 +31,6 @@ def eval_model(model, alphas, dataloader, eval_epoch=None, verbose=False):
     classes = ds.classes
     cls_cache = ds.cls
 
-    pcks = torch.zeros(len(classes), len(alphas), device=device)
     accs = torch.zeros(len(classes), device=device)
 
     wb = xlwt.Workbook()
@@ -52,8 +51,6 @@ def eval_model(model, alphas, dataloader, eval_epoch=None, verbose=False):
         iter_num = 0
 
         ds.cls = cls
-        pck_match_num = torch.zeros(len(alphas), device=device)
-        pck_total_num = torch.zeros(len(alphas), device=device)
         acc_match_num = torch.zeros(1, device=device)
         acc_total_num = torch.zeros(1, device=device)
         rel_sum = torch.zeros(1, device=device)
@@ -106,12 +103,8 @@ def eval_model(model, alphas, dataloader, eval_epoch=None, verbose=False):
                 print('Class {:<8} Iteration {:<4} {:>4.2f}sample/s'.format(cls, iter_num, running_speed))
                 running_since = time.time()
 
-        pcks[i] = pck_match_num / pck_total_num
         accs[i] = acc_match_num / acc_total_num
         if verbose:
-            print('Class {} PCK@{{'.format(cls) +
-                  ', '.join(list(map('{:.2f}'.format, alphas.tolist()))) + '} = {' +
-                  ', '.join(list(map('{:.4f}'.format, pcks[i].tolist()))) + '}')
             print('Class {} acc = {:.4f}'.format(cls, accs[i]))
 
     time_elapsed = time.time() - since
@@ -122,12 +115,6 @@ def eval_model(model, alphas, dataloader, eval_epoch=None, verbose=False):
 
     # print result
     print('mean relative: {:.4f}'.format(float(rel_sum / rel_num)))
-
-    for i in range(len(alphas)):
-        print('PCK@{:.2f}'.format(alphas[i]))
-        for cls, single_pck in zip(classes, pcks[:, i]):
-            print('{} = {:.4f}'.format(cls, single_pck))
-        print('average = {:.4f}'.format(torch.mean(pcks[:, i])))
 
     print('Matching accuracy')
     for cls, single_acc in zip(classes, accs):
@@ -171,8 +158,7 @@ if __name__ == '__main__':
     now_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     with DupStdoutFileManager(str(Path(cfg.OUTPUT_PATH) / ('eval_log_' + now_time + '.log'))) as _:
         print_easydict(cfg)
-        alphas = torch.tensor(cfg.EVAL.PCK_ALPHAS, dtype=torch.float32, device=device)
         classes = dataloader.dataset.classes
-        pcks = eval_model(model, alphas, dataloader,
+        accs = eval_model(model, dataloader,
                           eval_epoch=cfg.EVAL.EPOCH if cfg.EVAL.EPOCH != 0 else None,
                           verbose=True)

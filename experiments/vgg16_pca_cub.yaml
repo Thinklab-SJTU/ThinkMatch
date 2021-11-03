@@ -23,6 +23,7 @@ PROBLEM:
   RESCALE:  # rescaled image size
     - 256
     - 256
+  FILTER: 'unfiltered'
 
 # CUB2011 dataset settings
 CUB2011:

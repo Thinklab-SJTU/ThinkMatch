@@ -7,13 +7,13 @@ MODULE: models.NGM.model_v2
 
 BACKBONE: VGG16_bn_final
 
-# PRETRAINED_PATH: pretrained_weights/pretrained_params_vgg16_ngmv2_voc.pt
-
 BATCH_SIZE: 8
 DATALOADER_NUM: 2
 FP16: False
 
 RANDOM_SEED: 123
+
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_ngmv2_voc.pt
 
 # available GPU ids
 GPUS:
@@ -26,6 +26,7 @@ PROBLEM:
   RESCALE:  # rescaled image size
     - 256
     - 256
+  FILTER: 'intersection'
 
 # Graph construction settings
 GRAPH:
@@ -44,7 +45,7 @@ TRAIN:
   OPTIMIZER: Adam
 
   # learning rate
-  LR: 2.e-3
+  LR: 2.e-3 # 2.e-3
   SEPARATE_BACKBONE_LR: True
   BACKBONE_LR: 2.e-5
   MOMENTUM: 0.9

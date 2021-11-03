@@ -89,11 +89,8 @@ class Net(CNN):
                     'graph_indices': indices,
                 })
             else:
-                gt_perm_mats = data_dict['gt_perm_mat']
-                gt_x = [torch.bmm(gt_perm_mats[idx1], gt_perm_mats[idx2].transpose(1, 2)) for idx1, idx2 in indices]
                 data_dict.update({
                     'perm_mat_list': multi_graph_preds,
-                    'gt_perm_mat_list': gt_x,
                     'graph_indices': indices,
                 })
 

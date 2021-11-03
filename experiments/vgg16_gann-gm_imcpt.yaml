@@ -24,8 +24,7 @@ PROBLEM:
   RESCALE:  # rescaled image size
     - 256
     - 256
-  SRC_OUTLIER: True
-  TGT_OUTLIER: True
+  FILTER: 'unfiltered'
 
 # Graph construction settings
 GRAPH:

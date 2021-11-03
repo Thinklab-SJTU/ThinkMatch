@@ -13,6 +13,8 @@ FP16: False
 
 RANDOM_SEED: 123
 
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_bbgm_willow.pt
+
 STATISTIC_STEP: 100
 
 # available GPU ids
@@ -26,6 +28,7 @@ PROBLEM:
   RESCALE:  # rescaled image size
     - 256
     - 256
+  FILTER: 'intersection'
 
 # Graph construction settings
 GRAPH:
@@ -49,11 +52,11 @@ TRAIN:
   OPTIMIZER: Adam
 
   # learning rate
-  LR: 2.e-3
+  LR: 4.e-3 # 2.e-3
   SEPARATE_BACKBONE_LR: True
-  BACKBONE_LR: 2.e-5
+  BACKBONE_LR: 4.e-5 # 2.e-5
   MOMENTUM: 0.9
-  LR_DECAY: 0.5
+  LR_DECAY: 0.5 # 0.5
   LR_STEP:  # (in epochs)
     - 1
 

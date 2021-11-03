@@ -98,7 +98,7 @@ _ThinkMatch_ includes the flowing datasets with the provided benchmarks:
 * **IMC-PT-SparseGM**
 
 **TODO** We also plan to include the following datasets in the future:
-* **SPair-21k**
+* **SPair-71k**
 * **Synthetic data**
 
 _ThinkMatch_ also supports the following graph matching settings:
@@ -108,6 +108,17 @@ _ThinkMatch_ also supports the following graph matching settings:
 
 ## Get Started
 
+### Singularity (RECOMMENDED)
+
+1. Build the singularity container from the provided definition file:
+    ```bash
+    singularity build dl-of-gm.sif singularity.def
+    ```
+2. Run training by the script ``singularity_run.sh``:
+    ```bash
+    ./singularity_run.sh <gpuid> <path/to/your/yaml> [main/file (optional, defualt is train_eval.py)]
+    ```
+
 ### Docker (RECOMMENDED)
 
 1. We maintain a prebuilt image at [dockerhub](https://hub.docker.com/r/runzhongwang/thinkmatch): ``runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3``. It can be used by docker or other container runtimes that support docker images e.g. [singularity](https://sylabs.io/singularity/).
@@ -116,18 +127,22 @@ _ThinkMatch_ also supports the following graph matching settings:
 ### Manual configuration (for Ubuntu)
 This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1.6, cuda10.1, cudnn7 and torch-geometric 1.6.3.
 1. Install and configure Pytorch 1.6 (with GPU support).
+
 1. Install ninja-build: ``apt-get install ninja-build``
+
 1. Install python packages:
     ```bash
-    pip install tensorboardX scipy easydict pyyaml xlrd xlwt pynvml
+    pip install tensorboardX scipy easydict pyyaml xlrd xlwt pynvml pygmtools
    ```
+
 1. Install building tools for LPMP:
     ```bash
     apt-get install -y findutils libhdf5-serial-dev git wget libssl-dev
-    
+
     wget https://github.com/Kitware/CMake/releases/download/v3.19.1/cmake-3.19.1.tar.gz && tar zxvf cmake-3.19.1.tar.gz
     cd cmake-3.19.1 && ./bootstrap && make && make install
     ```
+
 1. Install and build LPMP:
     ```bash
    python -m pip install git+https://git@github.com/rogerwwww/lpmp.git
@@ -137,10 +152,11 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
    apt-get update
    apt-get install -y software-properties-common
    add-apt-repository ppa:ubuntu-toolchain-r/test
-   
+
    apt-get install -y gcc-9 g++-9
    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9
    ```
+
 1. Install torch-geometric:
     ```bash
     export CUDA=cu101
@@ -151,10 +167,12 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
     /opt/conda/bin/pip install torch-spline-conv==1.2.0 -f https://pytorch-geometric.com/whl/torch-${TORCH}+${CUDA}.html
     /opt/conda/bin/pip install torch-geometric==1.6.3
    ```
+
 1. If you have configured ``gcc-9`` to build LPMP, be sure to switch back to ``gcc-7`` because this code repository is based on ``gcc-7``. Here is also an example:
+
     ```bash
     update-alternatives --remove gcc /usr/bin/gcc-9
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
+   update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
    ```
 
 ### Available datasets
@@ -247,7 +265,7 @@ python train_eval.py --cfg experiments/vgg16_pca_voc.yaml
 Default configuration files are stored in``experiments/`` and you are welcomed to try your own configurations. If you find a better yaml configuration, please let us know by raising an issue or a PR and we will update the benchmark!
 
 ## Pretrained Models
-_ThinkMatch_ provides pretrained models. The model weights are available via [google drive](https://drive.google.com/drive/folders/11xAQlaEsMrRlIVc00nqWrjHf8VOXUxHQ?usp=sharing).
+_ThinkMatch_ provides pretrained models. The model weights are available via [google drive](https://drive.google.com/drive/folders/11xAQlaEsMrRlIVc00nqWrjHf8VOXUxHQ?usp=sharing) and [SJTU jbox](https://jbox.sjtu.edu.cn/l/L04xX3)
 
 To use the pretrained models, firstly download the weight files, then add the following line to your yaml file:
 ```yaml

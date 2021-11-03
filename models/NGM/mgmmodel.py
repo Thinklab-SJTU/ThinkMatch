@@ -139,7 +139,6 @@ class Net(CNN):
         pred_s = []
         pred_x = []
         indices = []
-        gt_x = []
 
         for src, tgt in combinations(feat_list, 2):
             # pca forward
@@ -166,23 +165,18 @@ class Net(CNN):
 
         matching_s = torch.stack(matching_s, dim=0)
 
-        gt_perm_mats = data_dict['gt_perm_mat']
-
         for idx1, idx2 in combinations(range(len(data)), 2):
             s = matching_s[:, joint_indices[idx1]:joint_indices[idx1+1], joint_indices[idx2]:joint_indices[idx2+1]]
             s = self.sinkhorn2(s)
-            x = torch.bmm(gt_perm_mats[idx1], gt_perm_mats[idx2].transpose(1, 2))
 
             pred_s.append(s)
             pred_x.append(hungarian(s))
             indices.append((idx1, idx2))
-            gt_x.append(x)
 
         data_dict.update({
             'ds_mat_list': pred_s,
             'perm_mat_list': pred_x,
             'graph_indices': indices,
-            'gt_perm_mat_list': gt_x
         })
         return data_dict
 

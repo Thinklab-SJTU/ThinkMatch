@@ -32,7 +32,7 @@ If docker is not available, we provide detailed steps to install the requirement
 #. Install python packages:
     ::
 
-        pip install tensorboardX scipy easydict pyyaml xlrd xlwt pynvml
+        pip install tensorboardX scipy easydict pyyaml xlrd xlwt pynvml pygmtools
 
 #. Install building tools for LPMP:
     ::

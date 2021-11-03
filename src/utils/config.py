@@ -1,9 +1,7 @@
 """Graph matching config system.
-
 This file specifies default config options for Fast R-CNN. You should not
 change values in this file. Instead, you should write a config file (in yaml)
 and use cfg_from_file(yaml_file) to load it and override the default options.
-
 Most tools in $ROOT/tools take a --cfg option to specify an override file.
     - See tools/{train,test}_net.py for example code that uses cfg_from_file()
     - See experiments/cfgs/*.yml for example YAML config override files
@@ -38,14 +36,17 @@ __C.PROBLEM.UNSUPERVISED = False
 # Rescaled image size
 __C.PROBLEM.RESCALE = (256, 256)
 
+# Filter of the keypoint. Chosen from 'intersection', 'inclusion', 'unfiltered'
+__C.PROBLEM.FILTER = 'intersection'
+
 # Do not include the problem if n_1 x n_2 > MAX_PROB_SIZE. -1 for no filtering
 __C.PROBLEM.MAX_PROB_SIZE = -1
 
-# Allow outlier in source graph. Useful for 2GM
-__C.PROBLEM.SRC_OUTLIER = False
-
-# Allow outlier in target graph. Useful for 2GM
-__C.PROBLEM.TGT_OUTLIER = False
+# # Allow outlier in source graph. Useful for 2GM
+# __C.PROBLEM.SRC_OUTLIER = False
+#
+# # Allow outlier in target graph. Useful for 2GM
+# __C.PROBLEM.TGT_OUTLIER = False
 
 # Number of graphs in a MGM/MGMC problem. Useful for MGM & MGMC
 # No effect if TEST_ALL_GRAPHS/TRAIN_ALL_GRAPHS=True
@@ -125,7 +126,6 @@ __C.TRAIN.CLASS = 'none'
 # Loss function. Should be 'offset' or 'perm'
 __C.TRAIN.LOSS_FUNC = 'perm'
 
-
 #
 # Evaluation options
 #
@@ -144,7 +144,6 @@ __C.EVAL.SAMPLES = 1000
 
 # Evaluated classes
 __C.EVAL.CLASS = 'all'
-
 
 #
 # MISC
@@ -256,8 +255,10 @@ def cfg_from_file(filename):
         mod = importlib.import_module(model_cfg_module)
         __C.update(mod.model_cfg)
 
-    if 'DATASET_FULL_NAME' in yaml_cfg and yaml_cfg.DATASET_FULL_NAME not in __C:
-        __C[yaml_cfg.DATASET_FULL_NAME] = src.dataset.dataset_cfg[yaml_cfg.DATASET_FULL_NAME]
+    if 'DATASET_FULL_NAME' in yaml_cfg and yaml_cfg.DATASET_FULL_NAME in yaml_cfg \
+        and yaml_cfg.DATASET_FULL_NAME not in __C:
+        __C[yaml_cfg.DATASET_FULL_NAME] = yaml_cfg[yaml_cfg.DATASET_FULL_NAME]
+
 
     _merge_a_into_b(yaml_cfg, __C)
 

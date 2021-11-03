@@ -30,8 +30,6 @@ def train_eval_model(model,
     device = next(model.parameters()).device
     print('model on device: {}'.format(device))
 
-    alphas = torch.tensor(cfg.EVAL.PCK_ALPHAS, dtype=torch.float32, device=device)  # for evaluation
-
     checkpoint_path = Path(cfg.OUTPUT_PATH) / 'params'
     if not checkpoint_path.exists():
         checkpoint_path.mkdir(parents=True)
@@ -124,7 +122,6 @@ def train_eval_model(model,
                     loss_dict = {'loss_{}'.format(i): l.item() for i, l in enumerate(multi_loss)}
                     loss_dict['loss'] = loss.item()
                     tfboard_writer.add_scalars('loss', loss_dict, epoch * cfg.TRAIN.EPOCH_ITERS + iter_num)
-                    #accdict = {'PCK@{:.2f}'.format(a): p for a, p in zip(alphas, pck)}
                     accdict = dict()
                     accdict['matching accuracy'] = acc
                     tfboard_writer.add_scalars(
@@ -162,11 +159,7 @@ def train_eval_model(model,
         print()
 
         # Eval in each epoch
-        #print('training set')
-        #accs = eval_model(model, alphas, dataloader['train'])
-        #print()
-        #print('testing set')
-        accs = eval_model(model, alphas, dataloader['test'])
+        accs = eval_model(model, dataloader['test'])
         acc_dict = {"{}".format(cls): single_acc for cls, single_acc in zip(dataloader['train'].dataset.classes, accs)}
         acc_dict['average'] = torch.mean(accs)
         tfboard_writer.add_scalars(

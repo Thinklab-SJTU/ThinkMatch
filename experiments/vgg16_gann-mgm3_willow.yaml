@@ -13,6 +13,8 @@ FP16: False
 
 RANDOM_SEED: 857142
 
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_gann-mgmc_willow.pt
+
 # available GPU ids
 GPUS:
   - 0
@@ -27,6 +29,7 @@ PROBLEM:
   NUM_GRAPHS: 8
   NUM_CLUSTERS: 3
   TEST_ALL_GRAPHS: True
+  FILTER: 'unfiltered'
 
 # Graph construction settings
 GRAPH:
