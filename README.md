@@ -108,17 +108,6 @@ _ThinkMatch_ also supports the following graph matching settings:
 
 ## Get Started
 
-### Singularity (RECOMMENDED)
-
-1. Build the singularity container from the provided definition file:
-    ```bash
-    singularity build dl-of-gm.sif singularity.def
-    ```
-2. Run training by the script ``singularity_run.sh``:
-    ```bash
-    ./singularity_run.sh <gpuid> <path/to/your/yaml> [main/file (optional, defualt is train_eval.py)]
-    ```
-
 ### Docker (RECOMMENDED)
 
 1. We maintain a prebuilt image at [dockerhub](https://hub.docker.com/r/runzhongwang/thinkmatch): ``runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3``. It can be used by docker or other container runtimes that support docker images e.g. [singularity](https://sylabs.io/singularity/).
