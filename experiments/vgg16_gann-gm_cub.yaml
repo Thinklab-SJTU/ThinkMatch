@@ -1,0 +1,84 @@
+MODEL_NAME: vgg16_gann-gm
+DATASET_NAME: cub
+
+DATASET_FULL_NAME: CUB2011
+
+MODULE: models.GANN.model
+
+BACKBONE: VGG16_bn
+
+BATCH_SIZE: 1
+DATALOADER_NUM: 0
+FP16: False
+
+RANDOM_SEED: 123
+
+# available GPU ids
+GPUS:
+  - 0
+#  - 1
+
+# Problem configuration
+PROBLEM:
+  TYPE: 2GM
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+  SRC_OUTLIER: True
+  TGT_OUTLIER: True
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: fc
+  TGT_GRAPH_CONSTRUCT: fc
+  SYM_ADJACENCY: True
+
+# CUB2011 dataset settings
+CUB2011:
+  CLASS_SPLIT: ori
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 0
+  NUM_EPOCHS: 20
+
+  LOSS_FUNC: perm
+
+  # learning rate
+  LR: 1.0e-3
+  MOMENTUM: 0.9
+  LR_DECAY: 0.1
+  LR_STEP:  # (in epochs)
+    - 10
+
+  EPOCH_ITERS: 200  # iterations per epoch
+
+  CLASS: none
+
+# Evaluation settings
+EVAL:
+  EPOCH: 20  # epoch to be tested
+  SAMPLES: 10  # number of tested pairs for each class
+
+# model parameters
+GANN:
+  FEATURE_CHANNEL: 1024
+  SK_ITER_NUM: 200
+  SK_TAU: 0.05
+  SK_EPSILON: 1.0e-10
+  UNIV_SIZE: 15
+  MGM_ITER:
+    - 1000
+  INIT_TAU:
+    - 0.05
+  BETA:
+    - 0.9
+    - 0.
+  GAMMA: 0.8
+  CONVERGE_TOL: 1.0e-3
+  MIN_TAU:
+    - 1.0e-3
+    - 1.0e-3
+  SCALE_FACTOR: 1.
+  QUAD_WEIGHT: 0.05

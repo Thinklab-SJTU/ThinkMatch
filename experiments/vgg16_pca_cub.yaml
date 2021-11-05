@@ -1,0 +1,69 @@
+MODEL_NAME: vgg16_pca
+DATASET_NAME: cub
+
+DATASET_FULL_NAME: CUB2011
+
+MODULE: models.PCA.model
+
+BACKBONE: VGG16_bn
+
+BATCH_SIZE: 8
+DATALOADER_NUM: 2
+
+RANDOM_SEED: 123
+
+# available GPU ids
+GPUS:
+  - 0
+#  - 1
+
+# Problem configuration
+PROBLEM:
+  TYPE: 2GM
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+
+# CUB2011 dataset settings
+CUB2011:
+  CLASS_SPLIT: all
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: tri
+  TGT_GRAPH_CONSTRUCT: tri
+  SYM_ADJACENCY: True
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 0
+  NUM_EPOCHS: 20
+
+  LOSS_FUNC: perm
+
+  # learning rate
+  LR: 1.0e-3
+  MOMENTUM: 0.9
+  LR_DECAY: 0.1
+  LR_STEP:  # (in epochs)
+    - 10 #4
+
+  EPOCH_ITERS: 2000  # iterations per epoch
+
+  CLASS: none
+
+# Evaluation settings
+EVAL:
+  EPOCH: 30  # epoch to be tested
+  SAMPLES: 1000  # number of tested pairs for each class
+
+# PCA model parameters
+PCA:
+  FEATURE_CHANNEL: 512
+  SK_ITER_NUM: 20
+  SK_EPSILON: 1.0e-10
+  SK_TAU: 0.05
+  GNN_FEAT: 2048
+  GNN_LAYER: 2
+  CROSS_ITER: False

@@ -1,0 +1,67 @@
+MODEL_NAME: vgg16_gmn
+DATASET_NAME: willow
+
+DATASET_FULL_NAME: WillowObject
+
+MODULE: models.GMN.model
+
+BACKBONE: VGG16_bn
+
+BATCH_SIZE: 8
+
+RANDOM_SEED: 123
+
+# available GPU ids
+GPUS:
+  - 0
+
+# Problem configuration
+PROBLEM:
+  TYPE: 2GM
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: tri
+  TGT_GRAPH_CONSTRUCT: fc
+  SYM_ADJACENCY: True
+
+# Willow object class dataset configuration
+WillowObject:
+  TRAIN_NUM: 20  # number of images for training set
+  SPLIT_OFFSET: 0  # the starting index of training set
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 0
+  NUM_EPOCHS: 30
+
+  LOSS_FUNC: offset
+
+  # learning rate
+  LR: 1.0e-4
+  MOMENTUM: 0.9
+  LR_DECAY: 0.1
+  LR_STEP:  # (in epochs)
+    - 10
+    - 20
+
+  EPOCH_ITERS: 1000  # iterations per epoch
+
+# Evaluation settings
+EVAL:
+  EPOCH: 30  # epoch to be tested
+  SAMPLES: 100  # number of tested pairs for each class
+
+# GMN model parameters
+GMN:
+  FEATURE_CHANNEL: 512
+  PI_ITER_NUM: 25
+  PI_STOP_THRESH: 1.0e-3
+  BS_ITER_NUM: 20
+  BS_EPSILON: 1.0e-10
+  VOTING_ALPHA: 200.
+  GM_SOLVER: SM

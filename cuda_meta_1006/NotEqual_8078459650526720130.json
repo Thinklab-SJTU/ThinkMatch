@@ -1,0 +1,10 @@
+{
+"kernelName" : "NotEqual_8078459650526720130_kernel0",
+"blockIdx.x" : 1,
+"blockIdx.y" : 1,
+"blockIdx.z" : 1,
+"threadIdx.x" : 1024,
+"threadIdx.y" : 1,
+"threadIdx.z" : 1,
+"sha256" : "1bc9330e27a1f34badcf40042348ada42f89cfac0e9c06afc923675dadde08e7"
+}

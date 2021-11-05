@@ -1,0 +1,10 @@
+{
+"kernelName" : "LogicalOr_6733249172694870344_kernel0",
+"blockIdx.x" : 1,
+"blockIdx.y" : 1,
+"blockIdx.z" : 1,
+"threadIdx.x" : 1024,
+"threadIdx.y" : 1,
+"threadIdx.z" : 1,
+"sha256" : "d188fa45778012d02566f8c372ad81063210ee89a4a199ce6bd1d8f5f2ea03e0"
+}
