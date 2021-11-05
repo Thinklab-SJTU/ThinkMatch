@@ -127,7 +127,7 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
 1. Install building tools for LPMP:
     ```bash
     apt-get install -y findutils libhdf5-serial-dev git wget libssl-dev
-
+    
     wget https://github.com/Kitware/CMake/releases/download/v3.19.1/cmake-3.19.1.tar.gz && tar zxvf cmake-3.19.1.tar.gz
     cd cmake-3.19.1 && ./bootstrap && make && make install
     ```
@@ -141,7 +141,7 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
    apt-get update
    apt-get install -y software-properties-common
    add-apt-repository ppa:ubuntu-toolchain-r/test
-
+    
    apt-get install -y gcc-9 g++-9
    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9
    ```
@@ -165,10 +165,13 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
    ```
 
 ### Available datasets
+
+Note: All following datasets can be automatically downloaded and unzipped by `pygmtools`, but you can also download the dataset yourself if a download failure occurs.
+
 1. PascalVOC-Keypoint
-    1. Download [VOC2011 dataset](http://host.robots.ox.ac.uk/pascal/VOC/voc2011/index.html) and make sure it looks like ``data/PascalVOC/VOC2011``
+    1. Download [VOC2011 dataset](http://host.robots.ox.ac.uk/pascal/VOC/voc2011/index.html) and make sure it looks like ``data/PascalVOC/TrainVal/VOCdevkit/VOC2011``
     1. Download keypoint annotation for VOC2011 from [Berkeley server](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/shape/poselets/voc2011_keypoints_Feb2012.tgz) or [google drive](https://drive.google.com/open?id=1D5o8rmnY1-DaDrgAXSygnflX5c-JyUWR) and make sure it looks like ``data/PascalVOC/annotations``
-    1. The train/test split is available in ``data/PascalVOC/voc2011_pairs.npz``
+    1. The train/test split is available in ``data/PascalVOC/voc2011_pairs.npz``. **This file must be added manually.**
 
     Please cite the following papers if you use PascalVOC-Keypoint dataset:
     ```
@@ -180,7 +183,7 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
       pages={303–338},
       year={2010}
     }
-
+    
     @inproceedings{BourdevICCV09,
       title={Poselets: Body part detectors trained using 3d human pose annotations},
       author={Bourdev, L. and Malik, J.},
@@ -192,7 +195,7 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
     ```
 1. Willow-Object-Class
     1. Download [Willow-ObjectClass dataset](http://www.di.ens.fr/willow/research/graphlearning/WILLOW-ObjectClass_dataset.zip)
-    1. Unzip the dataset and make sure it looks like ``data/WILLOW-ObjectClass``
+    1. Unzip the dataset and make sure it looks like ``data/WillowObject/WILLOW-ObjectClass``
 
     Please cite the following paper if you use Willow-Object-Class dataset:
     ```
@@ -206,7 +209,7 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
     ```
 1. CUB2011
     1. Download [CUB-200-2011 dataset](http://www.vision.caltech.edu/visipedia-data/CUB-200-2011/CUB_200_2011.tgz).
-    1. Unzip the dataset and make sure it looks like ``data/CUB_200_2011``
+    1. Unzip the dataset and make sure it looks like ``data/CUB_200_2011/CUB_200_2011``
 
     Please cite the following report if you use CUB2011 dataset:
     ```
@@ -220,7 +223,7 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
     ```
 1. IMC-PT-SparseGM
     1. Download the IMC-PT-SparseGM dataset from [google drive](https://drive.google.com/file/d/1Po9pRMWXTqKK2ABPpVmkcsOq-6K_2v-B/view?usp=sharing) or [baidu drive (code: 0576)](https://pan.baidu.com/s/1hlJdIFp4rkiz1Y-gztyHIw)
-    1. Unzip the dataset and make sure it looks like ``data/IMC_PT_SparseGM/annotation``
+    1. Unzip the dataset and make sure it looks like ``data/IMC_PT_SparseGM/annotations``
 
     Please cite the following papers if you use IMC-PT-SparseGM dataset:
     ```
@@ -231,7 +234,7 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
       pages={517--547},
       year={2021}
     }
-
+    
     @unpublished{WangPAMIsub21,
       title={Robust Self-supervised Learning of Deep Graph Matching with Mixture of Modes},
       author={Wang, Runzhong and Jiang, Shaofei and Yan, Junchi and Yang, Xiaokang},
@@ -239,6 +242,9 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
       year={2021}
     }
     ```
+
+For more information, please see [pygmtools](https://pypi.org/project/pygmtools/).
+
 ## Run the Experiment
 
 Run training and evaluation
