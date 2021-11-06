@@ -20,7 +20,7 @@ Only 2GM problem is supported now.
 
 Set the path of original parameters in its main function. After running it, the converted parameters will be saved as 'torch2ms.ckpt'
 
-Note: if you want to use this converter, you should install both mindspore and pytorch.
+Note: if you want to use this converter, you should install both mindspore and pytorch. This converter is only tested on PCA model, so you may need to implement the conversion of some layers that appear in other models but not in PCA model.
 
 ## Requirements
 
