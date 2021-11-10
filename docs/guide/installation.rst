@@ -8,9 +8,9 @@ We recommend using docker images if docker_ or other container runtimes e.g. sin
 1. We maintain a prebuilt image at dockerhub_:
     ::
 
-        runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3
+        runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.1.14
 
-    It can be used by docker or other container runtimes that support docker images e.g. singularity_.
+    It can be used by docker or other container runtimes that support docker images e.g. singularity_. You may find other versions on the Docker Hub webpage.
 #. We also provide a ``Dockerfile`` to build your own image (you may need ``docker`` and ``nvidia-docker`` installed on your computer).
 
 .. _docker: https://www.docker.com/
@@ -73,4 +73,3 @@ If docker is not available, we provide detailed steps to install the requirement
 
         update-alternatives --remove gcc /usr/bin/gcc-9
         update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
-
