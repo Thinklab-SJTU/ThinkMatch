@@ -15,6 +15,11 @@ It contains our implementation of following deep graph matching methods:
 
 This repository also include training/evaluation protocol on Pascal VOC Keypoint and Willow Object Class dataset, inline with the experiment part in our ICCV 2019 paper.
 
+To run this, you can
+```
+python eval_pdl.py --cfg experiments/vggpdl_pca_voc.yaml
+``
+
 ## Parameter\_convertion
 `convert_param.py` includes a function to convert the parameters in Pytorch (as `.pt` form) into those in Paddle (as `.pdparam` form).
 
@@ -34,5 +39,9 @@ def vgg_convert():
 ---
 
 ## Extra requirements
-paddlepaddle-gpu==2.1.0
+paddlepaddle-gpu==2.1.0 [Warning: Do not use version >=2.1.1 or version >=2.2.0. The former one has bugs that will reduce the accuracy of our model while the latter one has an unknown problem that possibly explodes your GPU memory]
 visualdl
+
+## bugs still not fixed
+https://github.com/PaddlePaddle/Paddle/issues/34633 That's the reason we cannot train the model well now : )
+
