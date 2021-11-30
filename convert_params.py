@@ -40,9 +40,9 @@ def convert_params(model_th, model_pd, model_path):
             key_th = key_pd.replace('cross_layer', 'cross_graph_0')
 
         if "_mean" in key_pd:
-            key_th = key_th.replace("_mean", "running_mean")
+            key_th = key_pd.replace("_mean", "running_mean")
         elif "_variance" in key_pd:
-            key_th = key_th.replace("_variance", "running_var")
+            key_th = key_pd.replace("_variance", "running_var")
 
         if "fc" in key_th or "classifier":
             if len(state_dict_pd[key_pd].shape) < 4:
@@ -83,10 +83,10 @@ def pca_convert():
     with fluid.dygraph.guard():
         model_th = tchPCA()
         model_pd = pdlPCA()
-        load_model(model_th, "output/vgg16_pca_voc/params/params_0020.pt")
-        #load_model(model_th, "pretrained/pretrained_params_vgg16_pca_voc.pt")
+        #load_model(model_th, "output/vgg16_pca_voc/params/params_0020.pt")
+        load_model(model_th, "pretrained/pretrained_params_vgg16_pca_voc.pt")
         #load_model(model_th , 'share_param.pt')
-        model_path = "./pretrained/my_vgg16_pca_voc"
+        model_path = "./pretrained/new_vgg16_pca_voc"
         print(model_th.state_dict().keys())
         print(len(model_th.state_dict().keys()))
         print(model_pd.state_dict().keys())
