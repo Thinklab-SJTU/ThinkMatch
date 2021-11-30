@@ -1,17 +1,17 @@
 import torch
 import torch.nn as nn
 
-from utils.sinkhorn_new import Sinkhorn
-from utils.voting_layer import Voting
-from GMN.displacement_layer import Displacement
-from utils.feature_align import feature_align
-from PCA.gconv import Siamese_Gconv
-from PCA.affinity_layer import Affinity
+from src.lap_solvers.sinkhorn_new import Sinkhorn
+from src.utils.voting_layer import Voting
+from models.GMN.displacement_layer import Displacement
+from src.utils.feature_align import feature_align
+from models.PCA.gconv import Siamese_Gconv
+from models.PCA.affinity_layer import Affinity
 
-from utils.config import cfg
+from src.utils.config import cfg
 
-import utils.backbone
-CNN = eval('utils.backbone.{}'.format(cfg.BACKBONE))
+import src.utils.backbone
+CNN = eval('src.utils.backbone.{}'.format(cfg.BACKBONE))
 
 
 class Net(CNN):

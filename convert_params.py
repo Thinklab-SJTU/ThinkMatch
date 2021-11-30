@@ -5,10 +5,10 @@ import paddle.fluid as fluid
 from torchvision import models
 from paddle import vision
 
-from PCA.model import Net as tchPCA
-from PCA.model_pdl import Net as pdlPCA
-from utils.model_sl import load_model
-from utils.config import cfg
+from models.PCA.model import Net as tchPCA
+from models.PCA.model_pdl import Net as pdlPCA
+from src.utils.model_sl import load_model
+from src.utils.config import cfg
 
 
 def convert_params(model_th, model_pd, model_path):
@@ -83,10 +83,10 @@ def pca_convert():
     with fluid.dygraph.guard():
         model_th = tchPCA()
         model_pd = pdlPCA()
-        #load_model(model_th, "output/vgg16_pca_voc/params/params_0020.pt")
-        load_model(model_th, "pretrained_params_vgg16_pca_voc.pt")
+        load_model(model_th, "output/vgg16_pca_voc/params/params_0020.pt")
+        #load_model(model_th, "pretrained/pretrained_params_vgg16_pca_voc.pt")
         #load_model(model_th , 'share_param.pt')
-        model_path = "./vgg16_pca_voc"
+        model_path = "./pretrained/my_vgg16_pca_voc"
         print(model_th.state_dict().keys())
         print(len(model_th.state_dict().keys()))
         print(model_pd.state_dict().keys())
@@ -95,9 +95,9 @@ def pca_convert():
     
 
 if __name__ == '__main__':
-    from utils.dup_stdout_manager import DupStdoutFileManager
-    from utils.parse_args import parse_args
-    from utils.print_easydict import print_easydict
+    from src.utils.dup_stdout_manager import DupStdoutFileManager
+    from src.utils.parse_args import parse_args
+    from src.utils.print_easydict import print_easydict
 
     args = parse_args('Deep learning of graph matching training & evaluation code.')
     pca_convert()
