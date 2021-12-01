@@ -457,11 +457,11 @@ def concatenate(*mats: CSXMatrix3d, device=None):
         indices.append(mat.indices.clone().to(device))
         indptr.append(mat.indptr[:-1].clone().to(device) + indptr_offset)
         data.append(mat.data.clone().to(device))
-        indptr_offset += mat.indptr[-1]
+        indptr_offset += mat.indptr[-1].to(device)
         indptr_offset = indptr_offset.to(device)
         batch_size += mat.shape[0]
 
-    indptr.append(indptr_offset)
+    indptr.append(indptr_offset.view(1))
 
     indices = torch.cat(indices)
     indptr = torch.cat(indptr)
