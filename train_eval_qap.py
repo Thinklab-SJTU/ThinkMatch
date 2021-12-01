@@ -94,7 +94,7 @@ def train_eval_model(model,
                         loss = criterion(s_pred, perm_mat, n1_gt, n2_gt)
                     elif cfg.TRAIN.LOSS_FUNC == 'obj':
                         loss = criterion(s_pred, affmtx)
-                    elif cfg.TRAIN.LOSS_FUNC == 'plain':
+                    elif cfg.TRAIN.LOSS_FUNC == 'custom':
                         loss = torch.sum(pred['loss'])
                     else:
                         raise ValueError('Unknown loss function {}'.format(cfg.TRAIN.LOSS_FUNC))
@@ -219,6 +219,10 @@ if __name__ == '__main__':
         optimizer = optim.SGD(model.parameters(), lr=cfg.TRAIN.LR, momentum=cfg.TRAIN.MOMENTUM, nesterov=True)
     elif cfg.TRAIN.OPTIMIZER.lower() == 'adam':
         optimizer = optim.Adam(model.parameters(), lr=cfg.TRAIN.LR)
+    elif cfg.TRAIN.LOSS_FUNC.lower() == 'custom':
+        criterion = None
+        print('NOTE: You are setting the loss function as \'custom\', please ensure that there is a tensor with key '
+              '\'loss\' in your model\'s returned dictionary.')
     else:
         raise ValueError('Unknown optimizer {}'.format(cfg.TRAIN.OPTIMIZER))
 

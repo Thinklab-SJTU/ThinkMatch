@@ -103,7 +103,7 @@ def train_eval_model(model,
                             loss = criterion(outputs['ds_mat'], outputs['gt_perm_mat'], *outputs['ns'])
                         elif cfg.TRAIN.LOSS_FUNC == 'hamming':
                             loss = criterion(outputs['perm_mat'], outputs['gt_perm_mat'])
-                        elif cfg.TRAIN.LOSS_FUNC == 'plain':
+                        elif cfg.TRAIN.LOSS_FUNC == 'custom':
                             loss = torch.sum(outputs['loss'])
                         else:
                             raise ValueError(
@@ -281,6 +281,10 @@ if __name__ == '__main__':
         criterion = PermutationLossHung()
     elif cfg.TRAIN.LOSS_FUNC.lower() == 'hamming':
         criterion = HammingLoss()
+    elif cfg.TRAIN.LOSS_FUNC.lower() == 'custom':
+        criterion = None
+        print('NOTE: You are setting the loss function as \'custom\', please ensure that there is a tensor with key '
+              '\'loss\' in your model\'s returned dictionary.')
     else:
         raise ValueError('Unknown loss function {}'.format(cfg.TRAIN.LOSS_FUNC))
 
