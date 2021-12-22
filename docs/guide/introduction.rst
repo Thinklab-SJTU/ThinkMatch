@@ -22,6 +22,7 @@ Graph matching techniques have been applied to the following applications:
 
 In this repository, we mainly focus on image keypoint matching because it is a popular testbed for existing graph matching methods.
 
-Readers are referred to the following survey for more technical details about graph matching:
+Readers are referred to the following surveys for more technical details about graph matching:
 
+* Junchi Yan, Shuang Yang, Edwin Hancock. "Learning Graph Matching and Related Combinatorial Optimization Problems." *IJCAI 2020*.
 * Junchi Yan, Xu-Cheng Yin, Weiyao Lin, Cheng Deng, Hongyuan Zha, Xiaokang Yang. "A Short Survey of Recent Advances in Graph Matching." *ICMR 2016*.
