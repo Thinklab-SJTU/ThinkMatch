@@ -22,6 +22,7 @@ from pygmtools.benchmark import Benchmark
 def train_eval_model(model,
                      criterion,
                      optimizer,
+                     image_dataset,
                      dataloader,
                      tfboard_writer,
                      benchmark,
@@ -60,6 +61,9 @@ def train_eval_model(model,
                                                last_epoch=cfg.TRAIN.START_EPOCH - 1)
 
     for epoch in range(start_epoch, num_epochs):
+        # Reset seed after evaluation per epoch
+        torch.manual_seed(cfg.RANDOM_SEED + epoch + 1)
+        dataloader['train'] = get_dataloader(image_dataset['train'], shuffle=True, fix_seed=False)
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
 
@@ -73,127 +77,126 @@ def train_eval_model(model,
         iter_num = 0
 
         # Iterate over data.
-        while iter_num < cfg.TRAIN.EPOCH_ITERS:
-            for inputs in dataloader['train']:
-                if iter_num >= cfg.TRAIN.EPOCH_ITERS:
-                    break
-                if model.module.device != torch.device('cpu'):
-                    inputs = data_to_cuda(inputs)
+        for inputs in dataloader['train']:
+            if iter_num >= cfg.TRAIN.EPOCH_ITERS:
+                break
+            if model.module.device != torch.device('cpu'):
+                inputs = data_to_cuda(inputs)
 
-                iter_num = iter_num + 1
+            iter_num = iter_num + 1
 
-                # zero the parameter gradients
-                optimizer.zero_grad()
+            # zero the parameter gradients
+            optimizer.zero_grad()
 
-                with torch.set_grad_enabled(True):
-                    # forward
-                    outputs = model(inputs)
+            with torch.set_grad_enabled(True):
+                # forward
+                outputs = model(inputs)
 
-                    if cfg.PROBLEM.TYPE == '2GM':
-                        assert 'ds_mat' in outputs
-                        assert 'perm_mat' in outputs
+                if cfg.PROBLEM.TYPE == '2GM':
+                    assert 'ds_mat' in outputs
+                    assert 'perm_mat' in outputs
+                    assert 'gt_perm_mat' in outputs
+
+                    # compute loss
+                    if cfg.TRAIN.LOSS_FUNC == 'offset':
+                        d_gt, grad_mask = displacement(outputs['gt_perm_mat'], *outputs['Ps'], outputs['ns'][0])
+                        d_pred, _ = displacement(outputs['ds_mat'], *outputs['Ps'], outputs['ns'][0])
+                        loss = criterion(d_pred, d_gt, grad_mask)
+                    elif cfg.TRAIN.LOSS_FUNC in ['perm', 'ce', 'hung']:
+                        loss = criterion(outputs['ds_mat'], outputs['gt_perm_mat'], *outputs['ns'])
+                    elif cfg.TRAIN.LOSS_FUNC == 'hamming':
+                        loss = criterion(outputs['perm_mat'], outputs['gt_perm_mat'])
+                    elif cfg.TRAIN.LOSS_FUNC == 'custom':
+                        loss = torch.sum(outputs['loss'])
+                    else:
+                        raise ValueError(
+                            'Unsupported loss function {} for problem type {}'.format(cfg.TRAIN.LOSS_FUNC,
+                                                                                      cfg.PROBLEM.TYPE))
+
+                    # compute accuracy
+                    acc = matching_accuracy(outputs['perm_mat'], outputs['gt_perm_mat'], outputs['ns'][0])
+
+                elif cfg.PROBLEM.TYPE in ['MGM', 'MGM3']:
+                    assert 'ds_mat_list' in outputs
+                    assert 'graph_indices' in outputs
+                    assert 'perm_mat_list' in outputs
+                    if not 'gt_perm_mat_list' in outputs:
                         assert 'gt_perm_mat' in outputs
-
-                        # compute loss
-                        if cfg.TRAIN.LOSS_FUNC == 'offset':
-                            d_gt, grad_mask = displacement(outputs['gt_perm_mat'], *outputs['Ps'], outputs['ns'][0])
-                            d_pred, _ = displacement(outputs['ds_mat'], *outputs['Ps'], outputs['ns'][0])
-                            loss = criterion(d_pred, d_gt, grad_mask)
-                        elif cfg.TRAIN.LOSS_FUNC in ['perm', 'ce', 'hung']:
-                            loss = criterion(outputs['ds_mat'], outputs['gt_perm_mat'], *outputs['ns'])
-                        elif cfg.TRAIN.LOSS_FUNC == 'hamming':
-                            loss = criterion(outputs['perm_mat'], outputs['gt_perm_mat'])
-                        elif cfg.TRAIN.LOSS_FUNC == 'custom':
-                            loss = torch.sum(outputs['loss'])
-                        else:
-                            raise ValueError(
-                                'Unsupported loss function {} for problem type {}'.format(cfg.TRAIN.LOSS_FUNC,
-                                                                                          cfg.PROBLEM.TYPE))
-
-                        # compute accuracy
-                        acc = matching_accuracy(outputs['perm_mat'], outputs['gt_perm_mat'], outputs['ns'][0])
-
-                    elif cfg.PROBLEM.TYPE in ['MGM', 'MGM3']:
-                        assert 'ds_mat_list' in outputs
-                        assert 'graph_indices' in outputs
-                        assert 'perm_mat_list' in outputs
-                        if not 'gt_perm_mat_list' in outputs:
-                            assert 'gt_perm_mat' in outputs
-                            gt_perm_mat_list = [outputs['gt_perm_mat'][idx] for idx in outputs['graph_indices']]
-                        else:
-                            gt_perm_mat_list = outputs['gt_perm_mat_list']
-
-                        # compute loss & accuracy
-                        if cfg.TRAIN.LOSS_FUNC in ['perm', 'ce' 'hung']:
-                            loss = torch.zeros(1, device=model.module.device)
-                            ns = outputs['ns']
-                            for s_pred, x_gt, (idx_src, idx_tgt) in \
-                                    zip(outputs['ds_mat_list'], gt_perm_mat_list, outputs['graph_indices']):
-                                l = criterion(s_pred, x_gt, ns[idx_src], ns[idx_tgt])
-                                loss += l
-                            loss /= len(outputs['ds_mat_list'])
-                        elif cfg.TRAIN.LOSS_FUNC == 'plain':
-                            loss = torch.sum(outputs['loss'])
-                        else:
-                            raise ValueError(
-                                'Unsupported loss function {} for problem type {}'.format(cfg.TRAIN.LOSS_FUNC,
-                                                                                          cfg.PROBLEM.TYPE))
-
-                        # compute accuracy
-                        acc = torch.zeros(1, device=model.module.device)
-                        for x_pred, x_gt, (idx_src, idx_tgt) in \
-                                zip(outputs['perm_mat_list'], gt_perm_mat_list, outputs['graph_indices']):
-                            a = matching_accuracy(x_pred, x_gt, ns[idx_src])
-                            acc += torch.sum(a)
-                        acc /= len(outputs['perm_mat_list'])
+                        gt_perm_mat_list = [outputs['gt_perm_mat'][idx] for idx in outputs['graph_indices']]
                     else:
-                        raise ValueError('Unknown problem type {}'.format(cfg.PROBLEM.TYPE))
+                        gt_perm_mat_list = outputs['gt_perm_mat_list']
 
-                    # backward + optimize
-                    if cfg.FP16:
-                        with amp.scale_loss(loss, optimizer) as scaled_loss:
-                            scaled_loss.backward()
+                    # compute loss & accuracy
+                    if cfg.TRAIN.LOSS_FUNC in ['perm', 'ce' 'hung']:
+                        loss = torch.zeros(1, device=model.module.device)
+                        ns = outputs['ns']
+                        for s_pred, x_gt, (idx_src, idx_tgt) in \
+                                zip(outputs['ds_mat_list'], gt_perm_mat_list, outputs['graph_indices']):
+                            l = criterion(s_pred, x_gt, ns[idx_src], ns[idx_tgt])
+                            loss += l
+                        loss /= len(outputs['ds_mat_list'])
+                    elif cfg.TRAIN.LOSS_FUNC == 'plain':
+                        loss = torch.sum(outputs['loss'])
                     else:
-                        loss.backward()
-                    optimizer.step()
+                        raise ValueError(
+                            'Unsupported loss function {} for problem type {}'.format(cfg.TRAIN.LOSS_FUNC,
+                                                                                      cfg.PROBLEM.TYPE))
 
-                    batch_num = inputs['batch_size']
+                    # compute accuracy
+                    acc = torch.zeros(1, device=model.module.device)
+                    for x_pred, x_gt, (idx_src, idx_tgt) in \
+                            zip(outputs['perm_mat_list'], gt_perm_mat_list, outputs['graph_indices']):
+                        a = matching_accuracy(x_pred, x_gt, ns[idx_src])
+                        acc += torch.sum(a)
+                    acc /= len(outputs['perm_mat_list'])
+                else:
+                    raise ValueError('Unknown problem type {}'.format(cfg.PROBLEM.TYPE))
 
-                    # tfboard writer
-                    loss_dict = dict()
-                    loss_dict['loss'] = loss.item()
-                    tfboard_writer.add_scalars('loss', loss_dict, epoch * cfg.TRAIN.EPOCH_ITERS + iter_num)
+                # backward + optimize
+                if cfg.FP16:
+                    with amp.scale_loss(loss, optimizer) as scaled_loss:
+                        scaled_loss.backward()
+                else:
+                    loss.backward()
+                optimizer.step()
 
-                    accdict = dict()
-                    accdict['matching accuracy'] = torch.mean(acc)
+                batch_num = inputs['batch_size']
+
+                # tfboard writer
+                loss_dict = dict()
+                loss_dict['loss'] = loss.item()
+                tfboard_writer.add_scalars('loss', loss_dict, epoch * cfg.TRAIN.EPOCH_ITERS + iter_num)
+
+                accdict = dict()
+                accdict['matching accuracy'] = torch.mean(acc)
+                tfboard_writer.add_scalars(
+                    'training accuracy',
+                    accdict,
+                    epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
+                )
+
+                # statistics
+                running_loss += loss.item() * batch_num
+                epoch_loss += loss.item() * batch_num
+
+                if iter_num % cfg.STATISTIC_STEP == 0:
+                    running_speed = cfg.STATISTIC_STEP * batch_num / (time.time() - running_since)
+                    print('Epoch {:<4} Iteration {:<4} {:>4.2f}sample/s Loss={:<8.4f}'
+                          .format(epoch, iter_num, running_speed, running_loss / cfg.STATISTIC_STEP / batch_num))
                     tfboard_writer.add_scalars(
-                        'training accuracy',
-                        accdict,
+                        'speed',
+                        {'speed': running_speed},
                         epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
                     )
 
-                    # statistics
-                    running_loss += loss.item() * batch_num
-                    epoch_loss += loss.item() * batch_num
+                    tfboard_writer.add_scalars(
+                        'learning rate',
+                        {'lr_{}'.format(i): x['lr'] for i, x in enumerate(optimizer.param_groups)},
+                        epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
+                    )
 
-                    if iter_num % cfg.STATISTIC_STEP == 0:
-                        running_speed = cfg.STATISTIC_STEP * batch_num / (time.time() - running_since)
-                        print('Epoch {:<4} Iteration {:<4} {:>4.2f}sample/s Loss={:<8.4f}'
-                              .format(epoch, iter_num, running_speed, running_loss / cfg.STATISTIC_STEP / batch_num))
-                        tfboard_writer.add_scalars(
-                            'speed',
-                            {'speed': running_speed},
-                            epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
-                        )
-
-                        tfboard_writer.add_scalars(
-                            'learning rate',
-                            {'lr_{}'.format(i): x['lr'] for i, x in enumerate(optimizer.param_groups)},
-                            epoch * cfg.TRAIN.EPOCH_ITERS + iter_num
-                        )
-
-                        running_loss = 0.0
-                        running_since = time.time()
+                    running_loss = 0.0
+                    running_since = time.time()
 
         epoch_loss = epoch_loss / cfg.TRAIN.EPOCH_ITERS / batch_num
 
@@ -253,6 +256,7 @@ if __name__ == '__main__':
                      filter=cfg.PROBLEM.FILTER,
                      **ds_dict)
         for x in ('train', 'test')}
+
     image_dataset = {
         x: GMDataset(name=cfg.DATASET_FULL_NAME,
                      bm=benchmark[x],
@@ -325,7 +329,7 @@ if __name__ == '__main__':
 
     with DupStdoutFileManager(str(Path(cfg.OUTPUT_PATH) / ('train_log_' + now_time + '.log'))) as _:
         print_easydict(cfg)
-        model = train_eval_model(model, criterion, optimizer, dataloader, tfboardwriter, benchmark,
+        model = train_eval_model(model, criterion, optimizer, image_dataset, dataloader, tfboardwriter, benchmark,
                                  num_epochs=cfg.TRAIN.NUM_EPOCHS,
                                  start_epoch=cfg.TRAIN.START_EPOCH,
                                  xls_wb=wb)

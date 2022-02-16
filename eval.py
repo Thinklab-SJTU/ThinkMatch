@@ -32,7 +32,9 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
                                   length=cfg.EVAL.SAMPLES,
                                   cls=cls,
                                   using_all_graphs=cfg.PROBLEM.TEST_ALL_GRAPHS)
-        torch.manual_seed(cfg.RANDOM_SEED)
+
+        torch.manual_seed(cfg.RANDOM_SEED)  # Fix fetched data in test-set to prevent variance
+
         dataloader = get_dataloader(image_dataset, shuffle=True)
         dataloaders.append(dataloader)
 
