@@ -96,9 +96,9 @@ _ThinkMatch_ includes the flowing datasets with the provided benchmarks:
 * **Willow-Object-Class**
 * **CUB2011**
 * **IMC-PT-SparseGM**
+* **SPair-71k**
 
 **TODO** We also plan to include the following datasets in the future:
-* **SPair-71k**
 * **Synthetic data**
 
 _ThinkMatch_ also supports the following graph matching settings:
@@ -259,7 +259,7 @@ python train_eval.py --cfg experiments/vgg16_pca_voc.yaml
 Default configuration files are stored in``experiments/`` and you are welcomed to try your own configurations. If you find a better yaml configuration, please let us know by raising an issue or a PR and we will update the benchmark!
 
 ## Pretrained Models
-_ThinkMatch_ provides pretrained models. The model weights are available via [google drive](https://drive.google.com/drive/folders/11xAQlaEsMrRlIVc00nqWrjHf8VOXUxHQ?usp=sharing)
+_ThinkMatch_ provides pretrained models. The model weights are available via [google drive](https://drive.google.com/drive/folders/11xAQlaEsMrRlIVc00nqWrjHf8VOXUxHQ?usp=sharing) and [SJTU jbox](https://jbox.sjtu.edu.cn/l/L04xX3)
 
 To use the pretrained models, firstly download the weight files, then add the following line to your yaml file:
 ```yaml
