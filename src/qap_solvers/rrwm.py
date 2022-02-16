@@ -20,7 +20,7 @@ class RRWM(nn.Module):
         self.max_iter = max_iter
         self.alpha = alpha
         self.beta = beta
-        self.sk = Sinkhorn(max_iter=sk_iter,log_forward=False)
+        self.sk = Sinkhorn(max_iter=sk_iter)
 
     def forward(self, M, num_src, ns_src, ns_tgt, v0=None):
         d = M.sum(dim=2, keepdim=True)
@@ -45,7 +45,7 @@ class RRWM(nn.Module):
             s = v.view(batch_num, -1, num_src).transpose(1, 2)
             s = torch.exp(self.beta * s / s.max(dim=1, keepdim=True).values.max(dim=2, keepdim=True).values)
 
-            v = self.alpha * self.sk(s, ns_src, ns_tgt).transpose(1, 2).reshape(batch_num, mn, 1) + (1 - self.alpha) * v
+            v = self.alpha * self.sk(torch.log(s), ns_src, ns_tgt).transpose(1, 2).reshape(batch_num, mn, 1) + (1 - self.alpha) * v
             n = torch.norm(v, p=1, dim=1, keepdim=True)
             v = torch.matmul(v, 1 / n)
 
