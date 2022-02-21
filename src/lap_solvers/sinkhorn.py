@@ -38,10 +38,6 @@ class Sinkhorn(nn.Module):
         We recommend setting ``log_forward=True`` because it is more numerically stable. It provides more precise
         gradient in back propagation and helps the model to converge better and faster.
 
-    .. warning::
-        If you set ``log_forward=False``, this function behaves a little bit differently: it does not include the
-        ``exp`` part.
-
     .. note::
         Setting ``batched_operation=True`` may be preferred when you are doing inference with this module and do not
         need the gradient.
