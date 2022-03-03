@@ -12,6 +12,7 @@ from src.utils.timer import Timer
 
 from src.utils.config import cfg
 from pygmtools.benchmark import Benchmark
+from warnings import warn
 
 
 def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=None):
@@ -51,11 +52,13 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
     timer = Timer()
 
     prediction = []
+    neg_gt_obj = []
 
     for i, cls in enumerate(classes):
         if verbose:
             print('Evaluating class {}: {}/{}'.format(cls, i, len(classes)))
 
+        neg_gt_obj.append(False)
         running_since = time.time()
         iter_num = 0
 
@@ -99,6 +102,8 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
                 if 'aff_mat' in outputs:
                     pred_obj_score = objective_score(outputs['perm_mat'], outputs['aff_mat'])
                     gt_obj_score = objective_score(outputs['gt_perm_mat'], outputs['aff_mat'])
+                    if not neg_gt_obj[i]:
+                        neg_gt_obj[i] = min(gt_obj_score) < 0
                     objs[i] += torch.sum(pred_obj_score / gt_obj_score)
                     obj_total_num += batch_num
             elif cfg.PROBLEM.TYPE in ['MGM', 'MGM3']:
@@ -158,6 +163,8 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
                 bm.eval_cls(prediction_cls, cls, verbose=verbose)
             print('Class {} norm obj score = {:.4f}'.format(cls, objs[i]))
             print('Class {} pred time = {}s'.format(cls, format_metric(pred_time[i])))
+            if neg_gt_obj[i]:
+                warn('The obj score metric in class {} is not reliable due to negative ground truth obj score detected'.format(cls), Warning)
             if cfg.PROBLEM.TYPE == 'MGM3':
                 print('Class {} cluster acc={}'.format(cls, format_metric(cluster_acc[i])))
                 print('Class {} cluster purity={}'.format(cls, format_metric(cluster_purity[i])))
@@ -195,38 +202,46 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
 
     if xls_sheet:
         for idx, cls in enumerate(classes):
-            xls_sheet.write(0, idx+1, cls)
-        xls_sheet.write(0, idx+2, 'mean')
+            xls_sheet.write(0, idx + 1, cls)
+        xls_sheet.write(0, idx + 2, 'mean')
 
     xls_row = 1
 
     # show result
     if xls_sheet:
         xls_sheet.write(xls_row, 0, 'precision')
-        xls_sheet.write(xls_row+1, 0, 'recall')
-        xls_sheet.write(xls_row+2, 0, 'f1')
-        xls_sheet.write(xls_row+3, 0, 'coverage')
+        xls_sheet.write(xls_row + 1, 0, 'recall')
+        xls_sheet.write(xls_row + 2, 0, 'f1')
+        xls_sheet.write(xls_row + 3, 0, 'coverage')
     for idx, (cls, cls_p, cls_r, cls_f1, cls_cvg) in enumerate(zip(classes, precisions, recalls, f1s, coverages)):
         if xls_sheet:
-            xls_sheet.write(xls_row, idx+1, '{:.4f}'.format(cls_p)) #'{:.4f}'.format(torch.mean(cls_p)))
-            xls_sheet.write(xls_row+1, idx+1, '{:.4f}'.format(cls_r)) #'{:.4f}'.format(torch.mean(cls_r)))
-            xls_sheet.write(xls_row+2, idx+1, '{:.4f}'.format(cls_f1)) #'{:.4f}'.format(torch.mean(cls_f1)))
-            xls_sheet.write(xls_row+3, idx+1, '{:.4f}'.format(cls_cvg))
+            xls_sheet.write(xls_row, idx + 1, '{:.4f}'.format(cls_p))  # '{:.4f}'.format(torch.mean(cls_p)))
+            xls_sheet.write(xls_row + 1, idx + 1, '{:.4f}'.format(cls_r))  # '{:.4f}'.format(torch.mean(cls_r)))
+            xls_sheet.write(xls_row + 2, idx + 1, '{:.4f}'.format(cls_f1))  # '{:.4f}'.format(torch.mean(cls_f1)))
+            xls_sheet.write(xls_row + 3, idx + 1, '{:.4f}'.format(cls_cvg))
     if xls_sheet:
-        xls_sheet.write(xls_row, idx+2, '{:.4f}'.format(result['mean']['precision'])) #'{:.4f}'.format(torch.mean(torch.cat(precisions))))
-        xls_sheet.write(xls_row+1, idx+2, '{:.4f}'.format(result['mean']['recall'])) #'{:.4f}'.format(torch.mean(torch.cat(recalls))))
-        xls_sheet.write(xls_row+2, idx+2, '{:.4f}'.format(result['mean']['f1'])) #'{:.4f}'.format(torch.mean(torch.cat(f1s))))
+        xls_sheet.write(xls_row, idx + 2, '{:.4f}'.format(
+            result['mean']['precision']))  # '{:.4f}'.format(torch.mean(torch.cat(precisions))))
+        xls_sheet.write(xls_row + 1, idx + 2,
+                        '{:.4f}'.format(result['mean']['recall']))  # '{:.4f}'.format(torch.mean(torch.cat(recalls))))
+        xls_sheet.write(xls_row + 2, idx + 2,
+                        '{:.4f}'.format(result['mean']['f1']))  # '{:.4f}'.format(torch.mean(torch.cat(f1s))))
         xls_row += 4
 
     if not torch.any(torch.isnan(objs)):
         print('Normalized objective score')
         if xls_sheet: xls_sheet.write(xls_row, 0, 'norm objscore')
+        neg_gt_obj_cls = []
         for idx, (cls, cls_obj) in enumerate(zip(classes, objs)):
             print('{} = {:.4f}'.format(cls, cls_obj))
-            if xls_sheet: xls_sheet.write(xls_row, idx+1, cls_obj.item()) #'{:.4f}'.format(cls_obj))
+            if neg_gt_obj[idx]:
+                neg_gt_obj_cls.append(cls)
+            if xls_sheet: xls_sheet.write(xls_row, idx + 1, cls_obj.item())  # '{:.4f}'.format(cls_obj))
         print('average objscore = {:.4f}'.format(torch.mean(objs)))
+        if len(neg_gt_obj_cls) > 0:
+            warn('The obj score metric in class {} is not reliable due to negative ground truth obj score detected'.format(neg_gt_obj_cls), Warning)
         if xls_sheet:
-            xls_sheet.write(xls_row, idx+2, torch.mean(objs).item()) #'{:.4f}'.format(torch.mean(objs)))
+            xls_sheet.write(xls_row, idx + 2, torch.mean(objs).item())  # '{:.4f}'.format(torch.mean(objs)))
             xls_row += 1
 
     if cfg.PROBLEM.TYPE == 'MGM3':
@@ -234,40 +249,48 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
         if xls_sheet: xls_sheet.write(xls_row, 0, 'cluster acc')
         for idx, (cls, cls_acc) in enumerate(zip(classes, cluster_acc)):
             print('{} = {}'.format(cls, format_metric(cls_acc)))
-            if xls_sheet: xls_sheet.write(xls_row, idx+1, torch.mean(cls_acc).item()) #'{:.4f}'.format(torch.mean(cls_acc)))
+            if xls_sheet: xls_sheet.write(xls_row, idx + 1,
+                                          torch.mean(cls_acc).item())  # '{:.4f}'.format(torch.mean(cls_acc)))
         print('average clustering accuracy = {}'.format(format_metric(torch.cat(cluster_acc))))
         if xls_sheet:
-            xls_sheet.write(xls_row, idx+2, torch.mean(torch.cat(cluster_acc)).item()) #'{:.4f}'.format(torch.mean(torch.cat(cluster_acc))))
+            xls_sheet.write(xls_row, idx + 2, torch.mean(
+                torch.cat(cluster_acc)).item())  # '{:.4f}'.format(torch.mean(torch.cat(cluster_acc))))
             xls_row += 1
 
         print('Clustering purity')
         if xls_sheet: xls_sheet.write(xls_row, 0, 'cluster purity')
         for idx, (cls, cls_acc) in enumerate(zip(classes, cluster_purity)):
             print('{} = {}'.format(cls, format_metric(cls_acc)))
-            if xls_sheet: xls_sheet.write(xls_row, idx+1, torch.mean(cls_acc).item()) #'{:.4f}'.format(torch.mean(cls_acc)))
+            if xls_sheet: xls_sheet.write(xls_row, idx + 1,
+                                          torch.mean(cls_acc).item())  # '{:.4f}'.format(torch.mean(cls_acc)))
         print('average clustering purity = {}'.format(format_metric(torch.cat(cluster_purity))))
         if xls_sheet:
-            xls_sheet.write(xls_row, idx+2, torch.mean(torch.cat(cluster_purity)).item()) #'{:.4f}'.format(torch.mean(torch.cat(cluster_purity))))
+            xls_sheet.write(xls_row, idx + 2, torch.mean(
+                torch.cat(cluster_purity)).item())  # '{:.4f}'.format(torch.mean(torch.cat(cluster_purity))))
             xls_row += 1
 
         print('Clustering rand index')
         if xls_sheet: xls_sheet.write(xls_row, 0, 'rand index')
         for idx, (cls, cls_acc) in enumerate(zip(classes, cluster_ri)):
             print('{} = {}'.format(cls, format_metric(cls_acc)))
-            if xls_sheet: xls_sheet.write(xls_row, idx+1, torch.mean(cls_acc).item()) #'{:.4f}'.format(torch.mean(cls_acc)))
+            if xls_sheet: xls_sheet.write(xls_row, idx + 1,
+                                          torch.mean(cls_acc).item())  # '{:.4f}'.format(torch.mean(cls_acc)))
         print('average rand index = {}'.format(format_metric(torch.cat(cluster_ri))))
         if xls_sheet:
-            xls_sheet.write(xls_row, idx+2, torch.mean(torch.cat(cluster_ri)).item()) #'{:.4f}'.format(torch.mean(torch.cat(cluster_ri))))
+            xls_sheet.write(xls_row, idx + 2, torch.mean(
+                torch.cat(cluster_ri)).item())  # '{:.4f}'.format(torch.mean(torch.cat(cluster_ri))))
             xls_row += 1
 
     print('Predict time')
     if xls_sheet: xls_sheet.write(xls_row, 0, 'time')
     for idx, (cls, cls_time) in enumerate(zip(classes, pred_time)):
         print('{} = {}'.format(cls, format_metric(cls_time)))
-        if xls_sheet: xls_sheet.write(xls_row, idx + 1, torch.mean(cls_time).item()) #'{:.4f}'.format(torch.mean(cls_time)))
+        if xls_sheet: xls_sheet.write(xls_row, idx + 1,
+                                      torch.mean(cls_time).item())  # '{:.4f}'.format(torch.mean(cls_time)))
     print('average time = {}'.format(format_metric(torch.cat(pred_time))))
     if xls_sheet:
-        xls_sheet.write(xls_row, idx+2, torch.mean(torch.cat(pred_time)).item()) #'{:.4f}'.format(torch.mean(torch.cat(pred_time))))
+        xls_sheet.write(xls_row, idx + 2,
+                        torch.mean(torch.cat(pred_time)).item())  # '{:.4f}'.format(torch.mean(torch.cat(pred_time))))
         xls_row += 1
 
     bm.rm_gt_cache(last_epoch=last_epoch)
@@ -283,6 +306,7 @@ if __name__ == '__main__':
     args = parse_args('Deep learning of graph matching evaluation code.')
 
     import importlib
+
     mod = importlib.import_module(cfg.MODULE)
     Net = mod.Net
 
