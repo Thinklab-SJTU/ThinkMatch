@@ -13,11 +13,11 @@ Graph Matching (GM) is a fundamental yet challenging problem in computer vision,
 
 Graph matching techniques have been applied to the following applications:
 * [Bridging movie and synopses](https://openaccess.thecvf.com/content_ICCV_2019/papers/Xiong_A_Graph-Based_Framework_to_Bridge_Movies_and_Synopses_ICCV_2019_paper.pdf)
-
+  
   <img src="docs/images/movie_synopses.png" alt="Bridging movie and synopses, ICCV 2019" width="50%">
 
 * [Image correspondence](https://arxiv.org/pdf/1911.11763.pdf)
-
+  
   <img src="docs/images/superglue.png" alt="Superglue, CVPR 2020" width="50%">
 
 * [Molecules matching](https://openaccess.thecvf.com/content/CVPR2021/papers/Wang_Combinatorial_Learning_of_Graph_Edit_Distance_via_Dynamic_Embedding_CVPR_2021_paper.pdf)
@@ -51,10 +51,10 @@ _ThinkMatch_ currently contains pytorch source code of the following deep graph 
 * [**GANN**](/models/GANN)
   * Runzhong Wang, Junchi Yan and Xiaokang Yang. "Graduated Assignment for Joint Multi-Graph Matching and Clustering with Application to Unsupervised Graph Matching Network Learning." _NeurIPS 2020_.
     [[paper]](https://papers.nips.cc/paper/2020/hash/e6384711491713d29bc63fc5eeb5ba4f-Abstract.html)
-  * Runzhong Wang, Shaofei Jiang, Junchi Yan and Xiaokang Yang. "Robust Self-supervised Learning of Deep Graph Matching with Mixture of Modes." _Submitted to TPAMI_.
+  * Runzhong Wang, Shaofei Jiang, Junchi Yan and Xiaokang Yang. "Robust Self-supervised Learning of Deep Graph Matching with Mixture of Modes." _Submitted to TPAMI_. 
     [[project page]](https://thinklab.sjtu.edu.cn/project/GANN-GM/index.html)
 * [**BBGM**](/models/BBGM)
-  * Michal Rolínek, Paul Swoboda, Dominik Zietlow, Anselm Paulus, Vít Musil, Georg Martius. "Deep Graph Matching via Blackbox Differentiation of Combinatorial Solvers." _ECCV 2020_.
+  * Michal Rolínek, Paul Swoboda, Dominik Zietlow, Anselm Paulus, Vít Musil, Georg Martius. "Deep Graph Matching via Blackbox Differentiation of Combinatorial Solvers." _ECCV 2020_. 
     [[paper]](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123730409.pdf)
 
 ## Deep Graph Matching Benchmarks
@@ -110,21 +110,25 @@ _ThinkMatch_ also supports the following graph matching settings:
 
 ### Docker (RECOMMENDED)
 
-1. We maintain a prebuilt image at [dockerhub](https://hub.docker.com/r/runzhongwang/thinkmatch): ``runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.1.14``. It can be used by docker or other container runtimes that support docker images e.g. [singularity](https://sylabs.io/singularity/).
-2. We also provide a ``Dockerfile`` to build your own image (you may need ``docker`` and ``nvidia-docker`` installed on your computer).
+Get the recommended docker image by
+```bash
+docker pull ghcr.io/thinklab-sjtu/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.2.0
+```
+
+See details in [ThinkMatch-runtime](https://github.com/Thinklab-SJTU/ThinkMatch-runtime).
 
 ### Manual configuration (for Ubuntu)
-This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1.6, cuda10.1, cudnn7 and torch-geometric 1.6.3.
-1. Install and configure Pytorch 1.6 (with GPU support).
+This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1.6, cuda10.1, cudnn7 and torch-geometric 1.6.3. 
+1. Install and configure Pytorch 1.6 (with GPU support). 
 1. Install ninja-build: ``apt-get install ninja-build``
-1. Install python packages:
+1. Install python packages: 
     ```bash
     pip install tensorboardX scipy easydict pyyaml xlrd xlwt pynvml pygmtools
    ```
-1. Install building tools for LPMP:
+1. Install building tools for LPMP: 
     ```bash
     apt-get install -y findutils libhdf5-serial-dev git wget libssl-dev
-
+    
     wget https://github.com/Kitware/CMake/releases/download/v3.19.1/cmake-3.19.1.tar.gz && tar zxvf cmake-3.19.1.tar.gz
     cd cmake-3.19.1 && ./bootstrap && make && make install
     ```
@@ -133,11 +137,12 @@ This repository is developed and tested with Ubuntu 16.04, Python 3.7, Pytorch 1
     ```bash
    python -m pip install git+https://git@github.com/rogerwwww/lpmp.git
    ```
-   You may need ``gcc-9`` to successfully build LPMP. Here we provide an example installing and configuring ``gcc-9``:
+   You may need ``gcc-9`` to successfully build LPMP. Here we provide an example installing and configuring ``gcc-9``: 
    ```bash
    apt-get update
    apt-get install -y software-properties-common
    add-apt-repository ppa:ubuntu-toolchain-r/test
+   
    apt-get install -y gcc-9 g++-9
    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9
    ```
