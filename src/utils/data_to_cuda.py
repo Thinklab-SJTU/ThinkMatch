@@ -22,7 +22,7 @@ def data_to_cuda(inputs):
         inputs = inputs
     elif type(inputs) in [torch.Tensor, CSRMatrix3d, CSCMatrix3d]:
         inputs = inputs.cuda()
-    elif type(inputs) in [pyg.data.Data, pyg.data.Batch]:
+    elif type(inputs) in [pyg.data.Data, pyg.data.Batch, pyg.data.batch.DataBatch]:
         inputs = inputs.to('cuda')
     else:
         raise TypeError('Unknown type of inputs: {}'.format(type(inputs)))

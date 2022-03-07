@@ -258,12 +258,12 @@ if __name__ == '__main__':
         for x in ('train', 'test')}
 
     image_dataset = {
-        x: GMDataset(name=cfg.DATASET_FULL_NAME,
-                     bm=benchmark[x],
-                     problem=cfg.PROBLEM.TYPE,
-                     length=dataset_len[x],
-                     cls=cfg.TRAIN.CLASS if x == 'train' else cfg.EVAL.CLASS,
-                     using_all_graphs=cfg.PROBLEM.TRAIN_ALL_GRAPHS if x == 'train' else cfg.PROBLEM.TEST_ALL_GRAPHS)
+        x: GMDataset(cfg.DATASET_FULL_NAME,
+                     benchmark[x],
+                     dataset_len[x],
+                     cfg.PROBLEM.TRAIN_ALL_GRAPHS if x == 'train' else cfg.PROBLEM.TEST_ALL_GRAPHS,
+                     cfg.TRAIN.CLASS if x == 'train' else cfg.EVAL.CLASS,
+                     cfg.PROBLEM.TYPE)
         for x in ('train', 'test')}
     dataloader = {x: get_dataloader(image_dataset[x], shuffle=True, fix_seed=(x == 'test'))
                   for x in ('train', 'test')}

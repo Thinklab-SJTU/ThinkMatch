@@ -5,17 +5,46 @@ Docker
 -----------
 We recommend using docker images if docker_ or other container runtimes e.g. singularity_ is available on your devices.
 
-1. We maintain a prebuilt image at dockerhub_:
-    ::
+We maintain a prebuilt image at GithubPackages_:
 
-        runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.1.14
+::
 
-    It can be used by docker or other container runtimes that support docker images e.g. singularity_. You may find other versions on the Docker Hub webpage.
-#. We also provide a ``Dockerfile`` to build your own image (you may need ``docker`` and ``nvidia-docker`` installed on your computer).
+    ghcr.io/thinklab-sjtu/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.2.0
+
+It can be used by docker or other container runtimes that support docker images e.g. singularity_. If you are using
+docker, run the following command to pull the image:
+
+::
+
+    docker pull ghcr.io/thinklab-sjtu/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.2.0
+
+
+Other docker images with different ``torch/cuda/pyg`` combinations are also provided to fit the needs of various GPU devices.
+Please check from the Internet which CUDA version best suits your GPU.
+
+::
+
+    ghcr.io/thinklab-sjtu/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.2.0 # recommended for GTX10 and RTX20 GPUs
+    ghcr.io/thinklab-sjtu/thinkmatch:torch1.7.1-cuda11.0-cudnn8-pyg1.6.3-pygmtools0.2.0
+    ghcr.io/thinklab-sjtu/thinkmatch:torch1.10.0-cuda11.3-cudnn8-pyg2.0.3-pygmtools0.2.0 # recommended for RTX30 GPUs
+
+.. note::
+
+    It is recommended to use the ``torch1.6.0-cuda10.1`` image if it is compatible with your devices, because our code
+    are developed and tested on this image. If you are encountering any issues on other images, we may not guarantee
+    to quickly resolve them because we do not have the same module as yours.
+
+.. note::
+
+    If you find the existing image does not suit your need and you want a new image, please raise an issue and provide
+    the ``torch/cuda/cudnn/pyg/pygmtools`` versions you required.
+
+For more information about the docker images, please check out ThinkMatch-runtime_
 
 .. _docker: https://www.docker.com/
-.. _dockerhub: https://hub.docker.com/r/runzhongwang/thinkmatch
+.. _GithubPackages: https://github.com/Thinklab-SJTU/ThinkMatch-runtime/pkgs/container/thinkmatch
 .. _singularity: https://sylabs.io/singularity/
+.. _ThinkMatch-runtime: https://github.com/Thinklab-SJTU/ThinkMatch-runtime
 
 Manual configuration
 --------------------------

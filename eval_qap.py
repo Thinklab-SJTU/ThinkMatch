@@ -141,10 +141,8 @@ if __name__ == '__main__':
     torch.manual_seed(cfg.RANDOM_SEED)
 
     qap_dataset = QAPDataset(cfg.DATASET_FULL_NAME,
-                             sets='test',
-                             length=cfg.EVAL.SAMPLES,
-                             pad=cfg.PAIR.PADDING,
-                             obj_resize=cfg.PAIR.RESCALE)
+                             cfg.EVAL.SAMPLES,
+                             sets='test')
     dataloader = get_dataloader(qap_dataset)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

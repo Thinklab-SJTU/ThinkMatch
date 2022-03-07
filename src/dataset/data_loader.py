@@ -257,7 +257,7 @@ class GMDataset(Dataset):
 
 
 class QAPDataset(Dataset):
-    def __init__(self, name, length, pad=16, cls=None, **args):
+    def __init__(self, name, length, cls=None, **args):
         self.name = name
         self.ds = eval(self.name)(**args, cls=cls)
         self.classes = self.ds.classes

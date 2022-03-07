@@ -193,9 +193,9 @@ if __name__ == '__main__':
     dataset_len = {'train': cfg.TRAIN.EPOCH_ITERS * cfg.BATCH_SIZE, 'test': cfg.EVAL.SAMPLES}
     qap_dataset = {
         x: QAPDataset(cfg.DATASET_FULL_NAME,
+                      dataset_len[x],
+                      cfg.TRAIN.CLASS if x == 'train' else None,
                       sets=x,
-                      length=dataset_len[x],
-                      cls=cfg.TRAIN.CLASS if x == 'train' else None,
                       fetch_online=False)
         for x in ('train', 'test')}
     dataloader = {x: get_dataloader(qap_dataset[x], fix_seed=(x == 'test'), shuffle=(x == 'train'))
