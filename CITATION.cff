@@ -19,3 +19,13 @@ authors:
     family-names: Yan
     email: yanjunchi@sjtu.edu.cn
     orcid: 'https://orcid.org/0000-0001-9639-7679'
+repository-code: 'https://github.com/Thinklab-SJTU/ThinkMatch'
+url: 'https://thinkmatch.readthedocs.io/'
+repository-artifact: >-
+  https://github.com/Thinklab-SJTU/ThinkMatch-runtime/pkgs/container/thinkmatch
+keywords:
+  - graph matching
+  - deep learning
+  - combinatorial optimization
+  - quadratic assignment problem
+license: MulanPSL-2.0
