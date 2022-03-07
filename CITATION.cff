@@ -1,0 +1,21 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: ThinkMatch
+message: >-
+  If you find this repository useful, please cite it
+  in your research papers.
+type: software
+authors:
+  - given-names: Runzhong
+    family-names: Wang
+    email: runzhong.wang@sjtu.edu.cn
+    orcid: 'https://orcid.org/0000-0002-9566-738X'
+  - given-names: Ziao
+    family-names: Guo
+    email: 1115712590@sjtu.edu.cn
+  - given-names: Junchi
+    family-names: Yan
+    email: yanjunchi@sjtu.edu.cn
+    orcid: 'https://orcid.org/0000-0001-9639-7679'
