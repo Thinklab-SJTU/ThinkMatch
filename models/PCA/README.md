@@ -68,8 +68,8 @@ The motivation of the iterative update scheme is that: better embedding features
   experiment config: ``experiments/vgg16_ipca_spair71k.yaml``
 
   pretrained model: [google drive](https://drive.google.com/file/d/1w1Uv6RKzgEJurZlusEVBoeZ7cbR8Nfeo/view?usp=sharing)
-  
-  | model   | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | dog    | horse  | mtbike | person | plant  | sheep  | train  | tv     | mean |
+
+| model   | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | dog    | horse  | mtbike | person | plant  | sheep  | train  | tv     | mean |
 | ------- | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
 | [PCA-GM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#pca-gm)  | 2019 | 0.3001 | 0.3798 | 0.4518 | 0.2638 | 0.3731 | 0.4448 | 0.3659 | 0.3048 | 0.3786 | 0.3098 | 0.3010 | 0.4072 | 0.4574 | 0.3231 | 0.3572 | 0.3488 | 0.2132 | 0.5822 |0.3646|
 | [IPCA-GM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#pca) | 2020 | 0.3597 | 0.3401 | 0.4184 | 0.2810 | 0.3821 | 0.4351 | 0.3649 | 0.3211 | 0.3762 | 0.2952 | 0.3425 | 0.4189 | 0.4639 | 0.3472 | 0.3750 | 0.3716 | 0.2571 | 0.5788 |0.3738|
