@@ -110,6 +110,39 @@ Since NMGM does not support partial matching, we do not evaluate NMGM on Pascal 
 | [NHGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | -               | 0.9740 | 0.9390 | 1.0000 | 0.9860    | 0.9890     | 0.9780 |
 | [NMGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | -               | 0.9760 | 0.9447 | 1.0000 | 1.0000    | 0.9902     | 0.9822 |
 
+### SPair-71k - 2GM
+
+* NGM 
+  
+  experiment config: ``experiments/vgg16_ngm_spair71k.yaml``
+
+  pretrained model: [google drive](https://drive.google.com/file/d/1U3SLg-oU9vopEIs1pcIwtZH9giGuqWE4/view?usp=sharing)
+
+* NHGM
+
+  experiment config: ``experiments/vgg16_nhgm_spair71k.yaml``
+
+  pretrained model: [google drive](https://drive.google.com/file/d/1RGBa2rgac4kGKnJzV5JaCa5hJRPw-Lkl/view?usp=sharing)
+
+* NGM-v2
+
+  experiment config: ``experiments/vgg16_ngmv2_spair71k.yaml``
+
+  pretrained model: [google drive](https://drive.google.com/file/d/1Yk0U7C_C_I7FXXzWACCkUVQK0h5qjNXP/view?usp=sharing)
+  
+* NHGM-v2
+
+  experiment config: ``experiments/vgg16_nhgmv2_spair71k.yaml``
+
+  pretrained model: [google drive](https://drive.google.com/file/d/1VSakqb9m6gMYC9ByiOXxmU54ysvNj3qm/view?usp=sharing)
+
+| model   | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | dog    | horse  | mtbike | person | plant  | sheep  | train  | tv     | mean |
+| ------- | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| [NGM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm)     | 2019 | 0.3569 | 0.3477 | 0.4386 | 0.2964 | 0.4603 | 0.4895 | 0.3792 | 0.2697 | 0.4639 | 0.3398 | 0.2811 | 0.3835 | 0.4402 | 0.3584 | 0.4725 | 0.3564 | 0.3311 | 0.5892 |0.3919|
+| [NHGM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm)    | 2019 | 0.2841 | 0.3115 | 0.4310 | 0.2827 | 0.3578 | 0.4558 | 0.3659 | 0.3024 | 0.5117 | 0.3334 | 0.3084 | 0.3836 | 0.4231 | 0.3440 | 0.4594 | 0.4020 | 0.3203 | 0.4251 |0.3723|
+| [NGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm)  | 2021 | 0.5717 | 0.5095 | 0.8536 | 0.7214 | 0.7030 | 0.9167 | 0.7754 | 0.7263 | 0.6432 | 0.7232 | 0.6101 | 0.6743 | 0.6807 | 0.6554 | 0.9891 | 0.7820 | 0.9439 | 0.9728 |0.7473|
+| [NMGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | 0.5354 | 0.4780 | 0.7795 | 0.6473 | 0.6715 | 0.8428 | 0.6763 | 0.6606 | 0.6363 | 0.6939 | 0.5624 | 0.6460 | 0.6939 | 0.6332 | 0.9726 | 0.7462 | 0.8741 | 0.9836 |0.7074|
+
 ## Run QAPLIB Experiments
 
 Our proposed NGM is capable of handling pure combinatorial optimization problems from [QAPLIB](https://www.opt.math.tugraz.at/qaplib/).

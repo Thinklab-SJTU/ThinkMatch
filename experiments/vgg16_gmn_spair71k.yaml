@@ -1,0 +1,67 @@
+MODEL_NAME: vgg16_gmn
+DATASET_NAME: spair71k
+
+DATASET_FULL_NAME: SPair71k
+
+MODULE: models.GMN.model
+
+BACKBONE: VGG16_bn
+
+BATCH_SIZE: 8
+DATALOADER_NUM: 2
+
+RANDOM_SEED: 123
+
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_gmn_spair71k.pt
+
+# available GPU ids
+GPUS:
+  - 0
+
+# Problem configuration
+PROBLEM:
+  TYPE: 2GM
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+  FILTER: 'intersection'
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: tri
+  TGT_GRAPH_CONSTRUCT: fc
+  SYM_ADJACENCY: True
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 0
+  NUM_EPOCHS: 10
+
+  LOSS_FUNC: offset
+
+  # learning rate
+  LR: 1.0e-3
+  MOMENTUM: 0.9
+  LR_DECAY: 0.1
+  LR_STEP:  # (in epochs)
+    - 2
+
+  EPOCH_ITERS: 2000  # iterations per epoch
+
+  CLASS: none
+
+# Evaluation settings
+EVAL:
+  EPOCH: 10  # epoch to be tested
+  SAMPLES: 1000  # number of tested pairs for each class
+
+# GMN model parameters
+GMN:
+  FEATURE_CHANNEL: 512
+  PI_ITER_NUM: 25
+  PI_STOP_THRESH: 1.0e-3
+  BS_ITER_NUM: 20
+  BS_EPSILON: 1.0e-10
+  VOTING_ALPHA: 200.
+  GM_SOLVER: SM

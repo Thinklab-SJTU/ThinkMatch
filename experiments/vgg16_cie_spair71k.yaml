@@ -1,0 +1,66 @@
+MODEL_NAME: vgg16_cie
+DATASET_NAME: spair71k
+
+DATASET_FULL_NAME: SPair71k
+
+MODULE: models.CIE.model
+
+BACKBONE: VGG16_bn
+
+BATCH_SIZE: 8
+DATALOADER_NUM: 2
+
+RANDOM_SEED: 123
+
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_cie_spair71k.pt
+
+# available GPU ids
+GPUS:
+  - 0
+
+# Problem configuration
+PROBLEM:
+  TYPE: 2GM
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+  FILTER: 'intersection'
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: tri
+  TGT_GRAPH_CONSTRUCT: tri
+  SYM_ADJACENCY: True
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 0
+  NUM_EPOCHS: 30
+
+  LOSS_FUNC: hung
+
+  # learning rate
+  LR: 1.0e-4
+  MOMENTUM: 0.9
+  LR_DECAY: 0.1
+  LR_STEP:  # (in epochs)
+    - 20
+
+  EPOCH_ITERS: 400  # iterations per epoch
+
+  CLASS: none
+
+# Evaluation settings
+EVAL:
+  EPOCH: 23  # epoch to be tested
+  SAMPLES: 1000  # number of tested pairs for each class
+
+# CIE model parameters
+CIE:
+  FEATURE_CHANNEL: 512
+  SK_ITER_NUM: 20
+  SK_EPSILON: 1.0e-10
+  SK_TAU: .005
+  GNN_FEAT: 2048
+  GNN_LAYER: 2

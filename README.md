@@ -90,13 +90,26 @@ _ThinkMatch_ currently contains pytorch source code of the following deep graph 
 | [NHGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | -               | 0.9740 | 0.9390 | 1.0000 | 0.9860    | 0.9890     | 0.9780 |
 | [NMGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | -               | 0.9760 | 0.9447 | 1.0000 | 1.0000    | 0.9902     | 0.9822 |
 
+### SPair-71k - 2GM
+
+| model   | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | dog    | horse  | mtbike | person | plant  | sheep  | train  | tv     | mean |
+| ------- | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| [GMN](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#gmn)     | 2018 | 0.3109 | 0.3082 | 0.3772 | 0.2441 | 0.3846 | 0.3538 | 0.3411 | 0.2842 | 0.4074 | 0.2282 | 0.2635 | 0.3089 | 0.3757 | 0.2723 | 0.3358 | 0.3470 | 0.2628 | 0.2930 | 0.3166 |
+| [PCA-GM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#pca-gm)  | 2019 | 0.3001 | 0.3798 | 0.4518 | 0.2638 | 0.3731 | 0.4448 | 0.3659 | 0.3048 | 0.3786 | 0.3098 | 0.3010 | 0.4072 | 0.4574 | 0.3231 | 0.3572 | 0.3488 | 0.2132 | 0.5822 |0.3646|
+| [NGM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm)     | 2019 | 0.3569 | 0.3477 | 0.4386 | 0.2964 | 0.4603 | 0.4895 | 0.3792 | 0.2697 | 0.4639 | 0.3398 | 0.2811 | 0.3835 | 0.4402 | 0.3584 | 0.4725 | 0.3564 | 0.3311 | 0.5892 |0.3919|
+| [NHGM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm)    | 2019 | 0.2841 | 0.3115 | 0.4310 | 0.2827 | 0.3578 | 0.4558 | 0.3659 | 0.3024 | 0.5117 | 0.3334 | 0.3084 | 0.3836 | 0.4231 | 0.3440 | 0.4594 | 0.4020 | 0.3203 | 0.4251 |0.3723|
+| [IPCA-GM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#pca) | 2020 | 0.3597 | 0.3401 | 0.4184 | 0.2810 | 0.3821 | 0.4351 | 0.3649 | 0.3211 | 0.3762 | 0.2952 | 0.3425 | 0.4189 | 0.4639 | 0.3472 | 0.3750 | 0.3716 | 0.2571 | 0.5788 |0.3738|
+| [CIE-H](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#cie-h)   | 2020 | 0.4284 | 0.4016 | 0.5820 | 0.3753 | 0.4514 | 0.4997 | 0.4395 | 0.3980 | 0.4435 | 0.3588 | 0.4301 | 0.5219 | 0.4714 | 0.3930 | 0.4167 | 0.4387 | 0.3806 | 0.7431 |0.4541|
+| [BBGM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#bbgm)    | 2020 | 0.5715 | 0.5405 | 0.8500 | 0.7162 | 0.6942 | 0.9095 | 0.7826 | 0.7223 | 0.6693 | 0.7151 | 0.6131 | 0.6944 | 0.7264 | 0.7221 | 0.9865 | 0.7926 | 0.9358 | 0.9919 |0.7574|
+| [NGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm)  | 2021 | 0.5717 | 0.5095 | 0.8536 | 0.7214 | 0.7030 | 0.9167 | 0.7754 | 0.7263 | 0.6432 | 0.7232 | 0.6101 | 0.6743 | 0.6807 | 0.6554 | 0.9891 | 0.7820 | 0.9439 | 0.9728 |0.7473|
+| [NMGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | 0.5354 | 0.4780 | 0.7795 | 0.6473 | 0.6715 | 0.8428 | 0.6763 | 0.6606 | 0.6363 | 0.6939 | 0.5624 | 0.6460 | 0.6939 | 0.6332 | 0.9726 | 0.7462 | 0.8741 | 0.9836 |0.7074|
+
 _ThinkMatch_ includes the flowing datasets with the provided benchmarks:
 
 * **PascalVOC-Keypoint**
 * **Willow-Object-Class**
 * **CUB2011**
 * **IMC-PT-SparseGM**
-* **SPair-71k**
 
 **TODO** We also plan to include the following datasets in the future:
 * **Synthetic data**
@@ -185,7 +198,7 @@ Note: All following datasets can be automatically downloaded and unzipped by `py
       pages={303–338},
       year={2010}
     }
-
+    
     @inproceedings{BourdevICCV09,
       title={Poselets: Body part detectors trained using 3d human pose annotations},
       author={Bourdev, L. and Malik, J.},
@@ -238,7 +251,7 @@ Note: All following datasets can be automatically downloaded and unzipped by `py
       pages={517--547},
       year={2021}
     }
-
+    
     @unpublished{WangPAMIsub21,
       title={Robust Self-supervised Learning of Deep Graph Matching with Mixture of Modes},
       author={Wang, Runzhong and Jiang, Shaofei and Yan, Junchi and Yang, Xiaokang},

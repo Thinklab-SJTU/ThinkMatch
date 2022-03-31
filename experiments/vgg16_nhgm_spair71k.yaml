@@ -1,0 +1,82 @@
+MODEL_NAME: vgg16_nhgm
+DATASET_NAME: spair71k
+
+DATASET_FULL_NAME: SPair71k
+
+MODULE: models.NGM.hypermodel
+
+BACKBONE: VGG16_bn
+
+BATCH_SIZE: 8
+DATALOADER_NUM: 2
+FP16: False
+
+RANDOM_SEED: 123
+
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_nhgm_spair71k.pt
+
+# available GPU ids
+GPUS:
+  - 0
+
+# Problem configuration
+PROBLEM:
+  TYPE: 2GM
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+  FILTER: 'intersection'
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: tri
+  TGT_GRAPH_CONSTRUCT: fc
+  SYM_ADJACENCY: True
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 0
+  NUM_EPOCHS: 20
+
+  LOSS_FUNC: perm
+
+  # learning rate
+  LR: 2.0e-2 #1.0e-2
+  MOMENTUM: 0.9
+  LR_DECAY: 0.3
+  LR_STEP:  # (in epochs)
+    - 4
+    - 6
+    - 8
+    - 10
+    - 12
+
+  EPOCH_ITERS: 400  # iterations per epoch
+
+  CLASS: none
+
+# Evaluation settings
+EVAL:
+  EPOCH: 30  # epoch to be tested
+  SAMPLES: 1000  # number of tested pairs for each class
+
+# model parameters
+NGM:
+  EDGE_FEATURE: cat
+  ORDER3_FEATURE: geo
+  SK_EMB: 1
+  FIRST_ORDER: True
+  FEATURE_CHANNEL: 512
+  SK_ITER_NUM: 20
+  SK_EPSILON: 1.0e-10
+  SK_TAU: 0.05
+  GNN_FEAT:
+    - 16
+    - 16
+    - 16
+  GNN_LAYER: 3
+
+  SIGMA3: 1.e-4
+  WEIGHT2: 1.
+  WEIGHT3: 1.5
