@@ -19,7 +19,7 @@ STATISTIC_STEP: 100
 
 # available GPU ids
 GPUS:
-  - 2
+  - 0
 
 # Problem configuration
 PROBLEM:
