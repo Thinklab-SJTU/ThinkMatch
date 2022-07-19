@@ -1,3 +1,4 @@
+import torch.cuda
 import torch.optim as optim
 import time
 import xlwt
@@ -135,6 +136,13 @@ def train_eval_model(model,
                             l = criterion(s_pred, x_gt, ns[idx_src], ns[idx_tgt])
                             loss += l
                         loss /= len(outputs['ds_mat_list'])
+                    elif cfg.TRAIN.LOSS_FUNC == 'hamming':
+                        loss = torch.zeros(1, device=model.module.device)
+                        ns = outputs['ns']
+                        for s_pred, x_gt in zip(outputs['ds_mat_list'], gt_perm_mat_list):
+                            l = criterion(s_pred, x_gt)
+                            loss += l
+                        loss /= len(outputs['ds_mat_list'])
                     elif cfg.TRAIN.LOSS_FUNC == 'plain':
                         loss = torch.sum(outputs['loss'])
                     else:
@@ -245,6 +253,8 @@ if __name__ == '__main__':
     Net = mod.Net
 
     torch.manual_seed(cfg.RANDOM_SEED)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(cfg.RANDOM_SEED)
 
     dataset_len = {'train': cfg.TRAIN.EPOCH_ITERS * cfg.BATCH_SIZE, 'test': cfg.EVAL.SAMPLES}
     ds_dict = cfg[cfg.DATASET_FULL_NAME] if ('DATASET_FULL_NAME' in cfg) and (cfg.DATASET_FULL_NAME in cfg) else {}

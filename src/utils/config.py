@@ -257,8 +257,11 @@ def cfg_from_file(filename):
 
     if 'DATASET_FULL_NAME' in yaml_cfg and yaml_cfg.DATASET_FULL_NAME in yaml_cfg \
         and yaml_cfg.DATASET_FULL_NAME not in __C:
-        __C[yaml_cfg.DATASET_FULL_NAME] = src.dataset.dataset_cfg[yaml_cfg.DATASET_FULL_NAME]
-        __C[yaml_cfg.DATASET_FULL_NAME].update(yaml_cfg[yaml_cfg.DATASET_FULL_NAME])
+        if yaml_cfg.DATASET_FULL_NAME in src.dataset.dataset_cfg:
+            __C[yaml_cfg.DATASET_FULL_NAME] = src.dataset.dataset_cfg[yaml_cfg.DATASET_FULL_NAME]
+            __C[yaml_cfg.DATASET_FULL_NAME].update(yaml_cfg[yaml_cfg.DATASET_FULL_NAME])
+        else:
+            __C[yaml_cfg.DATASET_FULL_NAME] = yaml_cfg[yaml_cfg.DATASET_FULL_NAME]
 
     _merge_a_into_b(yaml_cfg, __C)
 

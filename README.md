@@ -126,7 +126,7 @@ _ThinkMatch_ also supports the following graph matching settings:
 
 Get the recommended docker image by
 ```bash
-docker pull ghcr.io/thinklab-sjtu/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.2.0
+docker pull runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.2.4
 ```
 
 See details in [ThinkMatch-runtime](https://github.com/Thinklab-SJTU/ThinkMatch-runtime).

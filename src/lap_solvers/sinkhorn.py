@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torch import Tensor
+import pygmtools as pygm
 
 
 class Sinkhorn(nn.Module):
@@ -83,104 +84,7 @@ class Sinkhorn(nn.Module):
 
     def forward_log(self, s, nrows=None, ncols=None, dummy_row=False):
         """Compute sinkhorn with row/column normalization in the log space."""
-        if len(s.shape) == 2:
-            s = s.unsqueeze(0)
-            matrix_input = True
-        elif len(s.shape) == 3:
-            matrix_input = False
-        else:
-            raise ValueError('input data shape not understood.')
-
-        batch_size = s.shape[0]
-
-        if s.shape[2] >= s.shape[1]:
-            transposed = False
-        else:
-            s = s.transpose(1, 2)
-            nrows, ncols = ncols, nrows
-            transposed = True
-
-        if nrows is None:
-            nrows = [s.shape[1] for _ in range(batch_size)]
-        if ncols is None:
-            ncols = [s.shape[2] for _ in range(batch_size)]
-
-        # operations are performed on log_s
-        s = s / self.tau
-
-        if dummy_row:
-            assert s.shape[2] >= s.shape[1]
-            dummy_shape = list(s.shape)
-            dummy_shape[1] = s.shape[2] - s.shape[1]
-            ori_nrows = nrows
-            nrows = ncols
-            s = torch.cat((s, torch.full(dummy_shape, -float('inf')).to(s.device)), dim=1)
-            for b in range(batch_size):
-                s[b, ori_nrows[b]:nrows[b], :ncols[b]] = -100
-                s[b, nrows[b]:, :] = -float('inf')
-                s[b, :, ncols[b]:] = -float('inf')
-
-        if self.batched_operation:
-            log_s = s
-
-            for i in range(self.max_iter):
-                if i % 2 == 0:
-                    log_sum = torch.logsumexp(log_s, 2, keepdim=True)
-                    log_s = log_s - log_sum
-                    log_s[torch.isnan(log_s)] = -float('inf')
-                else:
-                    log_sum = torch.logsumexp(log_s, 1, keepdim=True)
-                    log_s = log_s - log_sum
-                    log_s[torch.isnan(log_s)] = -float('inf')
-
-                # ret_log_s[b, row_slice, col_slice] = log_s
-
-            if dummy_row and dummy_shape[1] > 0:
-                log_s = log_s[:, :-dummy_shape[1]]
-                for b in range(batch_size):
-                    log_s[b, ori_nrows[b]:nrows[b], :ncols[b]] = -float('inf')
-
-            if matrix_input:
-                log_s.squeeze_(0)
-
-            return torch.exp(log_s)
-        else:
-            ret_log_s = torch.full((batch_size, s.shape[1], s.shape[2]), -float('inf'), device=s.device, dtype=s.dtype)
-
-            for b in range(batch_size):
-                row_slice = slice(0, nrows[b])
-                col_slice = slice(0, ncols[b])
-                log_s = s[b, row_slice, col_slice]
-
-                for i in range(self.max_iter):
-                    if i % 2 == 0:
-                        log_sum = torch.logsumexp(log_s, 1, keepdim=True)
-                        log_s = log_s - log_sum
-                    else:
-                        log_sum = torch.logsumexp(log_s, 0, keepdim=True)
-                        log_s = log_s - log_sum
-
-                ret_log_s[b, row_slice, col_slice] = log_s
-
-            if dummy_row:
-                if dummy_shape[1] > 0:
-                    ret_log_s = ret_log_s[:, :-dummy_shape[1]]
-                for b in range(batch_size):
-                    ret_log_s[b, ori_nrows[b]:nrows[b], :ncols[b]] = -float('inf')
-
-            if transposed:
-                ret_log_s = ret_log_s.transpose(1, 2)
-            if matrix_input:
-                ret_log_s.squeeze_(0)
-
-            return torch.exp(ret_log_s)
-
-        # ret_log_s = torch.full((batch_size, s.shape[1], s.shape[2]), -float('inf'), device=s.device, dtype=s.dtype)
-
-        # for b in range(batch_size):
-        #    row_slice = slice(0, nrows[b])
-        #    col_slice = slice(0, ncols[b])
-        #    log_s = s[b, row_slice, col_slice]
+        return pygm.sinkhorn(s, nrows, ncols, dummy_row, self.max_iter, self.tau, self.batched_operation, 'pytorch')
 
     def forward_ori(self, s, nrows=None, ncols=None, dummy_row=False):
         r"""

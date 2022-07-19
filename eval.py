@@ -287,6 +287,8 @@ if __name__ == '__main__':
     Net = mod.Net
 
     torch.manual_seed(cfg.RANDOM_SEED)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(cfg.RANDOM_SEED)
 
     ds_dict = cfg[cfg.DATASET_FULL_NAME] if ('DATASET_FULL_NAME' in cfg) and (cfg.DATASET_FULL_NAME in cfg) else {}
     benchmark = Benchmark(name=cfg.DATASET_FULL_NAME,
