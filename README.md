@@ -278,5 +278,5 @@ If you have any questions, or if you are experiencing any issues, feel free to r
 
 We also offer the following chat rooms if you are more comfortable with them:
 
-* Gitter (for English users): [![Join the chat at https://gitter.im/pygmtools/community](https://badges.gitter.im/pygmtools/community.svg)](https://gitter.im/pygmtools/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+* Discord (for English users): https://discord.gg/gdtRJZGnAR
 * QQ Group (for Chinese users)/QQ群(中文用户): 696401889
