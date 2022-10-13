@@ -278,5 +278,5 @@ If you have any questions, or if you are experiencing any issues, feel free to r
 
 We also offer the following chat rooms if you are more comfortable with them:
 
-* Discord (for English users): https://discord.gg/gdtRJZGnAR
+* Discord (for English users): https://discord.gg/8m6n7rRz9T
 * QQ Group (for Chinese users)/QQ群(中文用户): 696401889
