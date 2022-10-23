@@ -2,6 +2,7 @@
 
 [![release](https://img.shields.io/github/v/release/Thinklab-SJTU/ThinkMatch)](https://github.com/Thinklab-SJTU/ThinkMatch/releases)
 [![Documentation Status](https://readthedocs.org/projects/thinkmatch/badge/?version=latest)](https://thinkmatch.readthedocs.io/en/latest/?badge=latest)
+[![docker](https://img.shields.io/badge/docker-images-orange)](https://hub.docker.com/r/runzhongwang/thinkmatch/tags)
 [![discord channel](https://img.shields.io/discord/1028701206526304317.svg?&color=blueviolet&label=discord)](https://discord.gg/8m6n7rRz9T)
 [![QQ group](https://img.shields.io/badge/QQ%20group-696401889-blue)](https://qm.qq.com/cgi-bin/qm/qr?k=QolXYJn_M5ilDEM9e2jEjlPnJ02Ktabd&jump_from=webapi&authKey=6zG6D/Js4YF5h5zj778aO5MDKOXBwPFi8gQ4LsXJN8Hn1V8uCVGV81iT4J/FjPGT)
 [![GitHub stars](https://img.shields.io/github/stars/Thinklab-SJTU/ThinkMatch.svg?style=social&label=Star&maxAge=8640)](https://GitHub.com/Thinklab-SJTU/ThinkMatch/stargazers/) 
@@ -117,8 +118,10 @@ _ThinkMatch_ also supports the following graph matching settings:
 
 Get the recommended docker image by
 ```bash
-docker pull runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.2.4
+docker pull runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.3.0
 ```
+
+See available images at [docker hub](https://hub.docker.com/r/runzhongwang/thinkmatch/tags).
 
 See details in [ThinkMatch-runtime](https://github.com/Thinklab-SJTU/ThinkMatch-runtime).
 
