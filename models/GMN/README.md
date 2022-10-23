@@ -30,6 +30,16 @@ pretrained model: [google drive](https://drive.google.com/file/d/1PWM1i0oywH3hrw
 | ------------------------ | ---- | --------------- | ------ | ------ | ------ | --------- | ---------- | ------ |
 | [GMN](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#gmn) | 2018 | -               | 0.6790 | 0.7670 | 0.9980 | 0.6920    | 0.8310     | 0.7934 |
 
+### SPair-71k - 2GM
+
+experiment config: ``experiments/vgg16_gmn_spair71k.yaml``
+
+pretrained model: [google drive](https://drive.google.com/file/d/13A93wIGflU-CnIp_lmlFUJuA7CHuSg0V/view?usp=sharing)
+
+| model   | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | dog    | horse  | mtbike | person | plant  | sheep  | train  | tv     | mean |
+| ------- | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| [GMN](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#gmn)     | 2018 | 0.5991 | 0.5099 | 0.7428 | 0.4672 | 0.6328 | 0.7552 | 0.6950 | 0.6462 | 0.5751 | 0.7302 | 0.5866 | 0.5914 | 0.6320 | 0.5116 | 0.8687 | 0.5787 | 0.6998 | 0.9238 | 0.6526 |
+
 ## File Organization
 ```
 ├── affinity_layer.py

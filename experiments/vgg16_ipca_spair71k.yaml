@@ -41,13 +41,14 @@ TRAIN:
   LOSS_FUNC: perm
 
   # learning rate
-  LR: 1.0e-4
+  LR: 5.0e-4
   MOMENTUM: 0.9
   LR_DECAY: 0.1
   LR_STEP:  # (in epochs)
-    - 3
+    - 2
+    - 6
 
-  EPOCH_ITERS: 2000  # iterations per epoch
+  EPOCH_ITERS: 400  # iterations per epoch
 
   CLASS: none
 

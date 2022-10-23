@@ -56,6 +56,25 @@ The motivation of the iterative update scheme is that: better embedding features
 | [PCA-GM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#pca-gm) | 2019 | -               | 0.8760 | 0.8360 | 1.0000 | 0.7760    | 0.8840     | 0.8744 |
 | [IPCA-GM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#pca) | 2020 | -               | 0.9040 | 0.8860 | 1.0000 | 0.8300    | 0.8830     | 0.9006 |
 
+### SPair-71k - 2GM
+* PCA-GM
+  
+  experiment config: ``experiments/vgg16_pca_spair71k.yaml``
+
+  pretrained model: [google drive](https://drive.google.com/file/d/1NcVtd36pkt08mpWgJsU5Ip7BNlZKXGCo/view?usp=sharing)
+  
+* IPCA-GM
+
+  experiment config: ``experiments/vgg16_ipca_spair71k.yaml``
+
+  pretrained model: [google drive](https://drive.google.com/file/d/1w1Uv6RKzgEJurZlusEVBoeZ7cbR8Nfeo/view?usp=sharing)
+
+| model   | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | dog    | horse  | mtbike | person | plant  | sheep  | train  | tv     | mean |
+| ------- | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| [PCA-GM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#pca-gm)  | 2019 | 0.6467 | 0.4571 | 0.7811 | 0.5128 | 0.6381 | 0.7272 | 0.6122 | 0.6278 | 0.6255 | 0.6822 | 0.5906 | 0.6115 | 0.6486 | 0.5773 | 0.8742 | 0.6042 | 0.7246 | 0.9283 | 0.6595 |
+| [IPCA-GM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#pca) | 2020 | 0.6901 | 0.5286 | 0.8037 | 0.5425 | 0.6653 | 0.8001 | 0.6847 | 0.7136 | 0.6136 | 0.7479 | 0.6631 | 0.6514 | 0.6956 | 0.6391 | 0.9112 | 0.6540 | 0.8291 | 0.9750 | 0.7116 |
+
+
 ## File Organization
 ```
 ├── affinity_layer.py

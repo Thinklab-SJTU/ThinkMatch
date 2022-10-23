@@ -31,6 +31,17 @@ pretrained model: [google drive](https://drive.google.com/file/d/1aUdNTWlFxk-sf-
 | [CIE-H](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#cie-h) | 2020 | -               | 0.8581 | 0.8206 | 0.9994 | 0.8836    | 0.8871     | 0.8898 |
 
 
+### SPair-71k - 2GM
+
+experiment config: ``experiments/vgg16_cie_spair71k.yaml``
+
+pretrained model: [google drive](https://drive.google.com/file/d/1wE_wpCkM4A5jzA1sF0UgnMif4R19zMPJ/view?usp=sharing)
+
+| model                                                        | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | dog    | horse  | mtbike | person | plant  | sheep  | train  | tv     | mean   |
+| ------------------------------------------------------------ | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| [CIE-H](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#cie-h) | 2020 | 0.7146 | 0.5710 | 0.8168 | 0.5672 | 0.6794 | 0.8246 | 0.7339 | 0.7449 | 0.6259 | 0.7804 | 0.6872 | 0.6626 | 0.7374 | 0.6604 | 0.9246 | 0.6717 | 0.8228 | 0.9751 | 0.7334 |
+
+
 ## File Organization
 ```
 ├── model.py

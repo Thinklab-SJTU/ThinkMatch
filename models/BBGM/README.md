@@ -30,6 +30,16 @@ pretrained model: [google drive](https://drive.google.com/file/d/1bt8wBeimM0ofm3
 | ------------------------ | ---- | --------------- | ------ | ------ | ------ | --------- | ---------- | ------ |
 | [BBGM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#bbgm) | 2020 | -               | 0.9680 | 0.8990 | 1.0000 | 0.9980    | 0.9940     | 0.9718 |
 
+### SPair-71k - 2GM
+
+experiment config: ``experiments/vgg16_bbgm_spair71k.yaml``
+
+pretrained model: [google drive](https://drive.google.com/file/d/1qWPmOLo6zSvXgreKtHfEBTYwLXyRb_ot/view?usp=sharing)
+
+| model   | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | dog    | horse  | mtbike | person | plant  | sheep  | train  | tv     | mean |
+| ------- | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| [BBGM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#bbgm)    | 2020 | 0.7250 | 0.6455 | 0.8780 | 0.7581 | 0.6927 | 0.9395 | 0.8859 | 0.7992 | 0.7456 | 0.8315 | 0.7878 | 0.7710 | 0.7650 | 0.7634 | 0.9820 | 0.8554 | 0.9678 | 0.9931 | 0.8215 |
+
 ## File Organization
 ```
 ├── affinity_layer.py

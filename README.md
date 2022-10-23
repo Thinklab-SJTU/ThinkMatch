@@ -95,6 +95,18 @@ _ThinkMatch_ currently contains pytorch source code of the following deep graph 
 | [NHGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | -               | 0.9740 | 0.9390 | 1.0000 | 0.9860    | 0.9890     | 0.9780 |
 | [NMGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | -               | 0.9760 | 0.9447 | 1.0000 | 1.0000    | 0.9902     | 0.9822 |
 
+### SPair-71k - 2GM
+
+| model                                                        | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | dog    | horse  | mtbike | person | plant  | sheep  | train  | tv     | mean   |
+| ------------------------------------------------------------ | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| [GMN](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#gmn) | 2018 | 0.5991 | 0.5099 | 0.7428 | 0.4672 | 0.6328 | 0.7552 | 0.6950 | 0.6462 | 0.5751 | 0.7302 | 0.5866 | 0.5914 | 0.6320 | 0.5116 | 0.8687 | 0.5787 | 0.6998 | 0.9238 | 0.6526 |
+| [PCA-GM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#pca-gm) | 2019 | 0.6467 | 0.4571 | 0.7811 | 0.5128 | 0.6381 | 0.7272 | 0.6122 | 0.6278 | 0.6255 | 0.6822 | 0.5906 | 0.6115 | 0.6486 | 0.5773 | 0.8742 | 0.6042 | 0.7246 | 0.9283 | 0.6595 |
+| [NGM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2019 | 0.6644 | 0.5262 | 0.7696 | 0.4960 | 0.6766 | 0.7878 | 0.6764 | 0.6827 | 0.5917 | 0.7364 | 0.6391 | 0.6066 | 0.7074 | 0.6089 | 0.8754 | 0.6387 | 0.7979 | 0.9150 | 0.6887 |
+| [IPCA-GM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#pca) | 2020 | 0.6901 | 0.5286 | 0.8037 | 0.5425 | 0.6653 | 0.8001 | 0.6847 | 0.7136 | 0.6136 | 0.7479 | 0.6631 | 0.6514 | 0.6956 | 0.6391 | 0.9112 | 0.6540 | 0.8291 | 0.9750 | 0.7116 |
+| [CIE-H](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#cie-h) | 2020 | 0.7146 | 0.5710 | 0.8168 | 0.5672 | 0.6794 | 0.8246 | 0.7339 | 0.7449 | 0.6259 | 0.7804 | 0.6872 | 0.6626 | 0.7374 | 0.6604 | 0.9246 | 0.6717 | 0.8228 | 0.9751 | 0.7334 |
+| [BBGM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#bbgm) | 2020 | 0.7250 | 0.6455 | 0.8780 | 0.7581 | 0.6927 | 0.9395 | 0.8859 | 0.7992 | 0.7456 | 0.8315 | 0.7878 | 0.7710 | 0.7650 | 0.7634 | 0.9820 | 0.8554 | 0.9678 | 0.9931 | 0.8215 |
+| [NGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | 0.6877 | 0.6331 | 0.8677 | 0.7013 | 0.6971 | 0.9467 | 0.8740 | 0.7737 | 0.7205 | 0.8067 | 0.7426 | 0.7253 | 0.7946 | 0.7340 | 0.9888 | 0.8123 | 0.9426 | 0.9867 | 0.8020 |
+| [NHGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | 0.6202 | 0.5781 | 0.8642 | 0.6846 | 0.6872 | 0.9335 | 0.8081 | 0.7656 | 0.6919 | 0.7987 | 0.6623 | 0.7171 | 0.7812 | 0.6953 | 0.9824 | 0.8444 | 0.9316 | 0.9926 | 0.7799 |
 
 _ThinkMatch_ includes the flowing datasets with the provided benchmarks:
 

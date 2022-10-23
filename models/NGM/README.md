@@ -110,6 +110,32 @@ Since NMGM does not support partial matching, we do not evaluate NMGM on Pascal 
 | [NHGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | -               | 0.9740 | 0.9390 | 1.0000 | 0.9860    | 0.9890     | 0.9780 |
 | [NMGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | -               | 0.9760 | 0.9447 | 1.0000 | 1.0000    | 0.9902     | 0.9822 |
 
+### SPair-71k - 2GM
+
+* NGM 
+  
+  experiment config: ``experiments/vgg16_ngm_spair71k.yaml``
+
+  pretrained model: [google drive](https://drive.google.com/file/d/1U3SLg-oU9vopEIs1pcIwtZH9giGuqWE4/view?usp=sharing)
+
+* NGM-v2
+
+  experiment config: ``experiments/vgg16_ngmv2_spair71k.yaml``
+
+  pretrained model: [google drive](https://drive.google.com/file/d/1Yk0U7C_C_I7FXXzWACCkUVQK0h5qjNXP/view?usp=sharing)
+  
+* NHGM-v2
+
+  experiment config: ``experiments/vgg16_nhgmv2_spair71k.yaml``
+
+  pretrained model: [google drive](https://drive.google.com/file/d/1VSakqb9m6gMYC9ByiOXxmU54ysvNj3qm/view?usp=sharing)
+
+| model   | year | aero   | bike   | bird   | boat   | bottle | bus    | car    | cat    | chair  | cow    | dog    | horse  | mtbike | person | plant  | sheep  | train  | tv     | mean |
+| ------- | ---- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| [NGM](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm)     | 2019 | 0.6644 | 0.5262 | 0.7696 | 0.4960 | 0.6766 | 0.7878 | 0.6764 | 0.6827 | 0.5917 | 0.7364 | 0.6391 | 0.6066 | 0.7074 | 0.6089 | 0.8754 | 0.6387 | 0.7979 | 0.9150 | 0.6887 |
+| [NGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm)  | 2021 | 0.6877 | 0.6331 | 0.8677 | 0.7013 | 0.6971 | 0.9467 | 0.8740 | 0.7737 | 0.7205 | 0.8067 | 0.7426 | 0.7253 | 0.7946 | 0.7340 | 0.9888 | 0.8123 | 0.9426 | 0.9867 | 0.8020 |
+| [NHGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | 0.6202 | 0.5781 | 0.8642 | 0.6846 | 0.6872 | 0.9335 | 0.8081 | 0.7656 | 0.6919 | 0.7987 | 0.6623 | 0.7171 | 0.7812 | 0.6953 | 0.9824 | 0.8444 | 0.9316 | 0.9926 | 0.7799 |
+
 ## Run QAPLIB Experiments
 
 Our proposed NGM is capable of handling pure combinatorial optimization problems from [QAPLIB](https://www.opt.math.tugraz.at/qaplib/).

@@ -10,7 +10,7 @@ BACKBONE: VGG16_bn
 BATCH_SIZE: 8
 DATALOADER_NUM: 2
 
-RANDOM_SEED: 123
+RANDOM_SEED: 321
 
 # PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_cie_spair71k.pt
 
@@ -43,11 +43,11 @@ TRAIN:
   # learning rate
   LR: 1.0e-4
   MOMENTUM: 0.9
-  LR_DECAY: 0.1
+  LR_DECAY: 0.2
   LR_STEP:  # (in epochs)
     - 20
 
-  EPOCH_ITERS: 400  # iterations per epoch
+  EPOCH_ITERS: 2000  # iterations per epoch
 
   CLASS: none
 
