@@ -84,7 +84,7 @@ class Sinkhorn(nn.Module):
 
     def forward_log(self, s, nrows=None, ncols=None, dummy_row=False):
         """Compute sinkhorn with row/column normalization in the log space."""
-        return pygm.sinkhorn(s, nrows, ncols, dummy_row, self.max_iter, self.tau, self.batched_operation, 'pytorch')
+        return pygm.sinkhorn(s, n1=nrows, n2=ncols, dummy_row=dummy_row, max_iter=self.max_iter, tau=self.tau, batched_operation=self.batched_operation, backend='pytorch')
 
     def forward_ori(self, s, nrows=None, ncols=None, dummy_row=False):
         r"""
