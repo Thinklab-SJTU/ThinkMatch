@@ -19,15 +19,15 @@ Graph Matching (GM) is a fundamental yet challenging problem in computer vision,
 Graph matching techniques have been applied to the following applications:
 * [Bridging movie and synopses](https://openaccess.thecvf.com/content_ICCV_2019/papers/Xiong_A_Graph-Based_Framework_to_Bridge_Movies_and_Synopses_ICCV_2019_paper.pdf)
   
-  <img src="docs/images/movie_synopses.png" alt="Bridging movie and synopses, ICCV 2019" width="50%">
+  <img src="https://thinkmatch.readthedocs.io/en/latest/_images/movie_synopses.png" alt="Bridging movie and synopses, ICCV 2019" width="50%">
 
 * [Image correspondence](https://arxiv.org/pdf/1911.11763.pdf)
   
-  <img src="docs/images/superglue.png" alt="Superglue, CVPR 2020" width="50%">
+  <img src="https://thinkmatch.readthedocs.io/en/latest/_images/superglue.png" alt="Superglue, CVPR 2020" width="50%">
 
 * [Molecules matching](https://openaccess.thecvf.com/content/CVPR2021/papers/Wang_Combinatorial_Learning_of_Graph_Edit_Distance_via_Dynamic_Embedding_CVPR_2021_paper.pdf)
 
-  <img src="docs/images/molecules.png" alt="Molecules matching, CVPR 2021" width="50%">
+  <img src="https://thinkmatch.readthedocs.io/en/latest/_images/molecules.png" alt="Molecules matching, CVPR 2021" width="50%">
 
 * and more...
 
@@ -61,6 +61,34 @@ _ThinkMatch_ currently contains pytorch source code of the following deep graph 
 * [**BBGM**](/models/BBGM)
   * Michal Rolínek, Paul Swoboda, Dominik Zietlow, Anselm Paulus, Vít Musil, Georg Martius. "Deep Graph Matching via Blackbox Differentiation of Combinatorial Solvers." _ECCV 2020_. 
     [[paper]](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123730409.pdf)
+
+## When to use ThinkMatch
+
+ThinkMatch is designed as a research protocol for deep graph matching. It is recommended if you have any of the 
+following demands:
+* Developing new algorithms and publishing new graph matching papers;
+* Understanding the details of deep graph matching models;
+* Playing around with the hyperparameters and network details;
+* Benchmarking deep graph matching networks.
+
+### When not to use ThinkMatch
+
+You may find the environment setup in ThinkMatch complicated and the details of graph matching hard to understand.
+``pygmtools`` has a user-friendly API, and is recommended for the following cases:
+
+* If you want to integrate graph matching as a step of your pipeline (either learning or non-learning, 
+  with ``numpy``/``pytorch``/``jittor``/``paddle``).
+* If you want a quick benchmarking and profiling of the graph matching solvers available in ``pygmtools``.
+* If you do not want to dive too deep into the algorithm details and do not need to modify the algorithm.
+
+You can simply install the user-friendly package by
+```shell
+$ pip install pygmtools
+```
+
+Official documentation: https://pygmtools.readthedocs.io
+
+Source code: https://github.com/Thinklab-SJTU/pygmtools
 
 ## Deep Graph Matching Benchmarks
 
@@ -130,10 +158,10 @@ _ThinkMatch_ also supports the following graph matching settings:
 
 Get the recommended docker image by
 ```bash
-docker pull runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.3.0
+docker pull runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.3.2
 ```
 
-See available images at [docker hub](https://hub.docker.com/r/runzhongwang/thinkmatch/tags).
+Other combinations of torch and cuda are also available. See available images at [docker hub](https://hub.docker.com/r/runzhongwang/thinkmatch/tags).
 
 See details in [ThinkMatch-runtime](https://github.com/Thinklab-SJTU/ThinkMatch-runtime).
 
@@ -192,7 +220,9 @@ Note: All following datasets can be automatically downloaded and unzipped by `py
 1. PascalVOC-Keypoint
 
     1. Download [VOC2011 dataset](http://host.robots.ox.ac.uk/pascal/VOC/voc2011/index.html) and make sure it looks like ``data/PascalVOC/TrainVal/VOCdevkit/VOC2011``
+    
     1. Download keypoint annotation for VOC2011 from [Berkeley server](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/shape/poselets/voc2011_keypoints_Feb2012.tgz) or [google drive](https://drive.google.com/open?id=1D5o8rmnY1-DaDrgAXSygnflX5c-JyUWR) and make sure it looks like ``data/PascalVOC/annotations``
+    
     1. The train/test split is available in ``data/PascalVOC/voc2011_pairs.npz``. **This file must be added manually.**
 
     Please cite the following papers if you use PascalVOC-Keypoint dataset:
@@ -216,7 +246,9 @@ Note: All following datasets can be automatically downloaded and unzipped by `py
     }
     ```
 1. Willow-Object-Class
+   
     1. Download [Willow-ObjectClass dataset](http://www.di.ens.fr/willow/research/graphlearning/WILLOW-ObjectClass_dataset.zip)
+    
     1. Unzip the dataset and make sure it looks like ``data/WillowObject/WILLOW-ObjectClass``
 
     Please cite the following paper if you use Willow-Object-Class dataset:
@@ -231,7 +263,9 @@ Note: All following datasets can be automatically downloaded and unzipped by `py
     ```
 
 1. CUB2011
+   
     1. Download [CUB-200-2011 dataset](http://www.vision.caltech.edu/visipedia-data/CUB-200-2011/CUB_200_2011.tgz).
+       
     1. Unzip the dataset and make sure it looks like ``data/CUB_200_2011/CUB_200_2011``
 
     Please cite the following report if you use CUB2011 dataset:
@@ -246,7 +280,9 @@ Note: All following datasets can be automatically downloaded and unzipped by `py
     ```
 
 1. IMC-PT-SparseGM
+   
     1. Download the IMC-PT-SparseGM dataset from [google drive](https://drive.google.com/file/d/1Po9pRMWXTqKK2ABPpVmkcsOq-6K_2v-B/view?usp=sharing) or [baidu drive (code: 0576)](https://pan.baidu.com/s/1hlJdIFp4rkiz1Y-gztyHIw)
+
     1. Unzip the dataset and make sure it looks like ``data/IMC_PT_SparseGM/annotations``
 
     Please cite the following papers if you use IMC-PT-SparseGM dataset:
@@ -299,9 +335,8 @@ We also offer the following chat rooms if you are more comfortable with them:
 
 * Discord (for English users): 
   
-  [<img src="https://discordapp.com/api/guilds/1028701206526304317/widget.png?style=banner2">](https://discord.gg/8m6n7rRz9T)
+  [![discord](https://discordapp.com/api/guilds/1028701206526304317/widget.png?style=banner2)](https://discord.gg/8m6n7rRz9T)
 
 * QQ Group (for Chinese users)/QQ群(中文用户): 696401889
   
-  [<img src="http://pub.idqqimg.com/wpa/images/group.png" alt="ThinkMatch/pygmtools交流群" title="ThinkMatch/pygmtools交流群">](https://qm.qq.com/cgi-bin/qm/qr?k=NlPuwwvaFaHzEWD8w7jSOTzoqSLIM80V&jump_from=webapi&authKey=chI2htrWDujQed6VtVid3V1NXEoJvwz3MVwruax6x5lQIvLsC8BmpmzBJOCzhtQd)
-
+  [![ThinkMatch/pygmtools交流群](http://pub.idqqimg.com/wpa/images/group.png)](https://qm.qq.com/cgi-bin/qm/qr?k=NlPuwwvaFaHzEWD8w7jSOTzoqSLIM80V&jump_from=webapi&authKey=chI2htrWDujQed6VtVid3V1NXEoJvwz3MVwruax6x5lQIvLsC8BmpmzBJOCzhtQd)
