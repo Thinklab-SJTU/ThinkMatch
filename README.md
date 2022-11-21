@@ -13,6 +13,10 @@ This repository is developed for the following purposes:
 * **Providing implementation** of state-of-the-art deep graph matching methods.
 * **Benchmarking** existing deep graph matching algorithms under different dataset & experiment settings, for the purpose of fair comparison.
 
+Official documentation: https://thinkmatch.readthedocs.io
+
+Source code: https://github.com/Thinklab-SJTU/ThinkMatch
+
 ## Introduction to Graph Matching
 Graph Matching (GM) is a fundamental yet challenging problem in computer vision, pattern recognition and data mining. GM aims to find node-to-node correspondence among multiple graphs, by solving an NP-hard combinatorial problem named Quadratic Assignment Problem (QAP). Recently, there is growing interest in developing deep learning based graph matching methods.
 
