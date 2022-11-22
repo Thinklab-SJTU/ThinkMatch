@@ -78,7 +78,7 @@ following demands:
 ### When not to use ThinkMatch
 
 You may find the environment setup in ThinkMatch complicated and the details of graph matching hard to understand.
-``pygmtools`` has a user-friendly API, and is recommended for the following cases:
+``pygmtools`` offers a user-friendly API, and is recommended for the following cases:
 
 * If you want to integrate graph matching as a step of your pipeline (either learning or non-learning, 
   with ``numpy``/``pytorch``/``jittor``/``paddle``).
