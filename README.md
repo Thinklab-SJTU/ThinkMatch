@@ -310,7 +310,7 @@ Note: All following datasets can be automatically downloaded and unzipped by `py
 
 1. SPair-71k
 
-    1. Download [SPair-71k dataset](http://cvlab.postech.ac.kr/research/SPair-71k/data/SPair-71k.tar.gz)
+    1. Download [SPair-71k dataset](http://cvlab.postech.ac.kr/research/SPair-71k/)
 
     1. Unzip the dataset and make sure it looks like ``data/SPair-71k``
 
