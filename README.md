@@ -40,6 +40,7 @@ In this repository, we mainly focus on image keypoint matching because it is a p
 Readers are referred to the following survey for more technical details about graph matching:
 * Junchi Yan, Xu-Cheng Yin, Weiyao Lin, Cheng Deng, Hongyuan Zha, Xiaokang Yang. "A Short Survey of Recent Advances in Graph Matching."
 _ICMR 2016_.
+
 ## Deep Graph Matching Algorithms
 _ThinkMatch_ currently contains pytorch source code of the following deep graph matching methods:
 
