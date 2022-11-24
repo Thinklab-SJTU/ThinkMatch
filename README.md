@@ -308,6 +308,22 @@ Note: All following datasets can be automatically downloaded and unzipped by `py
     }
     ```
 
+1. SPair-71k
+
+    1. Download [SPair-71k dataset](http://cvlab.postech.ac.kr/research/SPair-71k/data/SPair-71k.tar.gz)
+
+    1. Unzip the dataset and make sure it looks like ``data/SPair-71k``
+
+    Please cite the following paper if you use SPair-71k dataset:
+
+    ```
+    @article{min2019spair,
+      title={Spair-71k: A large-scale benchmark for semantic correspondence},
+      author={Min, Juhong and Lee, Jongmin and Ponce, Jean and Cho, Minsu},
+      journal={arXiv preprint arXiv:1908.10543},
+      year={2019}
+    }
+    ```
 For more information, please see [pygmtools](https://pypi.org/project/pygmtools/).
 
 ## Run the Experiment
