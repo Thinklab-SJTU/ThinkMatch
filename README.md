@@ -314,14 +314,21 @@ Note: All following datasets can be automatically downloaded and unzipped by `py
 
     1. Unzip the dataset and make sure it looks like ``data/SPair-71k``
 
-    Please cite the following paper if you use SPair-71k dataset:
+    Please cite the following papers if you use SPair-71k dataset:
 
     ```
     @article{min2019spair,
-      title={Spair-71k: A large-scale benchmark for semantic correspondence},
-      author={Min, Juhong and Lee, Jongmin and Ponce, Jean and Cho, Minsu},
-      journal={arXiv preprint arXiv:1908.10543},
-      year={2019}
+       title={SPair-71k: A Large-scale Benchmark for Semantic Correspondence},
+       author={Juhong Min and Jongmin Lee and Jean Ponce and Minsu Cho},
+       journal={arXiv prepreint arXiv:1908.10543},
+       year={2019}
+    }
+    
+    @InProceedings{min2019hyperpixel, 
+       title={Hyperpixel Flow: Semantic Correspondence with Multi-layer Neural Features},
+       author={Juhong Min and Jongmin Lee and Jean Ponce and Minsu Cho},
+       booktitle={ICCV},
+       year={2019}
     }
     ```
 For more information, please see [pygmtools](https://pypi.org/project/pygmtools/).
