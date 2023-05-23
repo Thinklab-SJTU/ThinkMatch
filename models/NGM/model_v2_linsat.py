@@ -10,7 +10,7 @@ from src.feature_align import feature_align
 from src.factorize_graph_matching import construct_aff_mat, construct_sparse_aff_mat
 from src.utils.pad_tensor import pad_tensor
 from models.NGM.gnn import GNNLayer, SPGNNLayer, PYGNNLayer
-from models.NGM.otnet import otnet_layer
+from src.linsatnet import otnet_layer
 from src.lap_solvers.hungarian import hungarian
 
 from src.utils.config import cfg

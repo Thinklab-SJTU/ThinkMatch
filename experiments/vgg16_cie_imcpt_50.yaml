@@ -1,9 +1,9 @@
-MODEL_NAME: vgg16_pca
-DATASET_NAME: imcpt
+MODEL_NAME: vgg16_cie
+DATASET_NAME: imcpt_50
 
 DATASET_FULL_NAME: IMC_PT_SparseGM
 
-MODULE: models.PCA.model
+MODULE: models.CIE.model
 
 BACKBONE: VGG16_bn
 
@@ -15,7 +15,7 @@ RANDOM_SEED: 123
 # available GPU ids
 GPUS:
   - 0
-#  - 1
+  #- 1
 
 # Problem configuration
 PROBLEM:
@@ -35,18 +35,16 @@ GRAPH:
 TRAIN:
   # start, end epochs
   START_EPOCH: 0
-  NUM_EPOCHS: 20
+  NUM_EPOCHS: 30
 
-  LOSS_FUNC: perm
+  LOSS_FUNC: hung
 
   # learning rate
-  LR: 1.0e-3
+  LR: 1.0e-5
   MOMENTUM: 0.9
-  LR_DECAY: 0.1
+  LR_DECAY: 0.2
   LR_STEP:  # (in epochs)
-    - 2
-    - 6
-    - 10
+    - 20
 
   EPOCH_ITERS: 2000  # iterations per epoch
 
@@ -54,15 +52,14 @@ TRAIN:
 
 # Evaluation settings
 EVAL:
-  EPOCH: 30  # epoch to be tested
+  EPOCH: 23  # epoch to be tested
   SAMPLES: 1000  # number of tested pairs for each class
 
-# PCA model parameters
-PCA:
+# CIE model parameters
+CIE:
   FEATURE_CHANNEL: 512
   SK_ITER_NUM: 20
   SK_EPSILON: 1.0e-10
-  CROSS_ITER: False
-  SK_TAU: 0.05
+  SK_TAU: .05
   GNN_FEAT: 2048
   GNN_LAYER: 2

@@ -39,7 +39,7 @@ GRAPH:
 # Training settings
 TRAIN:
   # start, end epochs
-  START_EPOCH: 7
+  START_EPOCH: 0
   NUM_EPOCHS: 20
 
   LOSS_FUNC: ilp
@@ -47,9 +47,9 @@ TRAIN:
   OPTIMIZER: Adam
 
   # learning rate
-  LR: 2.5e-4  # 2.e-3
+  LR: 2.e-3  # 2.e-3
   SEPARATE_BACKBONE_LR: True
-  BACKBONE_LR: 2.5e-6  # 2.e-5
+  BACKBONE_LR: 2.e-5  # 2.e-5
   MOMENTUM: 0.9
   LR_DECAY: 0.5
   LR_STEP:  # (in epochs)

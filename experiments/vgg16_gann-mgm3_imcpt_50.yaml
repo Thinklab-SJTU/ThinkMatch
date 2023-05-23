@@ -1,5 +1,5 @@
 MODEL_NAME: vgg16_gann-mgm3
-DATASET_NAME: imcpt
+DATASET_NAME: imcpt_50
 
 DATASET_FULL_NAME: IMC_PT_SparseGM
 

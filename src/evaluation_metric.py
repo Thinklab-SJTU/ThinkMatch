@@ -135,7 +135,7 @@ def matching_recall_varied(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor) -> Te
 
     :param pmat_pred: :math:`(b\times n_1 \times n_2)` predicted permutation matrix :math:`(\mathbf{X})`
     :param pmat_gt: :math:`(b\times n_1 \times n_2)` ground truth permutation matrix :math:`(\mathbf{X}^{gt})`
-    :param ns: :math:`(b)` number of exact pairs. We support batched instances with different number of nodes, and
+    :param ns: :math:`(b\times 2)` number of nodes in all pairs. We support batched instances with different number of nodes, and
      ``ns`` is required to specify the exact number of nodes of each instance in the batch.
     :return: :math:`(b)` matching recall
 
@@ -171,7 +171,7 @@ def matching_precision_varied(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor) ->
 
     :param pmat_pred: :math:`(b\times n_1 \times n_2)` predicted permutation matrix :math:`(\mathbf{X})`
     :param pmat_gt: :math:`(b\times n_1 \times n_2)` ground truth permutation matrix :math:`(\mathbf{X}^{gt})`
-    :param ns: :math:`(b)` number of exact pairs. We support batched instances with different number of nodes, and
+    :param ns: :math:`(b\times 2)` number of nodes in all pairs. We support batched instances with different number of nodes, and
      ``ns`` is required to specify the exact number of nodes of each instance in the batch.
     :return: :math:`(b)` matching precision
 
@@ -198,7 +198,7 @@ def matching_precision_varied(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor) ->
     return precision
 
 
-def matching_accuracy(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor) -> Tensor:
+def matching_accuracy(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor, idx: int) -> Tensor:
     r"""
     Matching Accuracy between predicted permutation matrix and ground truth permutation matrix.
 
@@ -209,18 +209,20 @@ def matching_accuracy(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor) -> Tensor:
 
     :param pmat_pred: :math:`(b\times n_1 \times n_2)` predicted permutation matrix :math:`(\mathbf{X})`
     :param pmat_gt: :math:`(b\times n_1 \times n_2)` ground truth permutation matrix :math:`(\mathbf{X}^{gt})`
-    :param ns: :math:`(b)` number of exact pairs. We support batched instances with different number of nodes, and
+    :param ns: :math:`(b\times g)` number of nodes in graphs, where :math:`g=2` for 2GM, and :math:`g>2` for MGM. We support batched instances with different number of nodes, and
      ``ns`` is required to specify the exact number of nodes of each instance in the batch.
+    :param idx: :math:`(int)` index of source graph in the graph pair.
+
     :return: :math:`(b)` matching accuracy
 
     .. note::
         If the graph matching problem has no outliers, it is proper to use this metric and papers call it "matching
         accuracy". If there are outliers, it is better to use ``matching_precision`` and ``matching_recall``.
     """
-    if 'GCAN' in cfg.MODEL_NAME:
+    if 'gcan' in cfg.MODEL_NAME:
         return matching_recall_varied(pmat_pred, pmat_gt, ns)
     else:
-        return matching_recall(pmat_pred, pmat_gt, ns)
+        return matching_recall(pmat_pred, pmat_gt, ns[idx])
 
 
 def format_accuracy_metric(ps: Tensor, rs: Tensor, f1s: Tensor) -> str:

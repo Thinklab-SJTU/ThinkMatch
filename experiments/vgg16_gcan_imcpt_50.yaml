@@ -8,7 +8,7 @@ MODULE: models.GCAN.GCAN_model
 BACKBONE: VGG16_bn_final
 
 BATCH_SIZE: 4
-DATALOADER_NUM: 0
+DATALOADER_NUM: 2
 FP16: False
 
 RANDOM_SEED: 321
@@ -35,7 +35,7 @@ GRAPH:
 # Training settings
 TRAIN:
   # start, end epochs
-  START_EPOCH: 2
+  START_EPOCH: 0
   NUM_EPOCHS: 20
 
   LOSS_FUNC: ilp

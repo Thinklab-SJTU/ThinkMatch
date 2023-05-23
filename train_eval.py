@@ -142,7 +142,7 @@ def train_eval_model(model,
                         ks_error = outputs['ks_error']
 
                     # compute accuracy
-                    acc = matching_accuracy(outputs['perm_mat'], outputs['gt_perm_mat'], outputs['ns'][0])
+                    acc = matching_accuracy(outputs['perm_mat'], outputs['gt_perm_mat'], outputs['ns'], idx=0)
 
                 elif cfg.PROBLEM.TYPE in ['MGM', 'MGM3']:
                     assert 'ds_mat_list' in outputs
@@ -174,7 +174,7 @@ def train_eval_model(model,
                     acc = torch.zeros(1, device=model.module.device)
                     for x_pred, x_gt, (idx_src, idx_tgt) in \
                             zip(outputs['perm_mat_list'], gt_perm_mat_list, outputs['graph_indices']):
-                        a = matching_accuracy(x_pred, x_gt, ns[idx_src])
+                        a = matching_accuracy(x_pred, x_gt, ns, idx=idx_src)
                         acc += torch.sum(a)
                     acc /= len(outputs['perm_mat_list'])
                 else:
