@@ -343,6 +343,8 @@ if __name__ == '__main__':
     optimizer_k = None
 
     if cfg.TRAIN.SEPARATE_BACKBONE_LR:
+        if not cfg.TRAIN.SEPARATE_K_LR:
+            backbone_ids = [id(item) for item in model.backbone_params]
             other_params = [param for param in model.parameters() if id(param) not in backbone_ids]
 
             model_params = [
@@ -350,6 +352,8 @@ if __name__ == '__main__':
                 {'params': model.backbone_params, 'lr': cfg.TRAIN.BACKBONE_LR}
             ]
         else:
+            backbone_ids = [id(item) for item in model.backbone_params]
+            k_params = model.k_params_id
             other_params = [param for param in model.parameters() if id(param) not in k_params and id(param) not in backbone_ids]
 
             model_params = [
