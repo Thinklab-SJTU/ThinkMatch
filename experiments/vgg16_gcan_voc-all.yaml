@@ -13,6 +13,7 @@ FP16: False
 
 RANDOM_SEED: 321
 
+#PRETRAINED_PATH: /mnt/nas2/home/guoziao/ThinkMatch-topk/output/vgg16_GCAN_varied_voc/params/params_0020.pt
 
 # available GPU ids
 GPUS:
