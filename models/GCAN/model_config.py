@@ -1,0 +1,32 @@
+from easydict import EasyDict as edict
+
+__C = edict()
+
+model_cfg = __C
+
+# GCAN model options
+__C.GCAN = edict()
+__C.GCAN.FEATURE_CHANNEL = 512
+__C.GCAN.NODE_FEATURE_DIM = 1024
+__C.GCAN.NODE_HIDDEN_SIZE = [512]
+__C.GCAN.SK_ITER_NUM = 20
+__C.GCAN.SK_EPSILON = 1.0e-10
+__C.GCAN.SK_TAU = 0.005
+__C.GCAN.CROSS_ITER = False
+__C.GCAN.CROSS_ITER_NUM = 1
+
+__C.AFA = edict()
+__C.AFA.UNIV_SIZE = -1
+__C.AFA.K_FACTOR = 50.
+__C.AFA.REG_HIDDEN_FEAT = 8
+__C.AFA.REGRESSION = True
+__C.AFA.HEAD_NUM = 16
+__C.AFA.KQV_DIM = 16
+__C.AFA.FF_HIDDEN_DIM = 256
+__C.AFA.MS_HIDDEN_DIM = 16
+__C.AFA.MS_LAYER1_INIT = 10
+__C.AFA.MS_LAYER2_INIT = 10
+__C.AFA.MEAN_K = False
+__C.AFA.K_GNN_LAYER = 2
+__C.AFA.TN_NEURONS = 16
+__C.AFA.AFAU = False

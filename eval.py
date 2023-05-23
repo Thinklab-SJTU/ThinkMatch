@@ -22,6 +22,7 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
 
     was_training = model.training
     model.eval()
+    model.module.trainings = False
 
     dataloaders = []
 
@@ -33,7 +34,7 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
                                   cls,
                                   cfg.PROBLEM.TYPE)
 
-        torch.manual_seed(cfg.RANDOM_SEED) # Fix fetched data in test-set to prevent variance
+        torch.manual_seed(cfg.RANDOM_SEED)  # Fix fetched data in test-set to prevent variance
 
         dataloader = get_dataloader(image_dataset, shuffle=True)
         dataloaders.append(dataloader)
@@ -53,6 +54,8 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
     prediction = []
 
     for i, cls in enumerate(classes):
+        running_ks_loss = 0.0
+        running_ks_error = 0
         if verbose:
             print('Evaluating class {}: {}/{}'.format(cls, i, len(classes)))
 
@@ -101,6 +104,11 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
                     gt_obj_score = objective_score(outputs['gt_perm_mat'], outputs['aff_mat'])
                     objs[i] += torch.sum(pred_obj_score / gt_obj_score)
                     obj_total_num += batch_num
+
+                if 'ks_loss' in outputs:
+                    ks_loss = outputs['ks_loss']
+                    ks_error = outputs['ks_error']
+
             elif cfg.PROBLEM.TYPE in ['MGM', 'MGM3']:
                 assert 'graph_indices' in outputs
                 assert 'perm_mat_list' in outputs
@@ -141,10 +149,20 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
                 cluster_purity_list.append(clustering_purity(pred_cluster, cls_gt_transpose))
                 cluster_ri_list.append(rand_index(pred_cluster, cls_gt_transpose))
 
+            if 'ks_loss' in outputs:
+                running_ks_loss += ks_loss * batch_num
+                running_ks_error += ks_error * batch_num
+
             if iter_num % cfg.STATISTIC_STEP == 0 and verbose:
                 running_speed = cfg.STATISTIC_STEP * batch_num / (time.time() - running_since)
                 print('Class {:<8} Iteration {:<4} {:>4.2f}sample/s'.format(cls, iter_num, running_speed))
                 running_since = time.time()
+
+        if 'ks_loss' in outputs:
+            print('In class {}: Ks_Loss={:<8.4f} Ks_Error={:<8.4f}'
+                  .format(cls,
+                          running_ks_loss / cfg.EVAL.SAMPLES,
+                          running_ks_error / cfg.EVAL.SAMPLES))
 
         objs[i] = objs[i] / obj_total_num
         pred_time.append(torch.cat(pred_time_list))
@@ -325,7 +343,7 @@ if __name__ == '__main__':
             model_path = cfg.PRETRAINED_PATH
         if len(model_path) > 0:
             print('Loading model parameters from {}'.format(model_path))
-            load_model(model, model_path)
+            load_model(model, model_path, False)
 
         pcks = eval_model(
             model, clss,

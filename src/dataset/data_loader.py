@@ -7,7 +7,7 @@ import numpy as np
 import random
 from src.build_graphs import build_graphs
 from src.factorize_graph_matching import kronecker_sparse, kronecker_torch
-from src.sparse_torch import CSRMatrix3d
+from src.sparse_torch import CSRMatrix3d, CSCMatrix3d
 from src.dataset import *
 
 from src.utils.config import cfg
@@ -89,9 +89,15 @@ class GMDataset(Dataset):
         ids = list(self.id_combination[cls_num][idx % self.length_list[cls_num]])
         anno_pair, perm_mat_, id_list = self.bm.get_data(ids)
         perm_mat = perm_mat_[(0, 1)].toarray()
-        while min(perm_mat.shape[0], perm_mat.shape[1]) <= 2 or perm_mat.size >= cfg.PROBLEM.MAX_PROB_SIZE > 0:
+        while min(perm_mat.shape[0], perm_mat.shape[1]) <= 2 or perm_mat.size >= cfg.PROBLEM.MAX_PROB_SIZE > 0 or perm_mat.sum() == 0:
             anno_pair, perm_mat_, id_list = self.bm.rand_get_data(cls)
             perm_mat = perm_mat_[(0, 1)].toarray()
+        if cfg.MODEL_NAME == 'vgg16_gcan_varied':
+            perm_mat_dummy = np.zeros([perm_mat.shape[0] + 1, perm_mat.shape[1] + 1], dtype=np.float32)
+            perm_mat_dummy[0: perm_mat.shape[0], 0: perm_mat.shape[1]] = perm_mat
+            perm_mat_dummy[-1, perm_mat_dummy.sum(axis=0) == 0] = 1
+            perm_mat_dummy[perm_mat_dummy.sum(axis=1) == 0, -1] = 1
+            perm_mat = perm_mat_dummy
 
         cls = [anno['cls'] for anno in anno_pair]
         P1 = [(kp['x'], kp['y']) for kp in anno_pair[0]['kpts']]
@@ -176,7 +182,7 @@ class GMDataset(Dataset):
             anno_list, perm_mat_dict, id_list = self.bm.rand_get_data(cls, num=num_graphs)
             perm_mat_dict = {key: val.toarray() for key, val in perm_mat_dict.items()}
             for pm in perm_mat_dict.values():
-                if pm.shape[0] <= 2 or pm.shape[1] <= 2 or pm.size >= cfg.PROBLEM.MAX_PROB_SIZE > 0:
+                if pm.shape[0] <= 2 or pm.shape[1] <= 2 or pm.size >= cfg.PROBLEM.MAX_PROB_SIZE > 0 or pm.sum() == 0:
                     refetch = True
                     break
 
@@ -359,11 +365,33 @@ def collate_fn(data: list):
                 sparse_dtype = np.float16
             else:
                 sparse_dtype = np.float32
-            K1G = [kronecker_sparse(x, y).astype(sparse_dtype) for x, y in zip(G2, G1)]  # 1 as source graph, 2 as target graph
+            if G1.shape[0] > 1:
+                KGHs_sparse = []
+                for b in range(G1.shape[0]):
+                    K1G = [kronecker_sparse(x, y).astype(sparse_dtype) for x, y in
+                           zip(G2[b].unsqueeze(0), G1[b].unsqueeze(0))]  # 1 as source graph, 2 as target graph
+                    K1H = [kronecker_sparse(x, y).astype(sparse_dtype) for x, y in zip(H2[b].unsqueeze(0), H1[b].unsqueeze(0))]
+
+                    # if 'NGM' in cfg and cfg.NGM.SPARSE_MODEL:
+                    K1G_sparse = CSCMatrix3d(K1G)
+                    K1H_sparse = CSCMatrix3d(K1H).transpose()
+                    KGHs_sparse.append((K1G_sparse.indices, K1H_sparse.indices))
+                ret['KGHs_sparse'] = KGHs_sparse
+            else:
+                K1G = [kronecker_sparse(x, y).astype(sparse_dtype) for x, y in zip(G2, G1)]  # 1 as source graph, 2 as target graph
+                K1H = [kronecker_sparse(x, y).astype(sparse_dtype) for x, y in zip(H2, H1)]
+
+                # if 'NGM' in cfg and cfg.NGM.SPARSE_MODEL:
+                K1G_sparse = CSCMatrix3d(K1G)
+                K1H_sparse = CSCMatrix3d(K1H).transpose()
+                ret['KGHs_sparse'] = [(K1G_sparse.indices, K1H_sparse.indices)]
+            # else:
+            K1G = [kronecker_sparse(x, y).astype(sparse_dtype) for x, y in
+                   zip(G2, G1)]  # 1 as source graph, 2 as target graph
             K1H = [kronecker_sparse(x, y).astype(sparse_dtype) for x, y in zip(H2, H1)]
+
             K1G = CSRMatrix3d(K1G)
             K1H = CSRMatrix3d(K1H).transpose()
-
             ret['KGHs'] = K1G, K1H
         elif cfg.PROBLEM.TYPE in ['MGM', 'MGM3'] and 'Gs_tgt' in ret and 'Hs_tgt' in ret:
             ret['KGHs'] = dict()

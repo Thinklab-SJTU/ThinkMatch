@@ -54,6 +54,15 @@ def construct_aff_mat(Ke: Tensor, Kp: Tensor, KroG: CSRMatrix3d, KroH: CSCMatrix
     return RebuildFGM.apply(Ke, Kp, KroG, KroH, KroGt, KroHt)
 
 
+def construct_sparse_aff_mat(Ke: Tensor, Kp: Tensor, row_idx: Tensor, col_idx: Tensor):
+    edge_value = torch.flatten(Ke)
+    point_value = torch.flatten(Kp)
+    K_value = torch.cat((edge_value, point_value), dim=0)
+    row_idx = torch.cat((row_idx, torch.linspace(0, point_value.shape[0] - 1, point_value.shape[0], device=row_idx.device)), dim=0)
+    col_idx = torch.cat((col_idx, torch.linspace(0, point_value.shape[0] - 1, point_value.shape[0], device=row_idx.device)), dim=0)
+    return K_value, row_idx, col_idx
+
+
 def kronecker_torch(t1: Tensor, t2: Tensor) -> Tensor:
     r"""
     Compute the kronecker product of :math:`\mathbf{T}_1` and :math:`\mathbf{T}_2`.

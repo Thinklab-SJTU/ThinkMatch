@@ -23,6 +23,7 @@ from pygmtools.benchmark import Benchmark
 def train_eval_model(model,
                      criterion,
                      optimizer,
+                     optimizer_k,
                      image_dataset,
                      dataloader,
                      tfboard_writer,
@@ -43,10 +44,12 @@ def train_eval_model(model,
     if not checkpoint_path.exists():
         checkpoint_path.mkdir(parents=True)
 
-    model_path, optim_path = '', ''
+    model_path, optim_path, optim_k_path = '', '', ''
     if start_epoch != 0:
         model_path = str(checkpoint_path / 'params_{:04}.pt'.format(start_epoch))
         optim_path = str(checkpoint_path / 'optim_{:04}.pt'.format(start_epoch))
+        if optimizer_k is not None:
+            optim_k_path = str(checkpoint_path / 'optim_k_{:04}.pt'.format(start_epoch))
     if len(cfg.PRETRAINED_PATH) > 0:
         model_path = cfg.PRETRAINED_PATH
     if len(model_path) > 0:
@@ -55,11 +58,24 @@ def train_eval_model(model,
     if len(optim_path) > 0:
         print('Loading optimizer state from {}'.format(optim_path))
         optimizer.load_state_dict(torch.load(optim_path))
+    if len(optim_k_path) > 0:
+        print('Loading optimizer_k state from {}'.format(optim_k_path))
+        optimizer_k.load_state_dict(torch.load(optim_k_path))
 
-    scheduler = optim.lr_scheduler.MultiStepLR(optimizer,
-                                               milestones=cfg.TRAIN.LR_STEP,
-                                               gamma=cfg.TRAIN.LR_DECAY,
-                                               last_epoch=cfg.TRAIN.START_EPOCH - 1)
+    if optimizer_k is not None:
+        scheduler = optim.lr_scheduler.MultiStepLR(optimizer,
+                                                   milestones=cfg.TRAIN.LR_STEP,
+                                                   gamma=cfg.TRAIN.LR_DECAY,
+                                                   last_epoch=-1)  # cfg.TRAIN.START_EPOCH - 1
+        scheduler_k = optim.lr_scheduler.MultiStepLR(optimizer_k,
+                                                   milestones=cfg.TRAIN.LR_STEP,
+                                                   gamma=cfg.TRAIN.LR_DECAY,
+                                                   last_epoch=-1)  # cfg.TRAIN.START_EPOCH - 1
+    else:
+        scheduler = optim.lr_scheduler.MultiStepLR(optimizer,
+                                                   milestones=cfg.TRAIN.LR_STEP,
+                                                   gamma=cfg.TRAIN.LR_DECAY,
+                                                   last_epoch=cfg.TRAIN.START_EPOCH - 1)
 
     for epoch in range(start_epoch, num_epochs):
         # Reset seed after evaluation per epoch
@@ -69,11 +85,16 @@ def train_eval_model(model,
         print('-' * 10)
 
         model.train()  # Set model to training mode
+        model.module.trainings = True
 
         print('lr = ' + ', '.join(['{:.2e}'.format(x['lr']) for x in optimizer.param_groups]))
+        if optimizer_k is not None:
+            print('K_regression_lr = ' + ', '.join(['{:.2e}'.format(x['lr']) for x in optimizer_k.param_groups]))
 
         epoch_loss = 0.0
         running_loss = 0.0
+        running_ks_loss = 0.0
+        running_ks_error = 0
         running_since = time.time()
         iter_num = 0
 
@@ -88,8 +109,11 @@ def train_eval_model(model,
 
             # zero the parameter gradients
             optimizer.zero_grad()
+            if optimizer_k is not None:
+                optimizer_k.zero_grad()
 
             with torch.set_grad_enabled(True):
+                # torch.autograd.set_detect_anomaly(True)
                 # forward
                 outputs = model(inputs)
 
@@ -103,7 +127,7 @@ def train_eval_model(model,
                         d_gt, grad_mask = displacement(outputs['gt_perm_mat'], *outputs['Ps'], outputs['ns'][0])
                         d_pred, _ = displacement(outputs['ds_mat'], *outputs['Ps'], outputs['ns'][0])
                         loss = criterion(d_pred, d_gt, grad_mask)
-                    elif cfg.TRAIN.LOSS_FUNC in ['perm', 'ce', 'hung']:
+                    elif cfg.TRAIN.LOSS_FUNC in ['perm', 'ce', 'hung', 'ilp']:
                         loss = criterion(outputs['ds_mat'], outputs['gt_perm_mat'], *outputs['ns'])
                     elif cfg.TRAIN.LOSS_FUNC == 'hamming':
                         loss = criterion(outputs['perm_mat'], outputs['gt_perm_mat'])
@@ -113,6 +137,9 @@ def train_eval_model(model,
                         raise ValueError(
                             'Unsupported loss function {} for problem type {}'.format(cfg.TRAIN.LOSS_FUNC,
                                                                                       cfg.PROBLEM.TYPE))
+                    if 'ks_loss' in outputs:
+                        ks_loss = outputs['ks_loss']
+                        ks_error = outputs['ks_error']
 
                     # compute accuracy
                     acc = matching_accuracy(outputs['perm_mat'], outputs['gt_perm_mat'], outputs['ns'][0])
@@ -134,13 +161,6 @@ def train_eval_model(model,
                         for s_pred, x_gt, (idx_src, idx_tgt) in \
                                 zip(outputs['ds_mat_list'], gt_perm_mat_list, outputs['graph_indices']):
                             l = criterion(s_pred, x_gt, ns[idx_src], ns[idx_tgt])
-                            loss += l
-                        loss /= len(outputs['ds_mat_list'])
-                    elif cfg.TRAIN.LOSS_FUNC == 'hamming':
-                        loss = torch.zeros(1, device=model.module.device)
-                        ns = outputs['ns']
-                        for s_pred, x_gt in zip(outputs['ds_mat_list'], gt_perm_mat_list):
-                            l = criterion(s_pred, x_gt)
                             loss += l
                         loss /= len(outputs['ds_mat_list'])
                     elif cfg.TRAIN.LOSS_FUNC == 'plain':
@@ -165,8 +185,17 @@ def train_eval_model(model,
                     with amp.scale_loss(loss, optimizer) as scaled_loss:
                         scaled_loss.backward()
                 else:
+                    # with torch.autograd.detect_anomaly():
                     loss.backward()
+                    if optimizer_k is not None:
+                        ks_loss.backward()
+                # for n, p in model.named_parameters():
+                #     if p.grad is not None and torch.any(torch.isnan(p.grad)):
+                #         print('NaN!!!')
+                #         print('name:', n, '-->require_grad:', p.requires_grad)
                 optimizer.step()
+                if optimizer_k is not None:
+                    optimizer_k.step()
 
                 batch_num = inputs['batch_size']
 
@@ -186,11 +215,14 @@ def train_eval_model(model,
                 # statistics
                 running_loss += loss.item() * batch_num
                 epoch_loss += loss.item() * batch_num
+                if 'ks_loss' in outputs:
+                    running_ks_loss += ks_loss * batch_num
+                    running_ks_error += ks_error * batch_num
 
                 if iter_num % cfg.STATISTIC_STEP == 0:
                     running_speed = cfg.STATISTIC_STEP * batch_num / (time.time() - running_since)
-                    print('Epoch {:<4} Iteration {:<4} {:>4.2f}sample/s Loss={:<8.4f}'
-                          .format(epoch, iter_num, running_speed, running_loss / cfg.STATISTIC_STEP / batch_num))
+                    print('Epoch {:<4} Iteration {:<4} {:>4.2f}sample/s Loss={:<8.4f} Ks_Loss={:<8.4f} Ks_Error={:<8.4f}'
+                          .format(epoch, iter_num, running_speed, running_loss / cfg.STATISTIC_STEP / batch_num, running_ks_loss / cfg.STATISTIC_STEP / batch_num, running_ks_error / cfg.STATISTIC_STEP / batch_num))
                     tfboard_writer.add_scalars(
                         'speed',
                         {'speed': running_speed},
@@ -204,12 +236,16 @@ def train_eval_model(model,
                     )
 
                     running_loss = 0.0
+                    running_ks_loss = 0.0
+                    running_ks_error = 0.0
                     running_since = time.time()
 
         epoch_loss = epoch_loss / cfg.TRAIN.EPOCH_ITERS / batch_num
 
         save_model(model, str(checkpoint_path / 'params_{:04}.pt'.format(epoch + 1)))
         torch.save(optimizer.state_dict(), str(checkpoint_path / 'optim_{:04}.pt'.format(epoch + 1)))
+        if optimizer_k is not None:
+            torch.save(optimizer_k.state_dict(), str(checkpoint_path / 'optim_k_{:04}.pt'.format(epoch + 1)))
 
         print('Epoch {:<4} Loss: {:.4f}'.format(epoch, epoch_loss))
         print()
@@ -232,6 +268,8 @@ def train_eval_model(model,
         wb.save(wb.__save_path)
 
         scheduler.step()
+        if optimizer_k is not None:
+            scheduler_k.step()
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}h {:.0f}m {:.0f}s'
@@ -253,8 +291,6 @@ if __name__ == '__main__':
     Net = mod.Net
 
     torch.manual_seed(cfg.RANDOM_SEED)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(cfg.RANDOM_SEED)
 
     dataset_len = {'train': cfg.TRAIN.EPOCH_ITERS * cfg.BATCH_SIZE, 'test': cfg.EVAL.SAMPLES}
     ds_dict = cfg[cfg.DATASET_FULL_NAME] if ('DATASET_FULL_NAME' in cfg) and (cfg.DATASET_FULL_NAME in cfg) else {}
@@ -295,6 +331,8 @@ if __name__ == '__main__':
         criterion = PermutationLossHung()
     elif cfg.TRAIN.LOSS_FUNC.lower() == 'hamming':
         criterion = HammingLoss()
+    elif cfg.TRAIN.LOSS_FUNC.lower() == 'ilp':
+        criterion = ILP_attention_loss()
     elif cfg.TRAIN.LOSS_FUNC.lower() == 'custom':
         criterion = None
         print('NOTE: You are setting the loss function as \'custom\', please ensure that there is a tensor with key '
@@ -302,14 +340,25 @@ if __name__ == '__main__':
     else:
         raise ValueError('Unknown loss function {}'.format(cfg.TRAIN.LOSS_FUNC))
 
-    if cfg.TRAIN.SEPARATE_BACKBONE_LR:
-        backbone_ids = [id(item) for item in model.backbone_params]
-        other_params = [param for param in model.parameters() if id(param) not in backbone_ids]
+    optimizer_k = None
 
-        model_params = [
-            {'params': other_params},
-            {'params': model.backbone_params, 'lr': cfg.TRAIN.BACKBONE_LR}
-        ]
+    if cfg.TRAIN.SEPARATE_BACKBONE_LR:
+            other_params = [param for param in model.parameters() if id(param) not in backbone_ids]
+
+            model_params = [
+                {'params': other_params},
+                {'params': model.backbone_params, 'lr': cfg.TRAIN.BACKBONE_LR}
+            ]
+        else:
+            other_params = [param for param in model.parameters() if id(param) not in k_params and id(param) not in backbone_ids]
+
+            model_params = [
+                {'params': other_params},
+                {'params': model.backbone_params, 'lr': cfg.TRAIN.BACKBONE_LR}
+            ]
+            k_reg_params = model.k_params
+            optimizer_k = optim.Adam(k_reg_params, lr=cfg.TRAIN.K_LR)
+
     else:
         model_params = model.parameters()
 
@@ -339,7 +388,7 @@ if __name__ == '__main__':
 
     with DupStdoutFileManager(str(Path(cfg.OUTPUT_PATH) / ('train_log_' + now_time + '.log'))) as _:
         print_easydict(cfg)
-        model = train_eval_model(model, criterion, optimizer, image_dataset, dataloader, tfboardwriter, benchmark,
+        model = train_eval_model(model, criterion, optimizer, optimizer_k, image_dataset, dataloader, tfboardwriter, benchmark,
                                  num_epochs=cfg.TRAIN.NUM_EPOCHS,
                                  start_epoch=cfg.TRAIN.START_EPOCH,
                                  xls_wb=wb)
