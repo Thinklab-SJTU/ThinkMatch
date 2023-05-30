@@ -82,7 +82,7 @@ You may find the environment setup in ThinkMatch complicated and the details of 
 ``pygmtools`` offers a user-friendly API, and is recommended for the following cases:
 
 * If you want to integrate graph matching as a step of your pipeline (either learning or non-learning, 
-  with ``numpy``/``pytorch``/``jittor``/``paddle``).
+  with ``numpy``/``pytorch``/``jittor``/``paddle``/``mindspore``/``tensorflow``).
 * If you want a quick benchmarking and profiling of the graph matching solvers available in ``pygmtools``.
 * If you do not want to dive too deep into the algorithm details and do not need to modify the algorithm.
 
