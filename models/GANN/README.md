@@ -47,10 +47,10 @@ Please cite the following papers if you use this model in your research:
   year = {2020}
 }
 
-@unpublished{WangPAMIsub21,
-  title={Robust Self-supervised Learning of Deep Graph Matching with Mixture of Modes},
-  author={Wang, Runzhong and Jiang, Shaofei and Yan, Junchi and Yang, Xiaokang},
-  note={submitted to IEEE Transactions of Pattern Analysis and Machine Intelligence},
-  year={2021}
+@article{WangPAMI23,
+  title={Unsupervised Learning of Graph Matching With Mixture of Modes Via Discrepancy Minimization},
+  author={Wang, Runzhong and Yan, Junchi and Yang, Xiaokang},
+  journal={IEEE Transactions of Pattern Analysis and Machine Intelligence},
+  year={2023}
 }
 ```
