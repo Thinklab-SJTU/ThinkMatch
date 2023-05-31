@@ -1,5 +1,5 @@
-MODEL_NAME: vgg16_gann-mgm
-DATASET_NAME: imcpt
+MODEL_NAME: vgg16_gann-gm
+DATASET_NAME: imcpt_50
 
 DATASET_FULL_NAME: IMC_PT_SparseGM
 
@@ -18,22 +18,18 @@ GPUS:
   - 0
 #  - 1
 
-# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_gann-mgm_imcpt.pt
-
 # Problem configuration
 PROBLEM:
-  TYPE: MGM
+  TYPE: 2GM
   RESCALE:  # rescaled image size
     - 256
     - 256
-  NUM_GRAPHS: 5
-  TRAIN_ALL_GRAPHS: False
-  TEST_ALL_GRAPHS: False
   FILTER: 'unfiltered'
 
 # Graph construction settings
 GRAPH:
   SRC_GRAPH_CONSTRUCT: fc
+  TGT_GRAPH_CONSTRUCT: fc
   SYM_ADJACENCY: True
 
 # Training settings
@@ -49,16 +45,16 @@ TRAIN:
   MOMENTUM: 0.9
   LR_DECAY: 0.1
   LR_STEP:  # (in epochs)
-    - 5
+    - 2
 
-  EPOCH_ITERS: 1000  # iterations per epoch
+  EPOCH_ITERS: 500  # iterations per epoch
 
   CLASS: none
 
 # Evaluation settings
 EVAL:
   EPOCH: 10  # epoch to be tested
-  SAMPLES: 100 # number of tests for each class
+  SAMPLES: 1000 # number of tests for each class
 
 # model parameters
 GANN:
@@ -75,7 +71,6 @@ GANN:
   CONVERGE_TOL: 1.0e-3
   MIN_TAU:
     - 0.005
-    #- 1.0e-2
   SCALE_FACTOR: 1.
   QUAD_WEIGHT: 0.008 #0.5
   NORM_QUAD_TERM: True

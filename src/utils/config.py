@@ -102,6 +102,12 @@ __C.TRAIN.OPTIMIZER = 'SGD'
 # Start learning rate
 __C.TRAIN.LR = 0.01
 
+# Use separate learning rate for the K regression module
+__C.TRAIN.SEPARATE_K_LR = False
+
+# Start learning rate for K regression module
+__C.TRAIN.K_LR = __C.TRAIN.LR
+
 # Use separate learning rate for the CNN backbone
 __C.TRAIN.SEPARATE_BACKBONE_LR = False
 

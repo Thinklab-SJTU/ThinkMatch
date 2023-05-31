@@ -1,16 +1,17 @@
-MODEL_NAME: vgg16_gmn
-DATASET_NAME: imcpt
+MODEL_NAME: vgg16_gcan_varied
+DATASET_NAME: spair71k
 
-DATASET_FULL_NAME: IMC_PT_SparseGM
+DATASET_FULL_NAME: SPair71k
 
-MODULE: models.GMN.model
+MODULE: models.GCAN.GCAN_model
 
-BACKBONE: VGG16_bn
+BACKBONE: VGG16_bn_final
 
 BATCH_SIZE: 8
 DATALOADER_NUM: 2
+FP16: False
 
-RANDOM_SEED: 123
+RANDOM_SEED: 321
 
 # available GPU ids
 GPUS:
@@ -28,23 +29,36 @@ PROBLEM:
 # Graph construction settings
 GRAPH:
   SRC_GRAPH_CONSTRUCT: tri
-  TGT_GRAPH_CONSTRUCT: fc
+  TGT_GRAPH_CONSTRUCT: tri
   SYM_ADJACENCY: True
 
 # Training settings
 TRAIN:
   # start, end epochs
   START_EPOCH: 0
-  NUM_EPOCHS: 10
+  NUM_EPOCHS: 20
 
-  LOSS_FUNC: offset
+  LOSS_FUNC: ilp
+
+  OPTIMIZER: Adam
 
   # learning rate
-  LR: 1.0e-3 #2.0e-4
+  LR: 2.e-3  # 2.e-3
+  SEPARATE_BACKBONE_LR: True
+  BACKBONE_LR: 2.e-5  # 2.e-5
   MOMENTUM: 0.9
-  LR_DECAY: 0.1
+  LR_DECAY: 0.5
   LR_STEP:  # (in epochs)
     - 2
+    - 4
+    - 6
+    - 8
+    - 10
+#    - 1
+#    - 3
+#    - 5
+#    - 7
+#    - 9
 
   EPOCH_ITERS: 2000  # iterations per epoch
 
@@ -52,15 +66,15 @@ TRAIN:
 
 # Evaluation settings
 EVAL:
-  EPOCH: 10  # epoch to be tested
+  EPOCH: 16  # epoch to be tested
   SAMPLES: 1000  # number of tested pairs for each class
 
-# GMN model parameters
-GMN:
+GCAN:
   FEATURE_CHANNEL: 512
-  PI_ITER_NUM: 25
-  PI_STOP_THRESH: 1.0e-3
-  BS_ITER_NUM: 20
-  BS_EPSILON: 1.0e-10
-  VOTING_ALPHA: 200.
-  GM_SOLVER: SM
+  NODE_FEATURE_DIM: 1024
+  NODE_HIDDEN_SIZE: [1024]
+  SK_ITER_NUM: 20
+  SK_EPSILON: 1.0e-10
+  CROSS_ITER: False
+  SK_TAU: 0.05
+

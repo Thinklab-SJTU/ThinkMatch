@@ -54,6 +54,47 @@ def construct_aff_mat(Ke: Tensor, Kp: Tensor, KroG: CSRMatrix3d, KroH: CSCMatrix
     return RebuildFGM.apply(Ke, Kp, KroG, KroH, KroGt, KroHt)
 
 
+def construct_sparse_aff_mat(Ke: Tensor, Kp: Tensor, row_idx: Tensor, col_idx: Tensor):
+    r"""
+    Construct sparse affinity matrix with edge-wise affinity matrix :math:`\mathbf{K}_e`, node-wise matrix
+    :math:`\mathbf{K}_p` and graph connectivity matrices :math:`\mathbf{G}_1, \mathbf{H}_1, \mathbf{G}_2, \mathbf{H}_2`
+
+    .. math ::
+        \mathbf{K}=\mathrm{diag}(\mathrm{vec}(\mathbf{K}_p)) +
+        (\mathbf{G}_2 \otimes_{\mathcal{K}} \mathbf{G}_1) \mathrm{diag}(\mathrm{vec}(\mathbf{K}_e))
+        (\mathbf{H}_2 \otimes_{\mathcal{K}} \mathbf{H}_1)^\top
+
+    where :math:`\mathrm{diag}(\cdot)` means building a diagonal matrix based on the given vector,
+    and :math:`\mathrm{vec}(\cdot)` means column-wise vectorization.
+    :math:`\otimes_{\mathcal{K}}` denotes Kronecker product.
+
+    This function does not supports batched operations. This formulation is developed by `"F. Zhou and F. Torre. Factorized
+    Graph Matching. TPAMI 2015." <http://www.f-zhou.com/gm/2015_PAMI_FGM_Draft.pdf>`_
+
+    :param Ke: :math:`(1\times n_e)` non-zero elements in edge-wise affinity matrix Ke.
+     :math:`n_e`: number of non-zero elements in dense Ke
+    :param Kp: :math:`(1\times n_1 n_2)` non-zero elements in node-wise affinity matrix Kp.
+     :math:`n_1`: number of nodes in graph 1, :math:`n_2`: number of nodes in graph 2
+    :param row_idx: :math:`(1\times n_e)` row indices of the non-zero elements in edge-wise affinity matrix Ke
+    :param col_idx: :math:`(1\times n_e)` column indices of the non-zero elements in edge-wise affinity matrix Ke
+    :return: none-zero values in the affinity matrix :math:`\mathbf K`, and their row/column indices (value, row-idx, col-idx)
+
+    For a graph matching problem with 5 nodes and 4 nodes,
+    the connection of :math:`\mathbf K` and :math:`\mathbf{K}_p, \mathbf{K}_e` is illustrated as
+
+    .. image :: ../../images/factorized_graph_matching.png
+
+    where :math:`\mathbf K (20 \times 20)` is the complete affinity matrix, :math:`\mathbf{K}_p (5 \times 4)` is the
+    node-wise affinity matrix, :math:`\mathbf{K}_e(16 \times 10)` is the edge-wise affinity matrix.
+    """
+    edge_value = torch.flatten(Ke)
+    point_value = torch.flatten(Kp)
+    K_value = torch.cat((edge_value, point_value), dim=0)
+    row_idx = torch.cat((row_idx, torch.linspace(0, point_value.shape[0] - 1, point_value.shape[0], device=row_idx.device)), dim=0)
+    col_idx = torch.cat((col_idx, torch.linspace(0, point_value.shape[0] - 1, point_value.shape[0], device=row_idx.device)), dim=0)
+    return K_value, row_idx, col_idx
+
+
 def kronecker_torch(t1: Tensor, t2: Tensor) -> Tensor:
     r"""
     Compute the kronecker product of :math:`\mathbf{T}_1` and :math:`\mathbf{T}_2`.

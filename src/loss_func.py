@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from src.lap_solvers.hungarian import hungarian
+from src.lap_solvers.ILP import ILP_solver
 from torch import Tensor
 
 
@@ -343,3 +344,66 @@ class HammingLoss(torch.nn.Module):
         """
         errors = pred_perm * (1.0 - gt_perm) + (1.0 - pred_perm) * gt_perm
         return errors.mean(dim=0).sum()
+
+
+class ILP_attention_loss(nn.Module):
+    r"""
+    Integer Linear Programming (ILP) attention loss between two permutations.
+    Proposed by `"Jiang et al. Graph-Context Attention Networks for Size-Varied Deep Graph Matching. CVPR 2022."
+    <https://openaccess.thecvf.com/content/CVPR2022/html/Jiang_Graph-Context_Attention_Networks_for_Size-Varied_Deep_Graph_Matching_CVPR_2022_paper.html>`_
+
+    .. math::
+        L_{perm} =- \sum_{i \in \mathcal{V}_1, j \in \mathcal{V}_2}
+        \left( \max\left(a_{i,j}, \mathbf{X}^{gt}_{i,j} \right) \log \mathbf{S}_{i,j} + (1-\mathbf{X}^{gt}_{i,j}) \log (1-\mathbf{S}_{i,j}) \right)
+
+    where :math:`\mathcal{V}_1, \mathcal{V}_2` are vertex sets for two graphs, and a_{i,j} is the ILP assignment result.
+
+    .. note::
+        For batched input, this loss function computes the averaged loss among all instances in the batch.
+    """
+    def __init__(self,varied_size=True):
+        super(ILP_attention_loss, self).__init__()
+        self.varied_size = varied_size
+
+    def forward(self, pred_dsmat: Tensor, gt_perm: Tensor, src_ns: Tensor, tgt_ns: Tensor) -> Tensor:
+        r"""
+        :param pred_dsmat: :math:`(b\times n_1 \times n_2)` predicted doubly-stochastic matrix :math:`(\mathbf{S})`
+        :param gt_perm: :math:`(b\times n_1 \times n_2)` ground truth permutation matrix :math:`(\mathbf{X}^{gt})`
+        :param src_ns: :math:`(b)` number of exact pairs in the first graph (also known as source graph).
+        :param tgt_ns: :math:`(b)` number of exact pairs in the second graph (also known as target graph).
+        :return: :math:`(1)` averaged permutation loss
+
+        .. note::
+            We support batched instances with different number of nodes, therefore ``src_ns`` and ``tgt_ns`` are
+            required to specify the exact number of nodes of each instance in the batch.
+        """
+        batch_num = pred_dsmat.shape[0]
+
+        pred_dsmat = pred_dsmat.to(dtype=torch.float32)
+
+        try:
+            assert torch.all((gt_perm >= 0) * (gt_perm <= 1))
+        except AssertionError as err:
+            print(pred_dsmat)
+            raise err
+
+        if self.varied_size:
+            dis_pred = ILP_solver(pred_dsmat+1, src_ns+1, tgt_ns+1, dummy=True)
+        else:
+            dis_pred = ILP_solver(pred_dsmat, src_ns, tgt_ns)
+        ali_perm = dis_pred + gt_perm
+        ali_perm[ali_perm >= 1.0] = 1
+        pred_dsmat = torch.mul(ali_perm, pred_dsmat)
+        gt_perm = torch.mul(ali_perm, gt_perm)
+
+        loss = torch.tensor(0.).to(pred_dsmat.device)
+        n_sum = torch.zeros_like(loss)
+        for b in range(batch_num):
+            batch_slice = [b, slice(src_ns[b]), slice(tgt_ns[b])]
+            loss += F.binary_cross_entropy(
+                pred_dsmat[batch_slice],
+                gt_perm[batch_slice],
+                reduction='sum')
+            n_sum += src_ns[b].to(n_sum.dtype).to(pred_dsmat.device)
+
+        return loss/n_sum

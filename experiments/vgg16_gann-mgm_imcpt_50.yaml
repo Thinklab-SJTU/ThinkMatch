@@ -1,0 +1,81 @@
+MODEL_NAME: vgg16_gann-mgm
+DATASET_NAME: imcpt_50
+
+DATASET_FULL_NAME: IMC_PT_SparseGM
+
+MODULE: models.GANN.model
+
+BACKBONE: VGG16_bn
+
+BATCH_SIZE: 1
+DATALOADER_NUM: 0
+FP16: False
+
+RANDOM_SEED: 123
+
+# available GPU ids
+GPUS:
+  - 0
+#  - 1
+
+# PRETRAINED_PATH: ThinkMatchPretrained/pretrained_params_vgg16_gann-mgm_imcpt.pt
+
+# Problem configuration
+PROBLEM:
+  TYPE: MGM
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+  NUM_GRAPHS: 5
+  TRAIN_ALL_GRAPHS: False
+  TEST_ALL_GRAPHS: False
+  FILTER: 'unfiltered'
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: fc
+  SYM_ADJACENCY: True
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 0
+  NUM_EPOCHS: 10
+
+  LOSS_FUNC: perm
+
+  # learning rate
+  LR: 1.0e-3
+  MOMENTUM: 0.9
+  LR_DECAY: 0.1
+  LR_STEP:  # (in epochs)
+    - 5
+
+  EPOCH_ITERS: 1000  # iterations per epoch
+
+  CLASS: none
+
+# Evaluation settings
+EVAL:
+  EPOCH: 10  # epoch to be tested
+  SAMPLES: 100 # number of tests for each class
+
+# model parameters
+GANN:
+  FEATURE_CHANNEL: 1024
+  SK_ITER_NUM: 50
+  SK_TAU: 0.05
+  SK_EPSILON: 1.0e-10
+  UNIV_SIZE: 50
+  MGM_ITER:
+    - 300
+  INIT_TAU:
+    - 0.05
+  GAMMA: 0.9
+  CONVERGE_TOL: 1.0e-3
+  MIN_TAU:
+    - 0.005
+    #- 1.0e-2
+  SCALE_FACTOR: 1.
+  QUAD_WEIGHT: 0.008 #0.5
+  NORM_QUAD_TERM: True

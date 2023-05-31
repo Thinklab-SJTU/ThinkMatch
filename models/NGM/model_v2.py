@@ -1,13 +1,15 @@
 import torch
 import itertools
+from torch_sparse import spmm, SparseTensor
 
 from models.BBGM.affinity_layer import InnerProductWithWeightsAffinity
 from models.BBGM.sconv_archs import SiameseSConvOnNodes, SiameseNodeFeaturesToEdgeFeatures
 from src.feature_align import feature_align
-from src.factorize_graph_matching import construct_aff_mat
+from src.factorize_graph_matching import construct_aff_mat, construct_sparse_aff_mat
 from src.utils.pad_tensor import pad_tensor
-from models.NGM.gnn import GNNLayer
+from models.NGM.gnn import GNNLayer, PYGNNLayer, SPGNNLayer
 from src.lap_solvers.sinkhorn import Sinkhorn
+from src.lap_solvers.sinkhorn_topk import greedy_perm
 from src.lap_solvers.hungarian import hungarian
 
 from src.utils.config import cfg
@@ -48,21 +50,51 @@ class Net(CNN):
         self.tau = cfg.NGM.SK_TAU
         self.mgm_tau = cfg.NGM.MGM_SK_TAU
         self.univ_size = cfg.NGM.UNIV_SIZE
+        self.sparse = cfg.NGM.SPARSE_MODEL
+        self.thresholding = cfg.NGM.THRESHOLDING
+        self.gt_k = cfg.NGM.GT_K
 
         self.sinkhorn = Sinkhorn(max_iter=cfg.NGM.SK_ITER_NUM, tau=self.tau, epsilon=cfg.NGM.SK_EPSILON)
         self.sinkhorn_mgm = Sinkhorn(max_iter=cfg.NGM.SK_ITER_NUM, epsilon=cfg.NGM.SK_EPSILON, tau=self.mgm_tau)
         self.gnn_layer = cfg.NGM.GNN_LAYER
-        for i in range(self.gnn_layer):
-            tau = cfg.NGM.SK_TAU
-            if i == 0:
-                gnn_layer = GNNLayer(1, 1,
-                                     cfg.NGM.GNN_FEAT[i] + cfg.NGM.SK_EMB, cfg.NGM.GNN_FEAT[i],
-                                     sk_channel=cfg.NGM.SK_EMB, sk_tau=tau, edge_emb=cfg.NGM.EDGE_EMB)
+        if not self.sparse:
+            for i in range(self.gnn_layer):
+                tau = cfg.NGM.SK_TAU
+                if i == 0:
+                    gnn_layer = GNNLayer(1, 1,
+                                         cfg.NGM.GNN_FEAT[i] + cfg.NGM.SK_EMB, cfg.NGM.GNN_FEAT[i],
+                                         sk_channel=cfg.NGM.SK_EMB, sk_tau=tau, edge_emb=cfg.NGM.EDGE_EMB)
+                else:
+                    gnn_layer = GNNLayer(cfg.NGM.GNN_FEAT[i - 1] + cfg.NGM.SK_EMB, cfg.NGM.GNN_FEAT[i - 1],
+                                         cfg.NGM.GNN_FEAT[i] + cfg.NGM.SK_EMB, cfg.NGM.GNN_FEAT[i],
+                                         sk_channel=cfg.NGM.SK_EMB, sk_tau=tau, edge_emb=cfg.NGM.EDGE_EMB)
+                self.add_module('gnn_layer_{}'.format(i), gnn_layer)
+        else:
+            self.geometric = True
+            if self.geometric:
+                for i in range(self.gnn_layer):
+                    tau = cfg.NGM.SK_TAU
+                    if i == 0:
+                        gnn_layer = PYGNNLayer(1, 1,
+                                               cfg.NGM.GNN_FEAT[i] + cfg.NGM.SK_EMB, cfg.NGM.GNN_FEAT[i],
+                                               sk_channel=cfg.NGM.SK_EMB, sk_tau=tau, edge_emb=cfg.NGM.EDGE_EMB)
+                    else:
+                        gnn_layer = PYGNNLayer(cfg.NGM.GNN_FEAT[i - 1] + cfg.NGM.SK_EMB, cfg.NGM.GNN_FEAT[i - 1],
+                                               cfg.NGM.GNN_FEAT[i] + cfg.NGM.SK_EMB, cfg.NGM.GNN_FEAT[i],
+                                               sk_channel=cfg.NGM.SK_EMB, sk_tau=tau, edge_emb=cfg.NGM.EDGE_EMB)
+                    self.add_module('gnn_layer_{}'.format(i), gnn_layer)
             else:
-                gnn_layer = GNNLayer(cfg.NGM.GNN_FEAT[i - 1] + cfg.NGM.SK_EMB, cfg.NGM.GNN_FEAT[i - 1],
-                                     cfg.NGM.GNN_FEAT[i] + cfg.NGM.SK_EMB, cfg.NGM.GNN_FEAT[i],
-                                     sk_channel=cfg.NGM.SK_EMB, sk_tau=tau, edge_emb=cfg.NGM.EDGE_EMB)
-            self.add_module('gnn_layer_{}'.format(i), gnn_layer)
+                for i in range(self.gnn_layer):
+                    tau = cfg.NGM.SK_TAU
+                    if i == 0:
+                        gnn_layer = SPGNNLayer(1, 1,
+                                               cfg.NGM.GNN_FEAT[i] + cfg.NGM.SK_EMB, cfg.NGM.GNN_FEAT[i],
+                                               sk_channel=cfg.NGM.SK_EMB, sk_tau=tau, edge_emb=cfg.NGM.EDGE_EMB)
+                    else:
+                        gnn_layer = SPGNNLayer(cfg.NGM.GNN_FEAT[i - 1] + cfg.NGM.SK_EMB, cfg.NGM.GNN_FEAT[i - 1],
+                                               cfg.NGM.GNN_FEAT[i] + cfg.NGM.SK_EMB, cfg.NGM.GNN_FEAT[i],
+                                               sk_channel=cfg.NGM.SK_EMB, sk_tau=tau, edge_emb=cfg.NGM.EDGE_EMB)
+                    self.add_module('gnn_layer_{}'.format(i), gnn_layer)
         self.classifier = nn.Linear(cfg.NGM.GNN_FEAT[-1] + cfg.NGM.SK_EMB, 1)
 
     def forward(
@@ -118,34 +150,75 @@ class Net(CNN):
         s_list, mgm_s_list, x_list, mgm_x_list, indices = [], [], [], [], []
 
         for unary_affs, quadratic_affs, (idx1, idx2) in zip(unary_affs_list, quadratic_affs_list, lexico_iter(range(num_graphs))):
-            kro_G, kro_H = data_dict['KGHs'] if num_graphs == 2 else data_dict['KGHs']['{},{}'.format(idx1, idx2)]
-            Kp = torch.stack(pad_tensor(unary_affs), dim=0)
-            Ke = torch.stack(pad_tensor(quadratic_affs), dim=0)
-            K = construct_aff_mat(Ke, Kp, kro_G, kro_H)
-            if num_graphs == 2: data_dict['aff_mat'] = K
+            if not self.sparse:
+                kro_G, kro_H = data_dict['KGHs'] if num_graphs == 2 else data_dict['KGHs']['{},{}'.format(idx1, idx2)]
+                Kp = torch.stack(pad_tensor(unary_affs), dim=0)
+                Ke = torch.stack(pad_tensor(quadratic_affs), dim=0)
+                K = construct_aff_mat(Ke, Kp, kro_G, kro_H)
+                if num_graphs == 2: data_dict['aff_mat'] = K
 
-            if cfg.NGM.FIRST_ORDER:
-                emb = Kp.transpose(1, 2).contiguous().view(Kp.shape[0], -1, 1)
+                if cfg.NGM.FIRST_ORDER:
+                    emb = Kp.transpose(1, 2).contiguous().view(Kp.shape[0], -1, 1)
+                else:
+                    emb = torch.ones(K.shape[0], K.shape[1], 1, device=K.device)
+
+                if cfg.NGM.POSITIVE_EDGES:
+                    A = (K > 0).to(K.dtype)
+                else:
+                    A = (K != 0).to(K.dtype)
+
+                emb_K = K.unsqueeze(-1)
+
+                # NGM qap solver
+                for i in range(self.gnn_layer):
+                    gnn_layer = getattr(self, 'gnn_layer_{}'.format(i))
+                    emb_K, emb = gnn_layer(A, emb_K, emb, n_points[idx1], n_points[idx2])
             else:
-                emb = torch.ones(K.shape[0], K.shape[1], 1, device=K.device)
+                kro_G, kro_H = data_dict['KGHs'] if num_graphs == 2 else data_dict['KGHs']['{},{}'.format(idx1, idx2)]
+                Kp = torch.stack(pad_tensor(unary_affs), dim=0)
+                Ke = torch.stack(pad_tensor(quadratic_affs), dim=0)
+                K_value, row_idx, col_idx = construct_sparse_aff_mat(Ke, Kp, kro_G, kro_H)
 
-            if cfg.NGM.POSITIVE_EDGES:
-                A = (K > 0).to(K.dtype)
-            else:
-                A = (K != 0).to(K.dtype)
+                if cfg.NGM.FIRST_ORDER:
+                    emb = Kp.transpose(1, 2).contiguous().view(Kp.shape[0], -1, 1)
+                else:
+                    emb = torch.ones(cfg.BATCH_SIZE, Kp.shape[1] * Kp.shape[2], 1, device=K_value.device)
 
-            emb_K = K.unsqueeze(-1)
+                # NGM qap solver
+                if self.geometric:
+                    adj = SparseTensor(row=row_idx.long(), col=col_idx.long(), value=K_value,
+                                       sparse_sizes=(Kp.shape[1] * Kp.shape[2], Kp.shape[1] * Kp.shape[2]))
+                    for i in range(self.gnn_layer):
+                        gnn_layer = getattr(self, 'gnn_layer_{}'.format(i))
+                        emb = gnn_layer(adj, emb, n_points[idx1], n_points[idx2])
+                else:
+                    K_index = torch.cat((row_idx.unsqueeze(0), col_idx.unsqueeze(0)), dim=0).long()
+                    A_value = torch.ones(K_value.shape, device=K_value.device)
+                    tmp = torch.ones([Kp.shape[1] * Kp.shape[2]], device=K_value.device).unsqueeze(-1)
+                    normed_A_value = 1 / torch.flatten(
+                        spmm(K_index, A_value, Kp.shape[1] * Kp.shape[2], Kp.shape[1] * Kp.shape[2], tmp))
+                    A_index = torch.linspace(0, Kp.shape[1] * Kp.shape[2] - 1, Kp.shape[1] * Kp.shape[2]).unsqueeze(0)
+                    A_index = torch.repeat_interleave(A_index, 2, dim=0).long().to(K_value.device)
 
-            # NGM qap solver
-            for i in range(self.gnn_layer):
-                gnn_layer = getattr(self, 'gnn_layer_{}'.format(i))
-                emb_K, emb = gnn_layer(A, emb_K, emb, n_points[idx1], n_points[idx2])
+                    for i in range(self.gnn_layer):
+                        gnn_layer = getattr(self, 'gnn_layer_{}'.format(i))
+                        emb = gnn_layer(K_value, K_index, normed_A_value, A_index, emb, n_points[idx1], n_points[idx2])
 
             v = self.classifier(emb)
             s = v.view(v.shape[0], points[idx2].shape[1], -1).transpose(1, 2)
 
             ss = self.sinkhorn(s, n_points[idx1], n_points[idx2], dummy_row=True)
             x = hungarian(ss, n_points[idx1], n_points[idx2])
+            if self.thresholding > 0 and self.gt_k:
+                raise AssertionError
+            if self.thresholding > 0:
+                valid_map = ss > self.thresholding
+                x = x * valid_map
+            if self.gt_k:
+                ks = torch.tensor([torch.sum(data_dict['gt_perm_mat'][i]) for i in range(data_dict['gt_perm_mat'].shape[0])], dtype=torch.float32, device=ss.device)
+                top_indices = torch.argsort(x.mul(ss).reshape(x.shape[0], -1), descending=True, dim=-1)
+                x = torch.zeros(ss.shape, device=ss.device)
+                x = greedy_perm(x, top_indices, ks.view(-1))
             s_list.append(ss)
             x_list.append(x)
             indices.append((idx1, idx2))

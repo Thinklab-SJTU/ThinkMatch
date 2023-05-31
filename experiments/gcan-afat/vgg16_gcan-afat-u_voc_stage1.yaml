@@ -1,0 +1,89 @@
+MODEL_NAME: vgg16_gcan_varied_afat-u
+DATASET_NAME: voc
+
+DATASET_FULL_NAME: PascalVOC
+
+MODULE: models.GCAN.GCAN_model_topk
+
+BACKBONE: VGG16_bn_final
+
+BATCH_SIZE: 8
+DATALOADER_NUM: 2
+FP16: False
+
+RANDOM_SEED: 123
+
+# available GPU ids
+GPUS:
+  - 0
+#  - 1
+
+# Problem configuration
+PROBLEM:
+  TYPE: 2GM
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+  FILTER: 'unfiltered'
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: tri
+  TGT_GRAPH_CONSTRUCT: tri
+  SYM_ADJACENCY: True
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 0
+  NUM_EPOCHS: 20
+
+  LOSS_FUNC: perm
+
+  OPTIMIZER: Adam
+
+  # learning rate
+  LR: 1.e-3
+  SEPARATE_BACKBONE_LR: True
+  BACKBONE_LR: 1.e-5
+  MOMENTUM: 0.9
+  LR_DECAY: 0.5
+  LR_STEP:  # (in epochs)
+    - 1
+    - 2
+    - 4
+    - 6
+    - 8
+    - 10
+
+  EPOCH_ITERS: 2000  # iterations per epoch
+
+  CLASS: none
+
+# Evaluation settings
+EVAL:
+  EPOCH: 10  # epoch to be tested
+  SAMPLES: 1000  # number of tested pairs for each class
+
+# GCAN model parameters
+GCAN:
+  FEATURE_CHANNEL: 512
+  NODE_FEATURE_DIM: 1024
+  NODE_HIDDEN_SIZE: [ 1024 ]
+  SK_ITER_NUM: 20
+  SK_EPSILON: 1.0e-10
+  CROSS_ITER: False
+  SK_TAU: 0.05
+
+AFA:
+  AFAU: True
+  K_FACTOR: 50.
+  UNIV_SIZE: 20
+  REGRESSION: False
+  HEAD_NUM: 8
+  KQV_DIM: 16
+  FF_HIDDEN_DIM: 16
+  MS_HIDDEN_DIM: 8
+  MS_LAYER1_INIT: 10
+  MS_LAYER2_INIT: 10
+  MEAN_K: True

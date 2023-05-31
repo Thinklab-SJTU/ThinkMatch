@@ -1,0 +1,91 @@
+MODEL_NAME: vgg16_gcan_varied_afat-i
+DATASET_NAME: willow
+
+DATASET_FULL_NAME: WillowObject
+
+MODULE: models.GCAN.GCAN_model_topk
+
+BACKBONE: VGG16_bn_final
+
+BATCH_SIZE: 8
+DATALOADER_NUM: 2
+FP16: False
+
+RANDOM_SEED: 123
+
+# available GPU ids
+GPUS:
+  - 0
+#  - 1
+
+# Problem configuration
+PROBLEM:
+  TYPE: 2GM
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+  FILTER: 'unfiltered'
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: tri
+  TGT_GRAPH_CONSTRUCT: tri
+  SYM_ADJACENCY: True
+
+WillowObject:
+  TRAIN_NUM: 20  # number of images for training set
+  SPLIT_OFFSET: 0  # the starting index of training set
+  RAND_OUTLIER: 10
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 10
+  NUM_EPOCHS: 20
+
+  LOSS_FUNC: hung
+
+  OPTIMIZER: Adam
+
+  # learning rate
+  LR: 1.e-20
+  SEPARATE_BACKBONE_LR: True
+  BACKBONE_LR: 1.e-20
+  SEPARATE_K_LR: True
+  K_LR: 1.e-4
+  MOMENTUM: 0.9
+  LR_DECAY: 0.5
+  LR_STEP:  # (in epochs)
+    - 1
+    - 2
+    - 4
+    - 6
+    - 8
+    - 10
+
+  EPOCH_ITERS: 1000  # iterations per epoch
+
+  CLASS: none
+
+# Evaluation settings
+EVAL:
+  EPOCH: 10  # epoch to be tested
+  SAMPLES: 100  # number of tested pairs for each class
+
+# GCAN model parameters
+GCAN:
+  FEATURE_CHANNEL: 512
+  NODE_FEATURE_DIM: 1024
+  NODE_HIDDEN_SIZE: [ 1024 ]
+  SK_ITER_NUM: 20
+  SK_EPSILON: 1.0e-10
+  CROSS_ITER: False
+  SK_TAU: 0.05
+
+AFA:
+  AFAU: False
+  UNIV_SIZE: 20
+  REG_HIDDEN_FEAT: 512
+  REGRESSION: True
+  K_FACTOR: 50.
+  TN_NEURONS: 16

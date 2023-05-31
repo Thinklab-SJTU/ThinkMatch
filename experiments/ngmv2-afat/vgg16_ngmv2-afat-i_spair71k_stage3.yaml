@@ -1,0 +1,93 @@
+MODEL_NAME: vgg16_ngmv2_afat-i
+DATASET_NAME: spair71k
+
+DATASET_FULL_NAME: SPair71k
+
+MODULE: models.NGM.model_v2_topk
+
+BACKBONE: VGG16_bn_final
+
+BATCH_SIZE: 8
+DATALOADER_NUM: 2
+FP16: False
+
+RANDOM_SEED: 123
+
+# available GPU ids
+GPUS:
+  - 0
+#  - 1
+
+# Problem configuration
+PROBLEM:
+  TYPE: 2GM
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+  FILTER: 'unfiltered'
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: tri
+  TGT_GRAPH_CONSTRUCT: tri
+  SYM_ADJACENCY: True
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 30
+  NUM_EPOCHS: 40
+
+  LOSS_FUNC: perm
+
+  OPTIMIZER: Adam
+
+  # learning rate
+  LR: 1.5e-4
+  SEPARATE_BACKBONE_LR: True
+  BACKBONE_LR: 1.5e-6
+  SEPARATE_K_LR: True
+  K_LR: 1.e-5
+  MOMENTUM: 0.9
+  LR_DECAY: 0.5
+  LR_STEP:  # (in epochs)
+    - 2
+    - 4
+    - 6
+    - 8
+    - 10
+
+  EPOCH_ITERS: 1000  # iterations per epoch
+
+  CLASS: none
+
+# Evaluation settings
+EVAL:
+  EPOCH: 30  # epoch to be tested
+  SAMPLES: 1000  # number of tested pairs for each class
+
+# model parameters
+NGM:
+  EDGE_FEATURE: cat
+  FEATURE_CHANNEL: 512
+  SK_ITER_NUM: 20
+  SK_EPSILON: 1.0e-10
+  SK_TAU: 0.05
+  GNN_FEAT:
+    - 16
+    - 16
+    - 16
+  GNN_LAYER: 3
+  GAUSSIAN_SIGMA: 1.
+  SK_EMB: 1
+  FIRST_ORDER: True
+  EDGE_EMB: False
+  SPARSE_MODEL: False
+
+AFA:
+  AFAU: False
+  UNIV_SIZE: 25
+  REG_HIDDEN_FEAT: 2048
+  REGRESSION: True
+  K_FACTOR: 50.
+  TN_NEURONS: 16

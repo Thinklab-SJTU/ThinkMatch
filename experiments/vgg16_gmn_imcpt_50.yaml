@@ -1,15 +1,14 @@
-MODEL_NAME: vgg16_gann-gm
-DATASET_NAME: imcpt
+MODEL_NAME: vgg16_gmn
+DATASET_NAME: imcpt_50
 
 DATASET_FULL_NAME: IMC_PT_SparseGM
 
-MODULE: models.GANN.model
+MODULE: models.GMN.model
 
 BACKBONE: VGG16_bn
 
-BATCH_SIZE: 1
-DATALOADER_NUM: 0
-FP16: False
+BATCH_SIZE: 8
+DATALOADER_NUM: 2
 
 RANDOM_SEED: 123
 
@@ -28,7 +27,7 @@ PROBLEM:
 
 # Graph construction settings
 GRAPH:
-  SRC_GRAPH_CONSTRUCT: fc
+  SRC_GRAPH_CONSTRUCT: tri
   TGT_GRAPH_CONSTRUCT: fc
   SYM_ADJACENCY: True
 
@@ -38,39 +37,30 @@ TRAIN:
   START_EPOCH: 0
   NUM_EPOCHS: 10
 
-  LOSS_FUNC: perm
+  LOSS_FUNC: offset
 
   # learning rate
-  LR: 1.0e-3
+  LR: 1.0e-3 #2.0e-4
   MOMENTUM: 0.9
   LR_DECAY: 0.1
   LR_STEP:  # (in epochs)
     - 2
 
-  EPOCH_ITERS: 500  # iterations per epoch
+  EPOCH_ITERS: 2000  # iterations per epoch
 
   CLASS: none
 
 # Evaluation settings
 EVAL:
   EPOCH: 10  # epoch to be tested
-  SAMPLES: 1000 # number of tests for each class
+  SAMPLES: 1000  # number of tested pairs for each class
 
-# model parameters
-GANN:
-  FEATURE_CHANNEL: 1024
-  SK_ITER_NUM: 50
-  SK_TAU: 0.05
-  SK_EPSILON: 1.0e-10
-  UNIV_SIZE: 50
-  MGM_ITER:
-    - 300
-  INIT_TAU:
-    - 0.05
-  GAMMA: 0.9
-  CONVERGE_TOL: 1.0e-3
-  MIN_TAU:
-    - 0.005
-  SCALE_FACTOR: 1.
-  QUAD_WEIGHT: 0.008 #0.5
-  NORM_QUAD_TERM: True
+# GMN model parameters
+GMN:
+  FEATURE_CHANNEL: 512
+  PI_ITER_NUM: 25
+  PI_STOP_THRESH: 1.0e-3
+  BS_ITER_NUM: 20
+  BS_EPSILON: 1.0e-10
+  VOTING_ALPHA: 200.
+  GM_SOLVER: SM

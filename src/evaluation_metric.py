@@ -1,6 +1,7 @@
 import torch
 from torch import Tensor
 from itertools import combinations
+from src.utils.config import cfg
 
 
 def pck(x: Tensor, x_gt: Tensor, perm_mat: Tensor, dist_threshs: Tensor, ns: Tensor) -> Tensor:
@@ -125,7 +126,79 @@ def matching_precision(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor) -> Tensor
     return precision
 
 
-def matching_accuracy(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor) -> Tensor:
+def matching_recall_varied(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor) -> Tensor:
+    r"""
+    Matching Recall between predicted permutation matrix and ground truth permutation matrix.
+
+    .. math::
+        \text{matching recall} = \frac{tr(\mathbf{X}\cdot {\mathbf{X}^{gt}}^\top)}{\sum \mathbf{X}^{gt}}
+
+    :param pmat_pred: :math:`(b\times n_1 \times n_2)` predicted permutation matrix :math:`(\mathbf{X})`
+    :param pmat_gt: :math:`(b\times n_1 \times n_2)` ground truth permutation matrix :math:`(\mathbf{X}^{gt})`
+    :param ns: :math:`(b\times 2)` number of nodes in all pairs. We support batched instances with different number of nodes, and
+     ``ns`` is required to specify the exact number of nodes of each instance in the batch.
+    :return: :math:`(b)` matching recall
+
+    """
+    device = pmat_pred.device
+    batch_num = pmat_pred.shape[0]
+
+    pmat_gt = pmat_gt.to(device)
+
+    assert torch.all((pmat_pred == 0) + (pmat_pred == 1)), 'pmat_pred can only contain 0/1 elements.'
+    assert torch.all((pmat_gt == 0) + (pmat_gt == 1)), 'pmat_gt should only contain 0/1 elements.'
+
+    acc = torch.zeros(batch_num, device=device)
+    for b in range(batch_num):
+        mask = torch.zeros((pmat_pred[b].shape[0],pmat_gt[b].shape[1]),device=pmat_pred.device)
+        mask[:ns[0][b]+1,:ns[1][b]+1]=1
+        mask[ns[0][b], ns[1][b]]=0
+        acc[b] = torch.sum(pmat_pred[b] * pmat_gt[b] * mask) / torch.sum(pmat_gt[b] * mask)
+        # acc[b] = torch.sum(pmat_pred[b, :ns[0][b], :ns[1][b]] * pmat_gt[b, :ns[0][b], :ns[1][b]]) / torch.sum(
+        #     pmat_gt[b, :ns[0][b], :ns[1][b]])
+
+    acc[torch.isnan(acc)] = 0
+
+    return acc
+
+
+def matching_precision_varied(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor) -> Tensor:
+    r"""
+    Matching Precision between predicted permutation matrix and ground truth permutation matrix.
+
+    .. math::
+        \text{matching precision} = \frac{tr(\mathbf{X}\cdot {\mathbf{X}^{gt}}^\top)}{\sum \mathbf{X}}
+
+    :param pmat_pred: :math:`(b\times n_1 \times n_2)` predicted permutation matrix :math:`(\mathbf{X})`
+    :param pmat_gt: :math:`(b\times n_1 \times n_2)` ground truth permutation matrix :math:`(\mathbf{X}^{gt})`
+    :param ns: :math:`(b\times 2)` number of nodes in all pairs. We support batched instances with different number of nodes, and
+     ``ns`` is required to specify the exact number of nodes of each instance in the batch.
+    :return: :math:`(b)` matching precision
+
+    """
+    device = pmat_pred.device
+    batch_num = pmat_pred.shape[0]
+
+    pmat_gt = pmat_gt.to(device)
+
+    assert torch.all((pmat_pred == 0) + (pmat_pred == 1)), 'pmat_pred can only contain 0/1 elements.'
+    assert torch.all((pmat_gt == 0) + (pmat_gt == 1)), 'pmat_gt should only contain 0/1 elements.'
+
+    precision = torch.zeros(batch_num, device=device)
+    for b in range(batch_num):
+        mask = torch.zeros((pmat_pred[b].shape[0],pmat_gt[b].shape[1]),device=pmat_pred.device)
+        mask[:ns[0][b]+1,:ns[1][b]+1]=1
+        mask[ns[0][b], ns[1][b]]=0
+        precision[b] = torch.sum(pmat_pred[b] * pmat_gt[b] * mask) / torch.sum(pmat_pred[b] * mask)
+        # precision[b] = torch.sum(pmat_pred[b, :ns[0][b]+1, :ns[1][b]+1] *
+        #                          pmat_gt[b, :ns[0][b]+1, :ns[1][b]+1]) / torch.sum(pmat_pred[b, :ns[0][b]+1, :ns[1][b]+1])
+
+    precision[torch.isnan(precision)] = 0
+
+    return precision
+
+
+def matching_accuracy(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor, idx: int) -> Tensor:
     r"""
     Matching Accuracy between predicted permutation matrix and ground truth permutation matrix.
 
@@ -136,15 +209,20 @@ def matching_accuracy(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor) -> Tensor:
 
     :param pmat_pred: :math:`(b\times n_1 \times n_2)` predicted permutation matrix :math:`(\mathbf{X})`
     :param pmat_gt: :math:`(b\times n_1 \times n_2)` ground truth permutation matrix :math:`(\mathbf{X}^{gt})`
-    :param ns: :math:`(b)` number of exact pairs. We support batched instances with different number of nodes, and
+    :param ns: :math:`(b\times g)` number of nodes in graphs, where :math:`g=2` for 2GM, and :math:`g>2` for MGM. We support batched instances with different number of nodes, and
      ``ns`` is required to specify the exact number of nodes of each instance in the batch.
+    :param idx: :math:`(int)` index of source graph in the graph pair.
+
     :return: :math:`(b)` matching accuracy
 
     .. note::
         If the graph matching problem has no outliers, it is proper to use this metric and papers call it "matching
         accuracy". If there are outliers, it is better to use ``matching_precision`` and ``matching_recall``.
     """
-    return matching_recall(pmat_pred, pmat_gt, ns)
+    if 'gcan' in cfg.MODEL_NAME and 'afat' not in cfg.MODEL_NAME:
+        return matching_recall_varied(pmat_pred, pmat_gt, ns)
+    else:
+        return matching_recall(pmat_pred, pmat_gt, ns[idx])
 
 
 def format_accuracy_metric(ps: Tensor, rs: Tensor, f1s: Tensor) -> str:
