@@ -28,6 +28,24 @@ To summarize, here we include the following models:
   * **NGM-v2**: two-graph matching/Lawler's QAP solver with VGG16+SplineConv
   * **NHGM-v2**: hyper-graph matching solver with VGG16+SplineConv
   * **NMGM-v2**: multi-graph matching solver with VGG16+SplineConv
+  
+We also implement the partial matching handling (PMH) approach in the following paper:
+* Runzhong Wang, Ziao Guo, Shaofei Jiang, Xiaokang Yang, Junchi Yan. "Deep Learning of Partial Graph Matching via Differentiable Top-K." _CVPR 2023_.
+  [[paper]](https://openaccess.thecvf.com/content/CVPR2023/html/Wang_Deep_Learning_of_Partial_Graph_Matching_via_Differentiable_Top-K_CVPR_2023_paper.html)
+
+The PMH approach is utilized to resolve partial graph matching problem, i.e., graph matching with the existence of outliers.
+It includes a topk-GM algorithm to suppress matchings with low confidence, and a AFA module to predict the number of inliers k.
+We choose NGMv2 as the backend graph matching network, and the file ``model_v2_topk.py`` can be referred to for details.
+The implementation of topk-GM algorithm and AFA modules is shown in ``src.lap_solvers.sinkhorn_topk.py`` and ``src.k_pred_net.py`` respectively.
+
+The partial graph matching problem and the permutation constraints can also be explicitly formulated and resolved via the approach proposed in the following paper:
+* Runzhong Wang, Yunhao Zhang, Ziao Guo, Tianyi Chen, Xiaokang Yang, Junchi Yan. "LinSATNet: The Positive Linear Satisfiability Neural Networks." _ICML 2023_.
+  [[paper]](https://openreview.net/forum?id=D2Oaj7v9YJ)
+  
+The apporach can project input variables with non-negative constraints turough a differentiable satisfiability layer based on an extension of the classic Sinkhorn algorithm involving jointly encoding multiple sets of marginal distributions. 
+We choose NGMv2 as the backend graph matching network, and the file ``model_v2_linsat.py`` can be referred to for details.
+The implementation of LinSATNet is shown in ``src.linsatnet.py``.
+
 
 ## Benchmark Results
 ### PascalVOC - 2GM
@@ -173,8 +191,12 @@ NOTICE: you may need a large GPU memory (up to 48GB in our experiment) to run NG
 |   the implementation of training/evaluation procedures of NGM (can handle both graph matching and QAP)
 ├── model_config.py
 |   the declaration of model hyperparameters
-└── model_v2.py
-    the implementation of training/evaluation procedures of NGMv2 (can only handle graph matching)
+├── model_v2.py
+|   the implementation of training/evaluation procedures of NGMv2 (can only handle graph matching)
+├── model_v2_linsat.py
+|   the implementation of training/evaluation procedures of NGMv2 combined with LinSATNet
+└── model_v2_topk.py
+    the implementation of training/evaluation procedures of NGMv2 combined with topk-GM algorithm and partial matching handling AFA modules
 ```
 some layers are borrowed from ``models/BBGM``
 
@@ -187,5 +209,19 @@ Please cite the following paper if you use this model in your research:
   title = {Neural Graph Matching Network: Learning Lawler's Quadratic Assignment Problem with Extension to Hypergraph and Multiple-graph Matching},
   journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
   year={2021}
+}
+
+@InProceedings{WangCVPR23,
+    author={Wang, Runzhong and Guo, Ziao and Jiang, Shaofei and Yang, Xiaokang and Yan, Junchi},
+    title={Deep Learning of Partial Graph Matching via Differentiable Top-K},
+    booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    year={2023},
+}
+
+@InProceedings{WangICML23, 
+   title={LinSATNet: The Positive Linear Satisfiability Neural Networks},
+   author={Runzhong Wang, Yunhao Zhang, Ziao Guo, Tianyi Chen, Xiaokang Yang, Junchi Yan},
+   booktitle={ICML},
+   year={2023}
 }
 ```

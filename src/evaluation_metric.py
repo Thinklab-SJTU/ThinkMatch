@@ -219,7 +219,7 @@ def matching_accuracy(pmat_pred: Tensor, pmat_gt: Tensor, ns: Tensor, idx: int) 
         If the graph matching problem has no outliers, it is proper to use this metric and papers call it "matching
         accuracy". If there are outliers, it is better to use ``matching_precision`` and ``matching_recall``.
     """
-    if 'gcan' in cfg.MODEL_NAME:
+    if 'gcan' in cfg.MODEL_NAME and 'afat' not in cfg.MODEL_NAME:
         return matching_recall_varied(pmat_pred, pmat_gt, ns)
     else:
         return matching_recall(pmat_pred, pmat_gt, ns[idx])

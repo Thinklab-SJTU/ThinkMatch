@@ -66,6 +66,10 @@ _ThinkMatch_ currently contains pytorch source code of the following deep graph 
 * [**BBGM**](/models/BBGM)
   * Michal Rolínek, Paul Swoboda, Dominik Zietlow, Anselm Paulus, Vít Musil, Georg Martius. "Deep Graph Matching via Blackbox Differentiation of Combinatorial Solvers." _ECCV 2020_. 
     [[paper]](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123730409.pdf)
+* [**GCAN**](/models/GCAN)
+  * Zheheng Jiang, Hossein Rahmani, Plamen Angelov, Sue Black, Bryan M. Williams. "Graph-Context Attention Networks for Size-Varied Deep Graph Matching." _CVPR 2022_. 
+    [[paper]](https://openaccess.thecvf.com/content/CVPR2022/papers/Jiang_Graph-Context_Attention_Networks_for_Size-Varied_Deep_Graph_Matching_CVPR_2022_paper.pdf)
+    
 
 ## When to use ThinkMatch
 
@@ -300,11 +304,13 @@ Note: All following datasets can be automatically downloaded and unzipped by `py
       year={2021}
     }
     
-    @unpublished{WangPAMIsub21,
-      title={Robust Self-supervised Learning of Deep Graph Matching with Mixture of Modes},
-      author={Wang, Runzhong and Jiang, Shaofei and Yan, Junchi and Yang, Xiaokang},
-      note={submitted to IEEE Transactions of Pattern Analysis and Machine Intelligence},
-      year={2021}
+
+    @InProceedings{WangCVPR23,
+        author    = {Wang, Runzhong and Guo, Ziao and Jiang, Shaofei and Yang, Xiaokang and Yan, Junchi},
+        title     = {Deep Learning of Partial Graph Matching via Differentiable Top-K},
+        booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+        month     = {June},
+        year      = {2023}
     }
     ```
 

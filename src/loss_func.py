@@ -347,13 +347,36 @@ class HammingLoss(torch.nn.Module):
 
 
 class ILP_attention_loss(nn.Module):
+    r"""
+    Integer Linear Programming (ILP) attention loss between two permutations.
+    Proposed by `"Jiang et al. Graph-Context Attention Networks for Size-Varied Deep Graph Matching. CVPR 2022."
+    <https://openaccess.thecvf.com/content/CVPR2022/html/Jiang_Graph-Context_Attention_Networks_for_Size-Varied_Deep_Graph_Matching_CVPR_2022_paper.html>`_
 
+    .. math::
+        L_{perm} =- \sum_{i \in \mathcal{V}_1, j \in \mathcal{V}_2}
+        \left( \max\left(a_{i,j}, \mathbf{X}^{gt}_{i,j} \right) \log \mathbf{S}_{i,j} + (1-\mathbf{X}^{gt}_{i,j}) \log (1-\mathbf{S}_{i,j}) \right)
+
+    where :math:`\mathcal{V}_1, \mathcal{V}_2` are vertex sets for two graphs, and a_{i,j} is the ILP assignment result.
+
+    .. note::
+        For batched input, this loss function computes the averaged loss among all instances in the batch.
+    """
     def __init__(self,varied_size=True):
         super(ILP_attention_loss, self).__init__()
         self.varied_size = varied_size
 
     def forward(self, pred_dsmat: Tensor, gt_perm: Tensor, src_ns: Tensor, tgt_ns: Tensor) -> Tensor:
+        r"""
+        :param pred_dsmat: :math:`(b\times n_1 \times n_2)` predicted doubly-stochastic matrix :math:`(\mathbf{S})`
+        :param gt_perm: :math:`(b\times n_1 \times n_2)` ground truth permutation matrix :math:`(\mathbf{X}^{gt})`
+        :param src_ns: :math:`(b)` number of exact pairs in the first graph (also known as source graph).
+        :param tgt_ns: :math:`(b)` number of exact pairs in the second graph (also known as target graph).
+        :return: :math:`(1)` averaged permutation loss
 
+        .. note::
+            We support batched instances with different number of nodes, therefore ``src_ns`` and ``tgt_ns`` are
+            required to specify the exact number of nodes of each instance in the batch.
+        """
         batch_num = pred_dsmat.shape[0]
 
         pred_dsmat = pred_dsmat.to(dtype=torch.float32)

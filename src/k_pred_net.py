@@ -6,11 +6,10 @@ import math
 from src.utils.config import cfg
 
 
-########################################
-# ENCODER
-########################################
 class Encoder(nn.Module):
-
+    """
+    AFA-U graph attention module to generate bipartite node embeddings.
+    """
     model_params = {
         'embedding_dim': cfg.AFA.UNIV_SIZE,
         'head_num': cfg.AFA.HEAD_NUM,
@@ -27,6 +26,14 @@ class Encoder(nn.Module):
         self.layers = nn.ModuleList([EncoderLayer(**self.model_params)])
 
     def forward(self, row_emb, col_emb, cost_mat):
+        """
+        Making a forward propagation pass to generate bipartite node embeddings.
+
+        :param row_emb: Initial node features of the source graph.
+        :param col_emb: Initial node features of the target graph.
+        :param cost_mat: Edge weights of the bipartite graph.
+        :return row_emb, col_emb: Aggregated node embeddings of the source graph, aggregated node embeddings of the target graph.
+        """
         # col_emb.shape: (batch, col_cnt, embedding)
         # row_emb.shape: (batch, row_cnt, embedding)
         # cost_mat.shape: (batch, row_cnt, col_cnt)
@@ -38,12 +45,24 @@ class Encoder(nn.Module):
 
 
 class EncoderLayer(nn.Module):
+    """
+    Encoding layer in AFA-U graph attention module.
+    """
     def __init__(self, **model_params):
         super().__init__()
         self.row_encoding_block = EncodingBlock(**model_params)
         self.col_encoding_block = EncodingBlock(**model_params)
 
     def forward(self, row_emb, col_emb, cost_mat):
+        """
+        Making a forward propagation pass in AFA-U graph attention module.
+
+        :param row_emb: Initial node features of the source graph.
+        :param col_emb: Initial node features of the target graph.
+        :param cost_mat: Edge weights of the bipartite graph.
+        :return row_emb, col_emb: Aggregated node embeddings of the source graph, aggregated node embeddings of the target graph.
+        """
+
         # row_emb.shape: (batch, row_cnt, embedding)
         # col_emb.shape: (batch, col_cnt, embedding)
         # cost_mat.shape: (batch, row_cnt, col_cnt)
@@ -54,6 +73,9 @@ class EncoderLayer(nn.Module):
 
 
 class EncodingBlock(nn.Module):
+    """
+    Encoding block for the source graph/the target graph in AFA-U graph attention module.
+    """
     def __init__(self, **model_params):
         super().__init__()
         self.model_params = model_params
@@ -64,7 +86,7 @@ class EncodingBlock(nn.Module):
         self.Wq = nn.Linear(embedding_dim, head_num * qkv_dim, bias=False)
         self.Wk = nn.Linear(embedding_dim, head_num * qkv_dim, bias=False)
         self.Wv = nn.Linear(embedding_dim, head_num * qkv_dim, bias=False)
-        self.mixed_score_MHA = MixedScore_MultiHeadAttention(**model_params)
+        self.mixed_score_MHA = CrossSet_MultiHeadAttention(**model_params)
         self.multi_head_combine = nn.Linear(head_num * qkv_dim, embedding_dim)
 
         self.add_n_normalization_1 = AddAndInstanceNormalization(**model_params)
@@ -72,6 +94,14 @@ class EncodingBlock(nn.Module):
         self.add_n_normalization_2 = AddAndInstanceNormalization(**model_params)
 
     def forward(self, row_emb, col_emb, cost_mat):
+        """
+        Making a forward propagation pass for the source graph/the target graph in AFA-U graph attention module.
+
+        :param row_emb: Initial node features of the source graph.
+        :param col_emb: Initial node features of the target graph.
+        :param cost_mat: Edge weights of the bipartite graph.
+        :return out: Aggregated node embeddings.
+        """
         # NOTE: row and col can be exchanged, if cost_mat.transpose(1,2) is used
         # input1.shape: (batch, row_cnt, embedding)
         # input2.shape: (batch, col_cnt, embedding)
@@ -92,19 +122,29 @@ class EncodingBlock(nn.Module):
 
         out1 = self.add_n_normalization_1(row_emb, multi_head_out)
         out2 = self.feed_forward(out1)
-        out3 = self.add_n_normalization_2(out1, out2)
+        out = self.add_n_normalization_2(out1, out2)
 
-        return out3
+        return out
         # shape: (batch, row_cnt, embedding)
 
 
 class AddAndInstanceNormalization(nn.Module):
+    """
+    Add and instance normalization in AFA-U graph attention module.
+    """
     def __init__(self, **model_params):
         super().__init__()
         embedding_dim = model_params['embedding_dim']
         self.norm = nn.InstanceNorm1d(embedding_dim, affine=True, track_running_stats=False)
 
     def forward(self, input1, input2):
+        """
+        Making a forward propagation pass to add and normalize 2 instances.
+
+        :param input1: Input node features of the source graph.
+        :param input2: Input node features of the target graph.
+        :return out: Added and normalized node embeddings.
+        """
         # input.shape: (batch, problem, embedding)
 
         added = input1 + input2
@@ -116,13 +156,16 @@ class AddAndInstanceNormalization(nn.Module):
         normalized = self.norm(transposed)
         # shape: (batch, embedding, problem)
 
-        back_trans = normalized.transpose(1, 2)
+        out = normalized.transpose(1, 2)
         # shape: (batch, problem, embedding)
 
-        return back_trans
+        return out
 
 
 class FeedForward(nn.Module):
+    """
+    Feed forward operation in AFA-U graph attention module.
+    """
     def __init__(self, **model_params):
         super().__init__()
         embedding_dim = model_params['embedding_dim']
@@ -132,12 +175,22 @@ class FeedForward(nn.Module):
         self.W2 = nn.Linear(ff_hidden_dim, embedding_dim)
 
     def forward(self, input1):
+        """
+        Making a forward propagation pass.
+
+        :param input1: Input node features.
+        :return out: Refined node features.
+        """
         # input.shape: (batch, problem, embedding)
+        out = self.W2(F.relu(self.W1(input1)))
 
-        return self.W2(F.relu(self.W1(input1)))
+        return out
 
 
-class MixedScore_MultiHeadAttention(nn.Module):
+class CrossSet_MultiHeadAttention(nn.Module):
+    """
+    Cross-set multi-head attention layer in AFA-U graph attention module.
+    """
     def __init__(self, **model_params):
         super().__init__()
         self.model_params = model_params
@@ -162,6 +215,15 @@ class MixedScore_MultiHeadAttention(nn.Module):
         # shape: (head, 1)
 
     def forward(self, q, k, v, cost_mat):
+        """
+        Making a forward propagation pass in cross-set multi-head attention layer.
+
+        :param k: Key vectors in attention mechanism.
+        :param q: Query vectors in attention mechanism.
+        :param v: Value vectors in attention mechanism.
+        :param cost_mat: Edge weights of the bipartite graph.
+        :return out: Refined node features.
+        """
         # q shape: (batch, head_num, row_cnt, qkv_dim)
         # k,v shape: (batch, head_num, col_cnt, qkv_dim)
         # cost_mat.shape: (batch, row_cnt, col_cnt)
@@ -212,21 +274,21 @@ class MixedScore_MultiHeadAttention(nn.Module):
         weights = nn.Softmax(dim=3)(mixed_scores)
         # shape: (batch, head_num, row_cnt, col_cnt)
 
-        out = torch.matmul(weights, v)
+        out1 = torch.matmul(weights, v)
         # shape: (batch, head_num, row_cnt, qkv_dim)
 
-        out_transposed = out.transpose(1, 2)
+        out_transposed = out1.transpose(1, 2)
         # shape: (batch, row_cnt, head_num, qkv_dim)
 
-        out_concat = out_transposed.reshape(batch_size, row_cnt, head_num * qkv_dim)
+        out = out_transposed.reshape(batch_size, row_cnt, head_num * qkv_dim)
         # shape: (batch, row_cnt, head_num*qkv_dim)
 
-        return out_concat
+        return out
 
 
 class TensorNetworkModule(torch.nn.Module):
     """
-    SimGNN Tensor Network module to calculate similarity vector.
+    SimGNN Tensor Network module in AFA-I module to calculate similarity vector.
     """
     def __init__(self, filters, tensor_neurons):
         """
@@ -273,7 +335,7 @@ class TensorNetworkModule(torch.nn.Module):
 
 class DenseAttentionModule(torch.nn.Module):
     """
-    SimGNN Dense Attention Module to make a pass on graph.
+    SimGNN Dense Attention Module in AFA-I module to make a pass on graph.
     """
 
     def __init__(self, filters):
@@ -322,10 +384,6 @@ class DenseAttentionModule(torch.nn.Module):
 
         return weighted.sum(dim=1)
 
-
-########################################
-# NN SUB FUNCTIONS
-########################################
 
 def reshape_by_heads(qkv, head_num):
     # q.shape: (batch, n, head_num*key_dim)   : n can be either 1 or PROBLEM_SIZE

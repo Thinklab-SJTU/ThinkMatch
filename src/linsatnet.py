@@ -1,5 +1,3 @@
-# 2023-01-06 version
-
 import torch
 import sys
 

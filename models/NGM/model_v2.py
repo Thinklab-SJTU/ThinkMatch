@@ -9,7 +9,7 @@ from src.factorize_graph_matching import construct_aff_mat, construct_sparse_aff
 from src.utils.pad_tensor import pad_tensor
 from models.NGM.gnn import GNNLayer, PYGNNLayer, SPGNNLayer
 from src.lap_solvers.sinkhorn import Sinkhorn
-from src.lap_solvers.sinkhorn_topk import soft_topk, greedy_perm
+from src.lap_solvers.sinkhorn_topk import greedy_perm
 from src.lap_solvers.hungarian import hungarian
 
 from src.utils.config import cfg

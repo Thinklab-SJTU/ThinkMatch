@@ -4,12 +4,11 @@ from models.GCAN.positional_encoding_layer import positional_encoding_layer
 from models.GCAN.GCA_module import GCA_module
 from src.feature_align import feature_align
 from src.utils.pad_tensor import pad_tensor, pad_tensor_varied
-from src.lap_solvers.sinkhorn import Sinkhorn
+# from src.lap_solvers.sinkhorn import Sinkhorn
 from src.lap_solvers.ILP import ILP_solver
-from src.lap_solvers.sinkhorn_varied import Sinkhorn as Sinkhorn_varied
+from src.lap_solvers.sinkhorn import Sinkhorn as Sinkhorn_varied
 from torch_geometric import utils as geometric_util
 from scipy.linalg import block_diag
-from src.lap_solvers.hungarian import hungarian
 import numpy as np
 
 from src.utils.config import cfg
@@ -70,14 +69,7 @@ class Net(CNN):
         self.rescale = cfg.PROBLEM.RESCALE
         self.tau = cfg.GCAN.SK_TAU
 
-        ### reb
-        # self.sinkhorn = Sinkhorn(max_iter=cfg.GCAN.SK_ITER_NUM, tau=self.tau, epsilon=cfg.GCAN.SK_EPSILON)
-        ### reb
-
-        if True:
-            self.sinkhorn = Sinkhorn_varied(max_iter=cfg.GCAN.SK_ITER_NUM, tau=self.tau, epsilon=cfg.GCAN.SK_EPSILON)
-        else:
-            self.sinkhorn = Sinkhorn(max_iter=cfg.GCAN.SK_ITER_NUM, tau=self.tau, epsilon=cfg.GCAN.SK_EPSILON)
+        self.sinkhorn = Sinkhorn_varied(max_iter=cfg.GCAN.SK_ITER_NUM, tau=self.tau, epsilon=cfg.GCAN.SK_EPSILON)
 
     def forward(
         self,

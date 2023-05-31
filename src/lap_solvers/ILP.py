@@ -27,12 +27,13 @@ def softmax(x,axis=None):
 
 def ILP_solver(s: Tensor, n1: Tensor=None, n2: Tensor=None, nproc: int=1, dummy: bool=False) -> Tensor:
     r"""
-    Solve optimal LAP permutation by hungarian algorithm. The time cost is :math:`O(n^3)`.
+    Solve optimal LAP permutation by Integer Linear Programming.
 
     :param s: :math:`(b\times n_1 \times n_2)` input 3d tensor. :math:`b`: batch size
     :param n1: :math:`(b)` number of objects in dim1
     :param n2: :math:`(b)` number of objects in dim2
     :param nproc: number of parallel processes (default: ``nproc=1`` for no parallel)
+    :param dummy: whether to add dummy node in permutation matrix to match the outliers
     :return: :math:`(b\times n_1 \times n_2)` optimal permutation matrix
 
     .. note::

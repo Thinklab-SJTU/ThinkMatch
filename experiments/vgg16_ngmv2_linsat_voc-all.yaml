@@ -13,6 +13,8 @@ FP16: False
 
 RANDOM_SEED: 123
 
+PRETRAINED_PATH: /mnt/nas2/home/guoziao/ThinkMatch-topk/output/vgg16_ngmv2_afat-i_voc/params/__otnet_params.pt
+
 # available GPU ids
 GPUS:
   - 0
@@ -68,7 +70,7 @@ EVAL:
 NGM:
   EDGE_FEATURE: cat
   FEATURE_CHANNEL: 512
-  SK_ITER_NUM: 800  # 20
+  SK_ITER_NUM: 40  # 20
   SK_EPSILON: 1.0e-10
   SK_TAU: 0.2  # 0.05
   GNN_FEAT:

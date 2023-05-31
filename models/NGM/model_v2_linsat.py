@@ -11,6 +11,7 @@ from src.factorize_graph_matching import construct_aff_mat, construct_sparse_aff
 from src.utils.pad_tensor import pad_tensor
 from models.NGM.gnn import GNNLayer, SPGNNLayer, PYGNNLayer
 from src.linsatnet import otnet_layer
+from src.lap_solvers.sinkhorn_topk import greedy_perm
 from src.lap_solvers.hungarian import hungarian
 
 from src.utils.config import cfg
@@ -94,7 +95,6 @@ class Net(CNN):
                     self.add_module('gnn_layer_{}'.format(i), gnn_layer)
 
         self.classifier = nn.Linear(cfg.NGM.GNN_FEAT[-1] + cfg.NGM.SK_EMB, 1)
-        self.hung = True
 
     def forward(
         self,
@@ -242,8 +242,10 @@ class Net(CNN):
                 ss_out[ii, 0:p0, 0:p1] = otnet_layer(input, A=constraint, b=b, E=E, f=f, max_iter=2 * cfg.NGM.SK_ITER_NUM,
                                                  tau=self.tau).reshape(p0, p1)
 
-            if self.hung:
-                x = hungarian(ss_out, n_points[idx1], n_points[idx2])
+            x = hungarian(ss_out, n_points[idx1], n_points[idx2])
+            top_indices = torch.argsort(x.mul(ss_out).reshape(x.shape[0], -1), descending=True, dim=-1)
+            x = torch.zeros(ss_out.shape, device=ss_out.device)
+            x = greedy_perm(x, top_indices, gt_ks)
             s_list.append(ss_out)
             x_list.append(x)
             indices.append((idx1, idx2))

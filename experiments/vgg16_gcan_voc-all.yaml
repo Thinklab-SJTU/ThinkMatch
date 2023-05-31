@@ -15,7 +15,7 @@ RANDOM_SEED: 321
 
 # available GPU ids
 GPUS:
-  - 1
+  - 0
 #  - 1
 
 # Problem configuration
@@ -43,9 +43,9 @@ TRAIN:
   OPTIMIZER: Adam
 
   # learning rate
-  LR: 1.25e-4  # 2.e-3
+  LR: 2.e-3  # 2.e-3
   SEPARATE_BACKBONE_LR: True
-  BACKBONE_LR: 1.25e-6  # 2.e-5
+  BACKBONE_LR: 2.e-5  # 2.e-5
   MOMENTUM: 0.9
   LR_DECAY: 0.5
   LR_STEP:  # (in epochs)
@@ -66,7 +66,7 @@ TRAIN:
 
 # Evaluation settings
 EVAL:
-  EPOCH: 16  # epoch to be tested
+  EPOCH: 10  # epoch to be tested
   SAMPLES: 1000  # number of tested pairs for each class
 
 GCAN:
