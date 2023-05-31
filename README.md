@@ -61,8 +61,8 @@ _ThinkMatch_ currently contains pytorch source code of the following deep graph 
 * [**GANN**](/models/GANN)
   * Runzhong Wang, Junchi Yan and Xiaokang Yang. "Graduated Assignment for Joint Multi-Graph Matching and Clustering with Application to Unsupervised Graph Matching Network Learning." _NeurIPS 2020_.
     [[paper]](https://papers.nips.cc/paper/2020/hash/e6384711491713d29bc63fc5eeb5ba4f-Abstract.html)
-  * Runzhong Wang, Shaofei Jiang, Junchi Yan and Xiaokang Yang. "Robust Self-supervised Learning of Deep Graph Matching with Mixture of Modes." _Submitted to TPAMI_. 
-    [[project page]](https://thinklab.sjtu.edu.cn/project/GANN-GM/index.html)
+  * Runzhong Wang, Junchi Yan and Xiaokang Yang. "Unsupervised Learning of Graph Matching with Mixture of Modes via Discrepancy Minimization." _TPAMI 2023_. 
+    [[paper]](https://ieeexplore.ieee.org/document/10073537), [[project page]](https://thinklab.sjtu.edu.cn/project/GANN-GM/index.html)
 * [**BBGM**](/models/BBGM)
   * Michal Rolínek, Paul Swoboda, Dominik Zietlow, Anselm Paulus, Vít Musil, Georg Martius. "Deep Graph Matching via Blackbox Differentiation of Combinatorial Solvers." _ECCV 2020_. 
     [[paper]](https://www.ecva.net/papers/eccv_2020/papers_ECCV/papers/123730409.pdf)
