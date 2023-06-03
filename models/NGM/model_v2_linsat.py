@@ -1,6 +1,3 @@
-import torch
-import random
-import numpy as np
 import itertools
 from torch_sparse import spmm, SparseTensor
 
@@ -10,8 +7,8 @@ from src.feature_align import feature_align
 from src.factorize_graph_matching import construct_aff_mat, construct_sparse_aff_mat
 from src.utils.pad_tensor import pad_tensor
 from models.NGM.gnn import GNNLayer, SPGNNLayer, PYGNNLayer
-from src.linsatnet import otnet_layer
-from src.lap_solvers.sinkhorn_topk import greedy_perm
+from LinSATNet import linsat_layer
+from models.AFAT.sinkhorn_topk import greedy_perm
 from src.lap_solvers.hungarian import hungarian
 
 from src.utils.config import cfg
@@ -239,7 +236,7 @@ class Net(CNN):
                 ### b[-1] = gt_ks[ii]
 
                 input = s[ii, 0:p0, 0:p1].reshape(-1)
-                ss_out[ii, 0:p0, 0:p1] = otnet_layer(input, A=constraint, b=b, E=E, f=f, max_iter=2 * cfg.NGM.SK_ITER_NUM,
+                ss_out[ii, 0:p0, 0:p1] = linsat_layer(input, A=constraint, b=b, E=E, f=f, max_iter=2 * cfg.NGM.SK_ITER_NUM,
                                                  tau=self.tau).reshape(p0, p1)
 
             x = hungarian(ss_out, n_points[idx1], n_points[idx2])

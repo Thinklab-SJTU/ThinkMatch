@@ -1,5 +1,3 @@
-import torch
-from torch import nn
 import itertools
 
 from models.GCAN.positional_encoding_layer import positional_encoding_layer
@@ -9,9 +7,9 @@ from src.utils.pad_tensor import pad_tensor
 from src.lap_solvers.sinkhorn import Sinkhorn
 from models.PCA.affinity_layer import Affinity
 from src.gconv import Siamese_Gconv
-from src.k_pred_net import Encoder, TensorNetworkModule, DenseAttentionModule
+from models.AFAT.k_pred_net import Encoder, TensorNetworkModule, DenseAttentionModule
 from torch_geometric import utils as geometric_util
-from src.lap_solvers.sinkhorn_topk import soft_topk, greedy_perm
+from models.AFAT.sinkhorn_topk import soft_topk, greedy_perm
 from src.lap_solvers.hungarian import hungarian
 from scipy.linalg import block_diag
 import numpy as np

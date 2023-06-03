@@ -69,6 +69,12 @@ _ThinkMatch_ currently contains pytorch source code of the following deep graph 
 * [**GCAN**](/models/GCAN)
   * Zheheng Jiang, Hossein Rahmani, Plamen Angelov, Sue Black, Bryan M. Williams. "Graph-Context Attention Networks for Size-Varied Deep Graph Matching." _CVPR 2022_. 
     [[paper]](https://openaccess.thecvf.com/content/CVPR2022/papers/Jiang_Graph-Context_Attention_Networks_for_Size-Varied_Deep_Graph_Matching_CVPR_2022_paper.pdf)
+* [**AFAT**](/models/AFAT)
+  * Runzhong Wang, Ziao Guo, Shaofei Jiang, Xiaokang Yang, Junchi Yan. "Deep Learning of Partial Graph Matching via Differentiable Top-K." _CVPR 2023_. 
+    [[paper]](https://openaccess.thecvf.com/content/CVPR2023/html/Wang_Deep_Learning_of_Partial_Graph_Matching_via_Differentiable_Top-K_CVPR_2023_paper.html)
+* [**LinSAT**](/models/LinSAT)
+  * Runzhong Wang, Yunhao Zhang, Ziao Guo, Tianyi Chen, Xiaokang Yang, Junchi Yan. "LinSATNet: The Positive Linear Satisfiability Neural Networks." _ICML 2023_. 
+    [[paper]](https://openreview.net/forum?id=D2Oaj7v9YJ)
     
 
 ## When to use ThinkMatch

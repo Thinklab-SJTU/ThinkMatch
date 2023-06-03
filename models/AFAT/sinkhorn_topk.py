@@ -5,7 +5,7 @@ from src.utils.config import cfg
 
 
 def soft_topk(scores, ks, max_iter=10, tau=1., nrows=None, ncols=None, return_prob=False):
-    """
+    r"""
     Topk-GM algorithm to suppress matches containing outliers.
 
     :param scores: :math:`(b\times n_1 \times n_2)` input 3d tensor. :math:`b`: batch size
@@ -16,6 +16,7 @@ def soft_topk(scores, ks, max_iter=10, tau=1., nrows=None, ncols=None, return_pr
     :param ncols: :math:`(b)` number of objects in dim2
     :param return_prob: whether to return the soft permutation matrix (default: ``False``)
     :return: :math:`(b\times n_1 \times n_2)` the hard permutation matrix
+
               if ``return_prob=True``, also return :math:`(b\times n_1 \times n_2)` the computed soft permutation matrix
     """
     dist_mat_list = []
@@ -52,7 +53,7 @@ def soft_topk(scores, ks, max_iter=10, tau=1., nrows=None, ncols=None, return_pr
 
 
 def greedy_perm(x, top_indices, ks):
-    """
+    r"""
     Greedy-topk algorithm to select matches with topk confidences.
 
     :param x: :math:`(b\times n_1 \times n_2)` input 3d tensor. :math:`b`: batch size

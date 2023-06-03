@@ -18,3 +18,9 @@ Models
 .. mdinclude:: ../../models/GANN/README.md
 
 .. mdinclude:: ../../models/BBGM/README.md
+
+.. mdinclude:: ../../models/GCAN/README.md
+
+.. mdinclude:: ../../models/AFAT/README.md
+
+.. mdinclude:: ../../models/LinSAT/README.md

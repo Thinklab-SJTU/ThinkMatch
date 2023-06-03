@@ -1,4 +1,3 @@
-import torch
 import itertools
 from torch_sparse import spmm, SparseTensor
 
@@ -10,9 +9,9 @@ from src.utils.pad_tensor import pad_tensor
 from models.NGM.gnn import GNNLayer, SPGNNLayer, PYGNNLayer
 from src.gconv import Siamese_Gconv
 from models.PCA.affinity_layer import Affinity
-from src.k_pred_net import Encoder, TensorNetworkModule, DenseAttentionModule
+from models.AFAT.k_pred_net import Encoder, TensorNetworkModule, DenseAttentionModule
 from src.lap_solvers.sinkhorn import Sinkhorn
-from src.lap_solvers.sinkhorn_topk import soft_topk, greedy_perm
+from models.AFAT.sinkhorn_topk import soft_topk, greedy_perm
 from src.lap_solvers.hungarian import hungarian
 
 from src.utils.config import cfg
