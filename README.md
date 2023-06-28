@@ -296,7 +296,7 @@ Note: All following datasets can be automatically downloaded and unzipped by `py
 
 1. IMC-PT-SparseGM
    
-    1. Download the IMC-PT-SparseGM dataset from [google drive](https://drive.google.com/file/d/1Po9pRMWXTqKK2ABPpVmkcsOq-6K_2v-B/view?usp=sharing) or [baidu drive (code: 0576)](https://pan.baidu.com/s/1hlJdIFp4rkiz1Y-gztyHIw)
+    1. Download the IMC-PT-SparseGM dataset from [google drive](https://drive.google.com/file/d/1C3xl_eWaCG3lL2C3vP8Fpsck88xZOHtg/view?usp=sharing) or [baidu drive (code: g2cj)](https://pan.baidu.com/s/1ZQ3AMqoHtE_uA86GPf2h4w)
 
     1. Unzip the dataset and make sure it looks like ``data/IMC_PT_SparseGM/annotations``
 
