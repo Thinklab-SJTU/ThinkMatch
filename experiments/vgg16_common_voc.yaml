@@ -1,0 +1,75 @@
+MODEL_NAME: vgg16_common
+DATASET_NAME: voc
+
+DATASET_FULL_NAME: PascalVOC
+
+MODULE: models.COMMON.model
+
+BACKBONE: VGG16_bn_final
+
+BATCH_SIZE: 8
+DATALOADER_NUM: 2
+FP16: False
+
+RANDOM_SEED: 66
+
+#PRETRAINED_PATH: ./output/vgg16_common_voc/params/params_0020.pt
+
+
+# available GPU ids
+GPUS:
+  - 0
+#  - 1
+
+# Problem configuration
+PROBLEM:
+  TYPE: 2GM
+  RESCALE:  # rescaled image size
+    - 256
+    - 256
+  FILTER: 'intersection'
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: tri
+  TGT_GRAPH_CONSTRUCT: tri
+  SYM_ADJACENCY: True
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 0
+  NUM_EPOCHS: 20
+
+  LOSS_FUNC: custom
+  OPTIMIZER: Adam
+
+  # learning rate
+  LR: 3.e-4 # 2.e-3
+  SEPARATE_BACKBONE_LR: True
+  BACKBONE_LR: 2.e-5
+  MOMENTUM: 0.9
+  LR_DECAY: 0.5
+  LR_STEP:  # (in epochs)
+    - 2
+    - 4
+    - 6
+    - 8
+    - 10
+
+  EPOCH_ITERS: 2000  # iterations per epoch
+
+  CLASS: none
+
+# Evaluation settings
+EVAL:
+  EPOCH: 20  # epoch to be tested
+  SAMPLES: 1000  # number of tested pairs for each class
+
+# model parameters
+COMMON:
+  FEATURE_CHANNEL: 512
+  ALPHA: 0.4
+  DISTILL: True
+  WARMUP_STEP: 2000 # usually set to EPOCH_ITERS
+  MOMENTUM: 0.995

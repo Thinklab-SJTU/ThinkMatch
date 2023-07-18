@@ -115,8 +115,10 @@ def train_eval_model(model,
             with torch.set_grad_enabled(True):
                 # torch.autograd.set_detect_anomaly(True)
                 # forward
-                outputs = model(inputs)
-
+                if 'common' in cfg.MODEL_NAME: # COMMON use the iter number to control the warmup temperature
+                    outputs = model(inputs, training=True, iter_num=iter_num, epoch=epoch)
+                else:
+                    outputs = model(inputs)
                 if cfg.PROBLEM.TYPE == '2GM':
                     assert 'ds_mat' in outputs
                     assert 'perm_mat' in outputs
