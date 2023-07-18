@@ -1,0 +1,77 @@
+MODEL_NAME: vgg16_common
+DATASET_NAME: willow
+
+DATASET_FULL_NAME: WillowObject
+
+MODULE: models.COMMON.model
+
+BACKBONE: VGG16_bn_final
+
+BATCH_SIZE: 8
+DATALOADER_NUM: 2
+FP16: False
+
+RANDOM_SEED: 123
+
+#PRETRAINED_PATH: ./output/vgg16_common_willow/params/params_0010.pt
+
+
+# available GPU ids
+GPUS:
+  - 0
+
+# Problem configuration
+PROBLEM:
+  TYPE: 2GM
+  RESCALE: # rescaled image size
+    - 256
+    - 256
+  FILTER: 'intersection'
+
+# Graph construction settings
+GRAPH:
+  SRC_GRAPH_CONSTRUCT: tri
+  TGT_GRAPH_CONSTRUCT: tri
+  SYM_ADJACENCY: True
+
+# Willow object class dataset configuration
+WillowObject:
+  TRAIN_NUM: 20  # number of images for training set
+  SPLIT_OFFSET: 0  # the starting index of training set
+
+# Training settings
+TRAIN:
+  # start, end epochs
+  START_EPOCH: 0
+  NUM_EPOCHS: 10
+
+  LOSS_FUNC: custom
+
+
+  OPTIMIZER: Adam
+
+  # learning rate
+  LR: 2.e-3 # 2.5e-3
+  SEPARATE_BACKBONE_LR: True
+  BACKBONE_LR: 2.5e-5
+  MOMENTUM: 0.9
+  LR_DECAY: 0.5
+  LR_STEP: # (in epochs)
+    - 6
+
+  EPOCH_ITERS: 100  # iterations per epoch
+
+  CLASS: none
+
+# Evaluation settings
+EVAL:
+  EPOCH: 10  # epoch to be tested
+  SAMPLES: 100  # number of tested pairs for each class
+
+# model parameters
+COMMON:
+  FEATURE_CHANNEL: 512 # following BBGM
+  ALPHA: 0.4
+  DISTILL: True
+  WARMUP_STEP: 300 # as the training set of Willow is small, we use a large warmup step
+  MOMENTUM: 0.995
