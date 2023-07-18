@@ -7,7 +7,7 @@ Official implementation of the following paper:
 
 COMMON proposes a deep graph matching pipeline to solve **Noisy Correspondence** in GM problem, which refers to node-level noisy correspondence (NNC) and edge-level noisy correspondence (ENC).
 
-<img src="https://github.com/Lin-Yijie/Graph-Matching-Networks/blob/main/COMMON/docs/images/nc_example.png" alt="COMMON, ICCV 2023" width="50%">
+<img src="https://github.com/Lin-Yijie/Graph-Matching-Networks/blob/main/COMMON/docs/images/nc_example.png" alt="COMMON, ICCV 2023" width="100%">
 
 As shown above, due to the poor recognizability and viewpoint differences between images, it is inevitable to inaccurately annotate some
 keypoints with offset and confusion, leading to the mismatch between two associated nodes (NNC). The noisy node-to-node
