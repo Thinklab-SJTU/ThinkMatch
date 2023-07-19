@@ -71,10 +71,10 @@ Note that the network structure of projection layer is defined in ``model.py``, 
 Please cite the following paper if you use this model in your research:
 
 ```
-@article{lin2022graph,
+@article{lin2023graph,
   title={Graph Matching with Bi-level Noisy Correspondence},
   author={Lin, Yijie and Yang, Mouxing and Yu, Jun and Hu, Peng and Zhang, Changqing and Peng, Xi},
   journal={IEEE International Conference on Computer Vision},
-  year={2022}
+  year={2023}
 }
 ```
