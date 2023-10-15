@@ -251,14 +251,25 @@ class GMDataset(Dataset):
         if self.cls is None or self.cls == 'none':
             cls_iterator = random.choice(self.classes)
         else:
-            cls_iterator = self.cls
+            if (self.test and cfg.EVAL.RAND_CLASS) or (not self.test and cfg.TRAIN.RAND_CLASS):
+                cls_iterator = random.sample(self.bm.classes, cfg.PROBLEM.NUM_CLUSTERS)
+            else:
+                cls_iterator = self.cls
         for cls in cls_iterator:
             dicts.append(self.get_multi(idx, cls))
         ret_dict = {}
         for key in dicts[0]:
-            ret_dict[key] = []
-            for dic in dicts:
-                ret_dict[key] += dic[key]
+            if key != 'gt_perm_mat':
+                ret_dict[key] = []
+                for dic in dicts:
+                    ret_dict[key] += dic[key]
+            else:
+                ret_dict[key] = {}
+                for i, dic in enumerate(dicts):
+                    for (idx1, idx2) in dic[key].keys():
+                        new_idx1 = idx1 + i * cfg.PROBLEM.NUM_GRAPHS
+                        new_idx2 = idx2 + i * cfg.PROBLEM.NUM_GRAPHS
+                        ret_dict[key][(new_idx1, new_idx2)] = dic[key][(idx1, idx2)]
         return ret_dict
 
 
