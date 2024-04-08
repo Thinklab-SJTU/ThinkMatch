@@ -387,3 +387,21 @@ We also offer the following chat rooms if you are more comfortable with them:
 * QQ Group (for Chinese users)/QQ群(中文用户): 696401889
   
   [![ThinkMatch/pygmtools交流群](http://pub.idqqimg.com/wpa/images/group.png)](https://qm.qq.com/cgi-bin/qm/qr?k=NlPuwwvaFaHzEWD8w7jSOTzoqSLIM80V&jump_from=webapi&authKey=chI2htrWDujQed6VtVid3V1NXEoJvwz3MVwruax6x5lQIvLsC8BmpmzBJOCzhtQd)
+
+## Citing ThinkMatch
+
+If you find any of the models useful in your research, please cite the corresponding papers (BibTeX citations are available for each model in the [``models/``](https://github.com/Thinklab-SJTU/ThinkMatch/tree/master/models) directory).
+
+If you are using the data/benchmark protocol, you are also using ``pygmtools``. Please cite the following JMLR paper:
+```
+@article{wang2024pygm,
+  author  = {Runzhong Wang and Ziao Guo and Wenzheng Pan and Jiale Ma and Yikai Zhang and Nan Yang and Qi Liu and Longxuan Wei and Hanxue Zhang and Chang Liu and Zetian Jiang and Xiaokang Yang and Junchi Yan},
+  title   = {Pygmtools: A Python Graph Matching Toolkit},
+  journal = {Journal of Machine Learning Research},
+  year    = {2024},
+  volume  = {25},
+  number  = {33},
+  pages   = {1-7},
+  url     = {https://jmlr.org/papers/v25/23-0572.html},
+}
+```
