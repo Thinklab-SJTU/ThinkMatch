@@ -180,7 +180,7 @@ _ThinkMatch_ also supports the following graph matching settings:
 
 Get the recommended docker image by
 ```bash
-docker pull runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.3.2
+docker pull runzhongwang/thinkmatch:torch1.6.0-cuda10.1-cudnn7-pyg1.6.3-pygmtools0.5.1
 ```
 
 Other combinations of torch and cuda are also available. See available images at [docker hub](https://hub.docker.com/r/runzhongwang/thinkmatch/tags).
