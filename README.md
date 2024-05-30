@@ -392,7 +392,7 @@ We also offer the following chat rooms if you are more comfortable with them:
 
 If you find any of the models useful in your research, please cite the corresponding papers (BibTeX citations are available for each model in the [``models/``](https://github.com/Thinklab-SJTU/ThinkMatch/tree/master/models) directory).
 
-If you are using the data/benchmark protocol, you are also using ``pygmtools``. Please cite the following JMLR paper:
+If you like this framework, you may also cite the underlying library ``pygmtools`` which is called during training & testing:
 ```
 @article{wang2024pygm,
   author  = {Runzhong Wang and Ziao Guo and Wenzheng Pan and Jiale Ma and Yikai Zhang and Nan Yang and Qi Liu and Longxuan Wei and Hanxue Zhang and Chang Liu and Zetian Jiang and Xiaokang Yang and Junchi Yan},
