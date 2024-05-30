@@ -158,7 +158,7 @@ class RebuildFGM(Function):
         batch_num = Ke.shape[0]
 
         Kro1Ke = Kro1.dotdiag(Ke.transpose(1, 2).contiguous().view(batch_num, -1))
-        Kro1KeKro2 = Kro1Ke.dot(Kro2, dense=True)
+        Kro1KeKro2 = Kro1Ke.dot(Kro2, dense_output=True)
 
         K = torch.empty_like(Kro1KeKro2)
         for b in range(batch_num):

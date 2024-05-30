@@ -10,6 +10,7 @@ if 'SPHINX' not in os.environ:
     sparse_dot = load(name='sparse_dot',
                       sources=['src/extension/sparse_dot/sparse_dot.cpp',
                                'src/extension/sparse_dot/csr_dot_csc_cuda.cu',
+                               'src/extension/sparse_dot/dense_dot_csc_cuda.cu',
                                'src/extension/sparse_dot/csr_dot_diag_cuda.cu'],
                       extra_include_paths=[
                           '/usr/include/python{}.{}/'.format(sys.version_info.major, sys.version_info.minor)]
@@ -266,6 +267,68 @@ class CSXMatrix3d:
                 break
         return ret
 
+    def diagonal(self):
+        assert self.shape[1] == self.shape[2], 'Only square matrix has diagonals'
+        new_diag = torch.zeros((self.shape[0], self.shape[1]), device=self.device)
+        for b in range(self.shape[0]):
+            if self.sptype == 'csr':
+                start_ptr = b * self.shape[1]
+                end_ptr = (b + 1) * self.shape[1] + 1
+                compressed_len = self.shape[1]
+            elif self.sptype == 'csc':
+                start_ptr = b * self.shape[2]
+                end_ptr = (b + 1) * self.shape[2] + 1
+                compressed_len = self.shape[2]
+            else:
+                raise ValueError('Data type not understood.')
+            indptr = self.indptr[start_ptr: end_ptr]
+
+            for i in range(compressed_len):
+                cur_inds = self.indices[indptr[i]:indptr[i + 1]]
+                if i in cur_inds:
+                    occur_idx = (cur_inds == i).nonzero()[0]
+                    new_diag[b, i] = self.data[indptr[i] + occur_idx]
+
+        return new_diag
+
+    @classmethod
+    def from_dense(self, dense_tensor, device=None):
+        assert len(dense_tensor.shape) == 3, 'input tensor must be 3-dimensional'
+        if device is None:
+            device = dense_tensor.device
+        batch_size = dense_tensor.shape[0]
+        coo_tensor = dense_tensor.to_sparse().coalesce()
+        coo_inds = coo_tensor.indices()
+        data = coo_tensor.values()
+
+        if self.sptype == 'csr':
+            compressed_len = dense_tensor.shape[1]
+            compressed_dim = 1
+            sparse_dim = 2
+        elif self.sptype == 'csc':
+            compressed_len = dense_tensor.shape[2]
+            compressed_dim = 2
+            sparse_dim = 1
+        else:
+            raise ValueError('Sparse matrix type not understood.')
+
+        indp = torch.zeros(batch_size * compressed_len + 1, dtype=torch.int64, device=device)
+
+        for b in range(batch_size):
+            batch_select = coo_inds[0] == b
+            uniq_vals, uniq_counts = torch.unique(coo_inds[compressed_dim][batch_select], return_counts=True)
+            indp[b * compressed_len + uniq_vals + 1] = uniq_counts
+        indp[1:] = torch.cumsum(indp[1:], dim=0)
+
+        ind = coo_inds[sparse_dim].view(-1)
+
+        if self.sptype == 'csr':
+            return CSRMatrix3d([ind, indp, data], dense_tensor.shape, device)
+        elif self.sptype == 'csc':
+            return CSCMatrix3d([ind, indp, data], dense_tensor.shape, device)
+        else:
+            return None
+
 
 class CSCMatrix3d(CSXMatrix3d):
     def __init__(self, inp, shape=None, device=None):
@@ -402,34 +465,41 @@ class CSRMatrix3d(CSXMatrix3d):
         return ret
 
 
-def dot(csr: CSRMatrix3d, csc: CSCMatrix3d, dense=False):
+def dot(t1: CSRMatrix3d or torch.Tensor, t2: CSCMatrix3d, dense_output=False):
     """
-    Compute the dot product of one CSR matrix and one CSC matrix. The result will be returned in a new CSR or dense
-    matrix. Note that CUDA implementations do not work when dense=False.
-    :param csr: fist input CSR matrix
-    :param csc: second input CSC matrix
-    :param dense: output matrix in dense format
+    Compute the dot product of one CSR/dense matrix and one CSC matrix. The result will be returned in a new CSR or
+    dense matrix. Note that only a few combinations of types are implemented.
+    :param t1: fist input matrix
+    :param t2: second input matrix
+    :param dense_output: output matrix in dense format
     :return: dot result in new csr matrix (dense=False) or
              dot result in dense matrix (dense=True)
     """
-    assert type(csr) == CSRMatrix3d
-    assert type(csc) == CSCMatrix3d
-    assert csr.shape[0] == csc.shape[0], 'Batch size mismatch'
-    batch_num = csr.shape[0]
-    assert csr.shape[2] == csc.shape[1], 'Matrix size mismatch'
-    out_h = csr.shape[1]
-    out_w = csc.shape[2]
+    assert t1.shape[0] == t2.shape[0], 'Batch size mismatch'
+    batch_num = t1.shape[0]
+    assert t1.shape[2] == t2.shape[1], 'Matrix size mismatch'
+    out_h = t1.shape[1]
+    out_w = t2.shape[2]
+    t1_w = t1.shape[2]
 
-    if csr.indptr.device == torch.device('cpu'):
-        new_indices, new_indptr, new_data = \
-            sparse_dot.csr_dot_csc(*csr.as_list(), *csc.as_list(), batch_num, out_h, out_w)
-        ret = CSRMatrix3d([new_indices, new_indptr, new_data], shape=(batch_num, out_h, out_w))
-        if dense:
-            ret = ret.numpy()
+    if type(t1) == CSRMatrix3d and type(t2) == CSCMatrix3d:
+        if t1.indptr.device == torch.device('cpu'):
+            new_indices, new_indptr, new_data = \
+                sparse_dot.csr_dot_csc_to_csr(*t1.as_list(), *t2.as_list(), batch_num, out_h, out_w)
+            ret = CSRMatrix3d([new_indices, new_indptr, new_data], shape=(batch_num, out_h, out_w))
+            if dense_output:
+                ret = ret.numpy()
+        else:
+            if not dense_output:
+                raise NotImplementedError('Sparse dot product result in CUDA is not implemented.')
+            ret = sparse_dot.csr_dot_csc_to_dense(*t1.as_list(), *t2.as_list(), batch_num, out_h, out_w)
+    elif type(t1) == torch.Tensor and type(t2) == CSCMatrix3d:
+        if t1.device != torch.device('cpu') and dense_output:
+            ret = sparse_dot.dense_dot_csc_to_dense(t1, *t2.as_list(), batch_num, out_h, out_w, t1_w)
+        else:
+            raise NotImplementedError('Not implemented: dense * sparse CSC -> dense.')
     else:
-        if not dense:
-            raise RuntimeWarning('Sparse dot product result in CUDA is not implemented.')
-        ret = sparse_dot.csr_dot_csc_dense_cuda(*csr.as_list(), *csc.as_list(), batch_num, out_h, out_w)
+        raise ValueError(f'Types of t1, t2 are not supported. Got type(t1)={type(t1)}, type(t2)={type(t2)}')
     return ret
 
 

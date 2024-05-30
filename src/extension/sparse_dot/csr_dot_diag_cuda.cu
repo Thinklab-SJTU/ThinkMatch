@@ -7,7 +7,7 @@
 
 
 template <typename scalar_t>
-__global__ void csr_dot_diag_cuda_kernel(
+__global__ void csr_dot_diag_to_csr_cuda_kernel(
     const int64_t* __restrict__ t1_indices,
     const int64_t* __restrict__ t1_indptr,
     const scalar_t* __restrict__ t1_data,
@@ -34,7 +34,7 @@ __global__ void csr_dot_diag_cuda_kernel(
 }
 
 
-std::vector<at::Tensor> csr_dot_diag_cuda(
+std::vector<at::Tensor> csr_dot_diag_to_csr_cuda(
     at::Tensor t1_indices,
     at::Tensor t1_indptr,
     at::Tensor t1_data,
@@ -50,8 +50,8 @@ std::vector<at::Tensor> csr_dot_diag_cuda(
     const int threads = 1024;
     const dim3 blocks((out_h + threads - 1) / threads, batch_size);
 
-    AT_DISPATCH_FLOATING_TYPES_AND_HALF(t1_data.type(), "csr_dot_diag_cuda", ([&] {
-    csr_dot_diag_cuda_kernel<scalar_t><<<blocks, threads>>>(
+    AT_DISPATCH_FLOATING_TYPES_AND_HALF(t1_data.type(), "csr_dot_diag_to_csr_cuda", ([&] {
+    csr_dot_diag_to_csr_cuda_kernel<scalar_t><<<blocks, threads>>>(
         t1_indices.data<int64_t>(),
         t1_indptr.data<int64_t>(),
         t1_data.data<scalar_t>(),

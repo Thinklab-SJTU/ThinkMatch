@@ -3,7 +3,7 @@
 
 /* CUDA Declaration */
 
-at::Tensor csr_dot_csc_cuda(
+at::Tensor csr_dot_csc_to_dense_cuda(
     at::Tensor t1_indices,
     at::Tensor t1_indptr,
     at::Tensor t1_data,
@@ -16,7 +16,19 @@ at::Tensor csr_dot_csc_cuda(
 );
 
 
-std::vector<at::Tensor> csr_dot_diag_cuda(
+at::Tensor dense_dot_csc_to_dense_cuda(
+    at::Tensor t1,
+    at::Tensor t2_indices,
+    at::Tensor t2_indptr,
+    at::Tensor t2_data,
+    int64_t batch_size,
+    int64_t out_h,
+    int64_t out_w,
+    int64_t t1_w
+);
+
+
+std::vector<at::Tensor> csr_dot_diag_to_csr_cuda(
     at::Tensor t1_indices,
     at::Tensor t1_indptr,
     at::Tensor t1_data,
@@ -35,7 +47,7 @@ std::vector<at::Tensor> csr_dot_diag_cuda(
 
 /* CSR dot CSC Implementation */
 
-std::vector<at::Tensor> csr_dot_csc_cpu(
+std::vector<at::Tensor> csr_dot_csc_to_csr_cpu(
     at::Tensor t1_indices,
     at::Tensor t1_indptr,
     at::Tensor t1_data,
@@ -132,7 +144,7 @@ std::vector<at::Tensor> csr_dot_csc_cpu(
 }
 
 
-at::Tensor csr_dot_csc_dense_cuda_wrapper(
+at::Tensor csr_dot_csc_to_dense_cuda_wrapper(
     at::Tensor t1_indices,
     at::Tensor t1_indptr,
     at::Tensor t1_data,
@@ -149,13 +161,34 @@ at::Tensor csr_dot_csc_dense_cuda_wrapper(
     CHECK_INPUT(t2_indices);
     CHECK_INPUT(t2_indptr);
     CHECK_INPUT(t2_data);
-    return csr_dot_csc_cuda(t1_indices, t1_indptr, t1_data,
-                            t2_indices, t2_indptr, t2_data,
-                            batch_size, out_h, out_w);
+    return csr_dot_csc_to_dense_cuda(t1_indices, t1_indptr, t1_data,
+                                     t2_indices, t2_indptr, t2_data,
+                                     batch_size, out_h, out_w);
 }
 
 
-std::vector<at::Tensor> csr_dot_csc(
+at::Tensor dense_dot_csc_to_dense_cuda_wrapper(
+    at::Tensor t1,
+    at::Tensor t2_indices,
+    at::Tensor t2_indptr,
+    at::Tensor t2_data,
+    int64_t batch_size,
+    int64_t out_h,
+    int64_t out_w,
+    int64_t t1_w
+){
+    CHECK_INPUT(t1);
+    CHECK_INPUT(t2_indices);
+    CHECK_INPUT(t2_indptr);
+    CHECK_INPUT(t2_data);
+    return dense_dot_csc_to_dense_cuda(t1,
+                                       t2_indices, t2_indptr, t2_data,
+                                       batch_size, out_h, out_w, t1_w);
+}
+
+
+// CSR * CSC -> CSR
+std::vector<at::Tensor> csr_dot_csc_to_csr(
     at::Tensor t1_indices,
     at::Tensor t1_indptr,
     at::Tensor t1_data,
@@ -170,10 +203,12 @@ std::vector<at::Tensor> csr_dot_csc(
     if (t1_indices.type().is_cuda())
         throw std::runtime_error("Unexpected cuda tensor in sparse dot sparse -> sparse computation.");
     else
-        return csr_dot_csc_cpu(t1_indices, t1_indptr, t1_data, t2_indices, t2_indptr, t2_data, batch_size, out_h, out_w);
+        return csr_dot_csc_to_csr_cpu(t1_indices, t1_indptr, t1_data, t2_indices, t2_indptr, t2_data, batch_size, out_h, out_w);
 }
 
-at::Tensor csr_dot_csc_dense_cuda(
+
+// CSR * CSC -> dense
+at::Tensor csr_dot_csc_to_dense(
     at::Tensor t1_indices,
     at::Tensor t1_indptr,
     at::Tensor t1_data,
@@ -183,16 +218,34 @@ at::Tensor csr_dot_csc_dense_cuda(
     int64_t batch_size,
     int64_t out_h,
     int64_t out_w
-)
-{
-    return csr_dot_csc_dense_cuda_wrapper(t1_indices, t1_indptr, t1_data, t2_indices, t2_indptr, t2_data,
-                                          batch_size, out_h, out_w);
+){
+    if (t1_indices.type().is_cuda())
+        return csr_dot_csc_to_dense_cuda_wrapper(t1_indices, t1_indptr, t1_data, t2_indices, t2_indptr, t2_data, batch_size, out_h, out_w);
+    else
+        throw std::runtime_error("Unexpected cpu tensor in sparse dot sparse -> dense computation.");
+}
+
+// dense * CSC -> dense
+at::Tensor dense_dot_csc_to_dense(
+    at::Tensor t1,
+    at::Tensor t2_indices,
+    at::Tensor t2_indptr,
+    at::Tensor t2_data,
+    int64_t batch_size,
+    int64_t out_h,
+    int64_t out_w,
+    int64_t t1_w
+){
+    if (t1.type().is_cuda())
+        return dense_dot_csc_to_dense_cuda_wrapper(t1, t2_indices, t2_indptr, t2_data, batch_size, out_h, out_w, t1_w);
+    else
+        throw std::runtime_error("Unexpected cpu tensor in dense dot sparse -> dense computation.");
 }
 
 
 /* CSR dot diag implementation */
 
-std::vector<at::Tensor> csr_dot_diag_cpu(
+std::vector<at::Tensor> csr_dot_diag_to_csr_cpu(
     at::Tensor t1_indices,
     at::Tensor t1_indptr,
     at::Tensor t1_data,
@@ -230,7 +283,7 @@ std::vector<at::Tensor> csr_dot_diag_cpu(
 }
 
 
-std::vector<at::Tensor> csr_dot_diag_cuda_wrapper(
+std::vector<at::Tensor> csr_dot_diag_to_csr_cuda_wrapper(
     at::Tensor t1_indices,
     at::Tensor t1_indptr,
     at::Tensor t1_data,
@@ -244,11 +297,11 @@ std::vector<at::Tensor> csr_dot_diag_cuda_wrapper(
     CHECK_INPUT(t1_indptr);
     CHECK_INPUT(t1_data);
     CHECK_INPUT(t2);
-    return csr_dot_diag_cuda(t1_indices, t1_indptr, t1_data, t2, batch_size, out_h, out_w);
+    return csr_dot_diag_to_csr_cuda(t1_indices, t1_indptr, t1_data, t2, batch_size, out_h, out_w);
 }
 
 
-std::vector<at::Tensor> csr_dot_diag(
+std::vector<at::Tensor> csr_dot_diag_to_csr(
     at::Tensor t1_indices,
     at::Tensor t1_indptr,
     at::Tensor t1_data,
@@ -259,17 +312,20 @@ std::vector<at::Tensor> csr_dot_diag(
 )
 {
     if (t1_indices.type().is_cuda())
-        return csr_dot_diag_cuda_wrapper(t1_indices, t1_indptr, t1_data, t2, batch_size, out_h, out_w);
+        return csr_dot_diag_to_csr_cuda_wrapper(t1_indices, t1_indptr, t1_data, t2, batch_size, out_h, out_w);
     else
-        return csr_dot_diag_cpu(t1_indices, t1_indptr, t1_data, t2, batch_size, out_h, out_w);
-
+        return csr_dot_diag_to_csr_cpu(t1_indices, t1_indptr, t1_data, t2, batch_size, out_h, out_w);
 }
 
 /* PyBind Interface */
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-  m.def("csr_dot_csc", &csr_dot_csc, "csr sparse matrix dot csc sparse matrix");
-  m.def("csr_dot_csc_dense_cuda", &csr_dot_csc_dense_cuda,
-        "cuda implementation of csr sparse matrix dot csc sparse matrix, result is dense");
-  m.def("csr_dot_diag", &csr_dot_diag, "csr sparse matrix dot a diagonal of dense vector");
+  m.def("csr_dot_csc_to_csr", &csr_dot_csc_to_csr,
+        "csr sparse matrix dot csc sparse matrix, result is csr");
+  m.def("csr_dot_csc_to_dense", &csr_dot_csc_to_dense,
+        "csr sparse matrix dot csc sparse matrix, result is dense");
+  m.def("dense_dot_csc_to_dense", &dense_dot_csc_to_dense,
+        "dense matrix dot a csc sparse matrix, result is dense");
+  m.def("csr_dot_diag_to_csr", &csr_dot_diag_to_csr,
+        "csr sparse matrix dot a diagonal of dense vector, result is csr");
 }
