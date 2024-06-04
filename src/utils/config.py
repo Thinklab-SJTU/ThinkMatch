@@ -256,6 +256,9 @@ def cfg_from_file(filename):
     with open(filename, 'r') as f:
         yaml_cfg = edict(yaml.full_load(f))
 
+    if 'RESCALE' in yaml_cfg['PROBLEM']:
+        yaml_cfg['PROBLEM']['RESCALE'] = tuple(yaml_cfg['PROBLEM']['RESCALE'])
+
     if 'MODULE' in yaml_cfg and yaml_cfg.MODULE not in __C:
         model_cfg_module = '.'.join(yaml_cfg.MODULE.split('.')[:-1] + ['model_config'])
         mod = importlib.import_module(model_cfg_module)
