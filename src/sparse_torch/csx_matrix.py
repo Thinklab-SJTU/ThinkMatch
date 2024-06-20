@@ -443,7 +443,7 @@ class CSRMatrix3d(CSXMatrix3d):
         out_h = self.shape[1]
         out_w = self.shape[2]
 
-        result = sparse_dot.csr_dot_diag(*self.as_list(), other, batch_size, out_h, out_w)
+        result = sparse_dot.csr_dot_diag_to_csr(*self.as_list(), other, batch_size, out_h, out_w)
         ret = CSRMatrix3d(result, shape=self.shape)
         '''
         indptr = self.indptr.clone()
