@@ -269,7 +269,7 @@ Note: All following datasets can be automatically downloaded and unzipped by `py
     ```
 1. Willow-Object-Class
    
-    1. Download [Willow-ObjectClass dataset](http://www.di.ens.fr/willow/research/graphlearning/WILLOW-ObjectClass_dataset.zip)
+    1. Download Willow-ObjectClass dataset from [the official site](http://www.di.ens.fr/willow/research/graphlearning/WILLOW-ObjectClass_dataset.zip) or [hugging face](https://huggingface.co/heatingma/pygmtools/resolve/main/WILLOW-ObjectClass_dataset.zip)
     
     1. Unzip the dataset and make sure it looks like ``data/WillowObject/WILLOW-ObjectClass``
 
