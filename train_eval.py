@@ -58,12 +58,13 @@ def train_eval_model(model,
     if len(optim_path) > 0:
         print('Loading optimizer state from {}'.format(optim_path))
         optimizer.load_state_dict(torch.load(optim_path))
-    if len(optim_k_path) > 0:
-        try:
+    if len(optim_k_path) > 0 and optimizer_k is not None:
+        optim_k_file = Path(optim_k_path)
+        if optim_k_file.exists():
             print('Loading optimizer_k state from {}'.format(optim_k_path))
             optimizer_k.load_state_dict(torch.load(optim_k_path))
-        except FileNotFoundError:
-            print('Creating new optimizer for AFA modules')
+        else:
+            print('optimizer_k state {} not found. Creating new optimizer for AFA modules'.format(optim_k_path))
 
     if optimizer_k is not None:
         scheduler = optim.lr_scheduler.MultiStepLR(optimizer,
