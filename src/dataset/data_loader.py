@@ -133,6 +133,28 @@ class GMDataset(Dataset):
                     'id_list': id_list,
                     'univ_size': [torch.tensor(int(x)) for x in univ_size],
                     }
+        keypoint_label1 = [kp['labels'] for kp in anno_pair[0]['kpts']]
+        keypoint_label2 = [kp['labels'] for kp in anno_pair[1]['kpts']]
+        ret_dict['keypoint_label'] = [tuple(keypoint_label1), tuple(keypoint_label2)]
+
+        # classify the keypoint pairs into four categories: truenegative (0), truepositive (1), falsepositive (2), and falsenegative (3)
+        if self.name == 'WillowObject':
+            perm_identity_mat = np.zeros([len(anno_pair[_]['kpts']) for _ in (0, 1)], dtype=np.float32)
+            for i, keypoint in enumerate(anno_pair[0]['kpts']):
+                for j, _keypoint in enumerate(anno_pair[1]['kpts']):
+                    if keypoint['labels'] == _keypoint['labels']:
+                        if keypoint['labels'] != 'outlier':
+                            if keypoint['identify_label'] == 'falsepositive' or _keypoint['identify_label'] == 'falsepositive':
+                                perm_identity_mat[i, j] = 2
+                            elif keypoint['identify_label'] == 'keypoint' and _keypoint['identify_label'] == 'keypoint':
+                                perm_identity_mat[i, j] = 1
+                if keypoint['identify_label'] not in ['keypoint', 'outlier', 'falsepositive']:
+                    for j, _keypoint in enumerate(anno_pair[1]['kpts']):
+                        if keypoint['identify_label'] == _keypoint['labels'] and _keypoint['identify_label'] == 'keypoint':
+                            perm_identity_mat[i, j] = 3
+                        if keypoint['identify_label'] == _keypoint['identify_label']:
+                            perm_identity_mat[i, j] = 3
+            ret_dict['perm_identity_mat'] = perm_identity_mat
 
         imgs = [anno['img'] for anno in anno_pair]
         if imgs[0] is not None:
@@ -251,25 +273,14 @@ class GMDataset(Dataset):
         if self.cls is None or self.cls == 'none':
             cls_iterator = random.choice(self.classes)
         else:
-            if (self.test and cfg.EVAL.RAND_CLASS) or (not self.test and cfg.TRAIN.RAND_CLASS):
-                cls_iterator = random.sample(self.bm.classes, cfg.PROBLEM.NUM_CLUSTERS)
-            else:
-                cls_iterator = self.cls
+            cls_iterator = self.cls
         for cls in cls_iterator:
             dicts.append(self.get_multi(idx, cls))
         ret_dict = {}
         for key in dicts[0]:
-            if key != 'gt_perm_mat':
-                ret_dict[key] = []
-                for dic in dicts:
-                    ret_dict[key] += dic[key]
-            else:
-                ret_dict[key] = {}
-                for i, dic in enumerate(dicts):
-                    for (idx1, idx2) in dic[key].keys():
-                        new_idx1 = idx1 + i * cfg.PROBLEM.NUM_GRAPHS
-                        new_idx2 = idx2 + i * cfg.PROBLEM.NUM_GRAPHS
-                        ret_dict[key][(new_idx1, new_idx2)] = dic[key][(idx1, idx2)]
+            ret_dict[key] = []
+            for dic in dicts:
+                ret_dict[key] += dic[key]
         return ret_dict
 
 

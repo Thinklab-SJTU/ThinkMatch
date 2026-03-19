@@ -158,7 +158,7 @@ class PermutationLossHung(nn.Module):
 
         dis_pred = hungarian(pred_dsmat, src_ns, tgt_ns)
         ali_perm = dis_pred + gt_perm
-        ali_perm[ali_perm > 1.0] = 1.0 # Hung
+        ali_perm[ali_perm > 1.0] = 1.0  # Hung
         pred_dsmat = torch.mul(ali_perm, pred_dsmat)
         gt_perm = torch.mul(ali_perm, gt_perm)
         loss = torch.tensor(0.).to(pred_dsmat.device)
@@ -487,3 +487,115 @@ class Distill_QuadraticContrast(torch.nn.Module):
         graph_loss = within_graph_loss + cross_graph_loss
 
         return graph_loss
+
+class Distill_InfoNCE_Outlier(torch.nn.Module):
+    def __init__(self, distill=True):
+        super(Distill_InfoNCE_Outlier, self).__init__()
+        self.distill = distill
+    def transform_softmax(self, matrix):
+        N, M = matrix.shape
+        min_dim = min(N, M)
+        sub_matrix = matrix[:min_dim, :min_dim]
+        softmax_matrix = F.softmax(sub_matrix, dim=1)
+        transformed_matrix = torch.zeros_like(matrix)
+        transformed_matrix[:min_dim, :min_dim] = softmax_matrix
+        return transformed_matrix
+
+    def forward(self, feature: Tensor, feature_m: Tensor, pixel_queue: Tensor, pixel_queue_m: Tensor, alpha: float,
+                dynamic_temperature: Tensor, dynamic_temperature_m: Tensor) -> Tensor:
+        align_num = feature[0].shape[0]
+        graph1_feat = F.normalize(feature[0], dim=-1)
+        graph2_feat = F.normalize(feature[1], dim=-1)
+        outlier_feat_1 = F.normalize(pixel_queue[0], dim=-1)
+        outlier_feat_2 = F.normalize(pixel_queue[1], dim=-1)
+        outlier_feat = torch.cat([outlier_feat_1, outlier_feat_2])
+
+        outlier_feat_1_m = F.normalize(pixel_queue_m[0], dim=-1)
+        outlier_feat_2_m = F.normalize(pixel_queue_m[1], dim=-1)
+        outlier_feat_m = torch.cat([outlier_feat_1_m, outlier_feat_2_m])
+
+        graph1_feat_all = torch.cat([graph1_feat, outlier_feat], dim=0)
+        graph2_feat_all = torch.cat([graph2_feat, outlier_feat], dim=0)
+
+        # following the contrastive loss in "Learning Transferable Visual Models From Natural Language Supervision"
+        sim_1to2 = dynamic_temperature.exp() * graph1_feat @ graph2_feat_all.T
+        sim_2to1 = dynamic_temperature.exp() * graph2_feat @ graph1_feat_all.T
+
+        # get momentum features
+        with torch.no_grad():
+            graph1_feat_m = F.normalize(feature_m[0], dim=-1)
+            graph2_feat_m = F.normalize(feature_m[1], dim=-1)
+            graph1_feat_m_all = torch.cat([graph1_feat_m, outlier_feat_m], dim=0)
+            graph2_feat_m_all = torch.cat([graph2_feat_m, outlier_feat_m], dim=0)
+
+            # momentum similiarity
+            sim_1to2_m = dynamic_temperature_m.exp() * graph1_feat_m @ graph2_feat_m_all.T
+            sim_2to1_m = dynamic_temperature_m.exp() * graph2_feat_m @ graph1_feat_m_all.T
+
+            sim_1to2_m = F.softmax(sim_1to2_m, dim=1)
+            sim_2to1_m = F.softmax(sim_2to1_m, dim=1)
+
+            # online similiarity
+            sim_targets_1 = torch.zeros(sim_1to2.size()).to(graph1_feat.device)
+            sim_targets_1.fill_diagonal_(1)
+            sim_targets_2 = torch.zeros(sim_2to1.size()).to(graph1_feat.device)
+            sim_targets_2.fill_diagonal_(1)
+
+            if self.distill == True: # following conference version of COMMON
+                # generate pseudo contrastive labels
+                sim_1to2_targets = alpha * sim_1to2_m + (1 - alpha) * sim_targets_1
+                sim_2to1_targets = alpha * sim_2to1_m + (1 - alpha) * sim_targets_2
+            else:
+                sim_1to2_targets = sim_targets_1
+                sim_2to1_targets = sim_targets_2
+
+        bin_value = (sim_1to2[:, align_num:].mean() + sim_2to1[:, align_num:].mean()) / (2 * dynamic_temperature.exp())
+
+        loss_i2t = -torch.sum(F.log_softmax(sim_1to2, dim=1) * sim_1to2_targets, dim=1).mean()
+        loss_t2i = -torch.sum(F.log_softmax(sim_2to1, dim=1) * sim_2to1_targets, dim=1).mean()
+        contrast_loss = (loss_i2t + loss_t2i) / 2
+        return contrast_loss, bin_value
+
+
+class Permutation_Bin_Loss(nn.Module):
+    def __init__(self):
+        super(Permutation_Bin_Loss, self).__init__()
+
+    def forward(self, pred_dsmat: Tensor, gt_perm: Tensor, src_ns: Tensor, tgt_ns: Tensor) -> Tensor:
+        r"""
+        :param pred_dsmat: :math:`(b\times n_1 \times n_2)` predicted doubly-stochastic matrix :math:`(\mathbf{S})`
+        :param gt_perm: :math:`(b\times n_1 \times n_2)` ground truth permutation matrix :math:`(\mathbf{X}^{gt})`
+        :param src_ns: :math:`(b)` number of exact pairs in the first graph (also known as source graph).
+        :param tgt_ns: :math:`(b)` number of exact pairs in the second graph (also known as target graph).
+        :return: :math:`(1)` averaged permutation loss
+
+        .. note::
+            We support batched instances with different number of nodes, therefore ``src_ns`` and ``tgt_ns`` are
+            required to specify the exact number of nodes of each instance in the batch.
+        """
+        batch_num = pred_dsmat.shape[0]
+
+        pred_dsmat = pred_dsmat.to(dtype=torch.float32)
+
+        loss = torch.tensor(0.).to(pred_dsmat.device)
+        n_sum = torch.zeros_like(loss)
+        for b in range(batch_num):
+            src_n, tgt_n = src_ns[b], tgt_ns[b]
+            batch_slice = [b, slice(src_n + 1), slice(tgt_n + 1)]
+            ext_gt_perm = torch.zeros((src_n + 1, tgt_n + 1), device=pred_dsmat.device)
+            ext_gt_perm[:src_n, :tgt_n] = gt_perm[b, :src_n, :tgt_n]
+
+            ext_gt_perm[:-1, -1] = 1 - torch.sum(gt_perm[b, slice(src_n), :], dim=1)  # 最后一行
+            ext_gt_perm[-1, :-1] = 1 - torch.sum(gt_perm[b, :, slice(tgt_n)], dim=0)
+            # keep it larger than 0
+            ext_gt_perm[:-1, -1] = torch.clamp(ext_gt_perm[:-1, -1], min=0)
+            ext_gt_perm[-1, :-1] = torch.clamp(ext_gt_perm[-1, :-1], min=0)
+
+            loss_mask = torch.ones_like(ext_gt_perm)
+            loss_mask[-1, -1] = 0
+            pred_dsmat_slice = torch.clamp(pred_dsmat[batch_slice], min=1e-7, max=1 - 1e-7)
+            loss += (-torch.log(pred_dsmat_slice) * ext_gt_perm -
+                     torch.log(1 - pred_dsmat_slice) * (1 - ext_gt_perm))[loss_mask.bool()].sum()
+            n_sum += src_ns[b].to(n_sum.dtype).to(pred_dsmat.device)
+
+        return loss / n_sum

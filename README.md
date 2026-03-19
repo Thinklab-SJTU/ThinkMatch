@@ -76,10 +76,12 @@ _ThinkMatch_ currently contains pytorch source code of the following deep graph 
 * [**LinSAT**](/models/LinSAT)
   * Runzhong Wang, Yunhao Zhang, Ziao Guo, Tianyi Chen, Xiaokang Yang, Junchi Yan. "LinSATNet: The Positive Linear Satisfiability Neural Networks." _ICML 2023_. 
     [[paper]](https://openreview.net/forum?id=D2Oaj7v9YJ)
-* [**COMMON**](/models/COMMON)
+* [**COMMON**](/models/COMMON) & [**COMMON+**](/models/COMMONPLUS)
   * Yijie Lin, Mouxing Yang, Jun Yu, Peng Hu, Changqing Zhang, Xi Peng. "Graph Matching with Bi-level Noisy
   Correspondence." _ICCV 2023_. 
     [[paper]](https://arxiv.org/pdf/2212.04085.pdf), [[project page]](https://github.com/Lin-Yijie/Graph-Matching-Networks/tree/main/COMMON)
+  * Yijie Lin, Mouxing Yang, Peng Hu, Jiancheng Lv, Hao Chen, Xi Peng. "Learning with Partial and Noisy Correspondence in Graph Matching". TPAMI, 2026. 
+    [[paper]](https://xlearning-lab.com/assets/2026-TPAMI-Learning-With-Partial-and-Noisy-Correspondence-in-Graph-Matching.pdf)
 
 ## When to use ThinkMatch
 
@@ -125,6 +127,8 @@ Source code: https://github.com/Thinklab-SJTU/pygmtools
 | [NGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | 0.6184 | 0.7118 | 0.7762 | 0.7875 | 0.8733 | 0.9363 | 0.8770 | 0.7977 | 0.5535 | 0.7781 | 0.8952 | 0.7880 | 0.8011 | 0.7923 | 0.6258 | 0.9771 | 0.7769 | 0.7574 | 0.9665 | 0.9323 | 0.8011 |
 | [NHGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | 0.5995 | 0.7154 | 0.7724 | 0.7902 | 0.8773 | 0.9457 | 0.8903 | 0.8181 | 0.5995 | 0.8129 | 0.8695 | 0.7811 | 0.7645 | 0.7750 | 0.6440 | 0.9872 | 0.7778 | 0.7538 | 0.9787 | 0.9280 | 0.8040 |
 | [COMMON](https://arxiv.org/pdf/2212.04085.pdf) | 2023 | 0.6560 | 0.7520 | 0.8080 | 0.7950    |0.8930 | 0.9230 | 0.9010 | 0.8180 | 0.6160 | 0.8070| 0.9500 | 0.8200 |    0.8160    | 0.7950 | 0.6660 |    0.9890 | 0.7890 | 0.8090 | 0.9930 |    0.9380 | 0.8270 |  
+| [COMMON+](https://xlearning-lab.com/assets/2026-TPAMI-Learning-With-Partial-and-Noisy-Correspondence-in-Graph-Matching.pdf) | 2026 | 0.6880 | 0.7550 | 0.8260 | 0.7740 | 0.9000 | 0.9220 | 0.8950 | 0.8070 | 0.6180 | 0.8240 | 0.9530 | 0.8050 | 0.8210 | 0.8160 | 0.6770 | 0.9880 | 0.7990 | 0.8100 | 0.9850 | 0.9540 | 0.8310 |
+
 
 ### Willow Object Class - 2GM & MGM
 
@@ -143,6 +147,7 @@ Source code: https://github.com/Thinklab-SJTU/pygmtools
 | [NHGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | -               | 0.9740 | 0.9390 | 1.0000 | 0.9860    | 0.9890     | 0.9780 |
 | [NMGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | -               | 0.9760 | 0.9447 | 1.0000 | 1.0000    | 0.9902     | 0.9822 |
 | [COMMON](https://arxiv.org/pdf/2212.04085.pdf) | 2023 | -             | 0.9760 | 0.9820 | 1.0000 | 1.0000 | 0.9960     | 0.9910 |
+| [COMMON+](https://xlearning-lab.com/assets/2026-TPAMI-Learning-With-Partial-and-Noisy-Correspondence-in-Graph-Matching.pdf) | 2026  | -             | 0.9830 | 0.9820 | 1.0000 | 1.0000 | 1.0000 | 0.9930 |
 
 ### SPair-71k - 2GM
 
@@ -157,6 +162,7 @@ Source code: https://github.com/Thinklab-SJTU/pygmtools
 | [NGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | 0.6877 | 0.6331 | 0.8677 | 0.7013 | 0.6971 | 0.9467 | 0.8740 | 0.7737 | 0.7205 | 0.8067 | 0.7426 | 0.7253 | 0.7946 | 0.7340 | 0.9888 | 0.8123 | 0.9426 | 0.9867 | 0.8020 |
 | [NHGM-v2](https://thinkmatch.readthedocs.io/en/latest/guide/models.html#ngm) | 2021 | 0.6202 | 0.5781 | 0.8642 | 0.6846 | 0.6872 | 0.9335 | 0.8081 | 0.7656 | 0.6919 | 0.7987 | 0.6623 | 0.7171 | 0.7812 | 0.6953 | 0.9824 | 0.8444 | 0.9316 | 0.9926 | 0.7799 |
 | [COMMON](https://arxiv.org/pdf/2212.04085.pdf)    | 2023 | 0.7730 | 0.6820 | 0.9200 | 0.7950 | 0.7040 | 0.9750 | 0.9160 | 0.8250 | 0.7220 | 0.8800 | 0.8000| 0.7410 | 0.8340 | 0.8280 | 0.9990 | 0.8440 | 0.9820 | 0.9980| 0.8450 |
+| [COMMON+](https://xlearning-lab.com/assets/2026-TPAMI-Learning-With-Partial-and-Noisy-Correspondence-in-Graph-Matching.pdf)  | 2026 | 0.7980 | 0.7230 | 0.9170 | 0.7870 | 0.7080 | 0.9800 | 0.9180 | 0.8190 | 0.7280 | 0.8820 | 0.8330 | 0.7640 | 0.8340 | 0.8390 | 0.9990 | 0.8610 | 0.9920 | 0.9990 | 0.8550 |
 
 _ThinkMatch_ includes the flowing datasets with the provided benchmarks:
 

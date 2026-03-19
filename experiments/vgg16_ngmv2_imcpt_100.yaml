@@ -15,7 +15,7 @@ RANDOM_SEED: 123
 
 
 IMC_PT_SparseGM:
-  ROOT_DIR_NPZ: data/Image_Matching_Challange_Data/annotations_100
+  ROOT_DIR_NPZ: data/IMC-PT-SparseGM/annotations_100
   MAX_KPT_NUM: 100
 
 # available GPU ids

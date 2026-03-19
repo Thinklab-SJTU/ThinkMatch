@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 from torchvision import models
 
+import timm
+from timm.models import VisionTransformer
+
 
 class VGG16_base(nn.Module):
     r"""
@@ -47,11 +50,11 @@ class VGG16_base(nn.Module):
                 cnt_m += 1
             conv_list += [module]
 
-            #if cnt_m == 4 and cnt_r == 2 and isinstance(module, nn.ReLU):
+            # if cnt_m == 4 and cnt_r == 2 and isinstance(module, nn.ReLU):
             if cnt_m == 4 and cnt_r == 3 and isinstance(module, nn.Conv2d):
                 node_list = conv_list
                 conv_list = []
-            #elif cnt_m == 5 and cnt_r == 1 and isinstance(module, nn.ReLU):
+            # elif cnt_m == 5 and cnt_r == 1 and isinstance(module, nn.ReLU):
             elif cnt_m == 5 and cnt_r == 2 and isinstance(module, nn.Conv2d):
                 edge_list = conv_list
                 conv_list = []
@@ -61,10 +64,11 @@ class VGG16_base(nn.Module):
         # Set the layers as a nn.Sequential module
         node_layers = nn.Sequential(*node_list)
         edge_layers = nn.Sequential(*edge_list)
-        final_layers = nn.Sequential(*conv_list, nn.AdaptiveMaxPool2d((1, 1), return_indices=False)) # this final layer follows Rolink et al. ECCV20
+        final_layers = nn.Sequential(*conv_list, nn.AdaptiveMaxPool2d((1, 1),
+                                                                      return_indices=False))  # this final layer follows Rolink et al. ECCV20
 
         return node_layers, edge_layers, final_layers
-    
+
 
 class VGG16_bn_final(VGG16_base):
     r"""
@@ -98,8 +102,94 @@ class VGG16(VGG16_base):
         super(VGG16, self).__init__(False, False)
 
 
+class Vit_transformer(VisionTransformer):
+    """
+    The base class of Vit transformer. It downloads the pretrained weight by timm API.
+    """
+    def __init__(self, type: str, img_size = 224, embed_dim=768, depth=12, num_heads=12, patch_size=16):
+        super(Vit_transformer, self).__init__(img_size=img_size, embed_dim=embed_dim, depth=depth, num_heads=num_heads, patch_size=patch_size)
+        # if base in the class name, then use the below model
+        if 'base' in type and patch_size == 16 and img_size == 384:
+            model = timm.create_model("timm/vit_base_patch16_384.augreg_in21k_ft_in1k", pretrained=True)
+        elif 'base' in type and patch_size == 16 and img_size == 224:
+            model = timm.create_model("timm/vit_base_patch16_224.augreg_in21k_ft_in1k", pretrained=True)
+        elif 'base' in type and patch_size == 8 and img_size == 224:
+            model = timm.create_model("timm/vit_base_patch8_224.augreg_in21k_ft_in1k", pretrained=True)
+        elif 'large' in type and patch_size == 16 and img_size == 224:
+            model = timm.create_model("timm/vit_large_patch16_224.augreg_in21k_ft_in1k", pretrained=True)
+        self.num_patches = self.patch_embed.grid_size[0]
+        self.depth = depth
+        parameters = model.state_dict()
+        self.load_state_dict(parameters, strict=False)
+        self.backbone_params = list(self.parameters())
+
+    @property
+    def device(self):
+        return next(self.parameters()).device
+
+    def node_edge_layer(self, x: torch.Tensor) -> torch.Tensor:
+        # from get_intermediate_layers of timm.models.vision_transformer
+        x = self.patch_embed(x)
+        x = self._pos_embed(x)
+        x = self.patch_drop(x)
+        x = self.norm_pre(x)
+        for i in range(self.depth):
+            x = self.blocks[i](x)
+            if i == self.depth - 2:
+                nodes = x[:, 1:]
+            elif i == self.depth - 1:
+                edges = x[:, 1:]
+
+        x = self.norm(x)
+        x = self.forward_head(x)
+        glb = x
+        nodes, edges = nodes.transpose(1, 2), edges.transpose(1, 2)
+        nodes, edges = (nodes.view(-1, self.embed_dim, self.num_patches, self.num_patches),
+                        edges.view(-1, self.embed_dim, self.num_patches, self.num_patches))
+
+        return nodes, edges, glb
+
+
+class Vit_base_patch16_384(Vit_transformer):
+    """
+    Vit transformer with base model.
+    A Vision Transformer (ViT) image classification model. Trained on ImageNet-21k and fine-tuned on ImageNet-1k in JAX
+     by paper authors, ported to PyTorch by Ross Wightman.
+    """
+    def __init__(self):
+        super(Vit_base_patch16_384, self).__init__('base', img_size=384)
+
+class Vit_base_patch16_224(Vit_transformer):
+    """
+    Vit transformer with base model.
+    A Vision Transformer (ViT) image classification model. Trained on ImageNet-21k and fine-tuned on ImageNet-1k in JAX
+     by paper authors, ported to PyTorch by Ross Wightman.
+    """
+    def __init__(self):
+        super(Vit_base_patch16_224, self).__init__('base')
+
+class Vit_base_patch8_224(Vit_transformer):
+    """
+    Vit transformer with base model.
+    A Vision Transformer (ViT) image classification model. Trained on ImageNet-21k and fine-tuned on ImageNet-1k in JAX
+     by paper authors, ported to PyTorch by Ross Wightman.
+    """
+    def __init__(self):
+        super(Vit_base_patch8_224, self).__init__('base', patch_size=8)
+
+
+class Vit_large_patch16_224(Vit_transformer):
+    """
+    Vit transformer with large model.
+    A Vision Transformer (ViT) image classification model. Trained on ImageNet-21k and fine-tuned on ImageNet-1k in JAX
+     by paper authors, ported to PyTorch by Ross Wightman.
+    """
+    def __init__(self):
+        super(Vit_large_patch16_224, self).__init__('large', embed_dim=1024, depth=24, num_heads=16)
+
+
 class NoBackbone(nn.Module):
-    r"""
+    """
     A model with no CNN backbone for non-image data.
     """
     def __init__(self, *args, **kwargs):

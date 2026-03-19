@@ -187,6 +187,7 @@ class GumbelSinkhorn(nn.Module):
     def __init__(self, max_iter=10, tau=1., epsilon=1e-4, batched_operation=False):
         super(GumbelSinkhorn, self).__init__()
         self.sinkhorn = Sinkhorn(max_iter, tau, epsilon, batched_operation=batched_operation)
+        self.scale = tau
 
     def forward(self, s: Tensor, nrows: Tensor=None, ncols: Tensor=None,
                 sample_num=5, dummy_row=False) -> Tensor:
@@ -233,6 +234,72 @@ class GumbelSinkhorn(nn.Module):
         s_rep = self.sinkhorn(s_rep, nrows_rep, ncols_rep, dummy_row)
         #s_rep = torch.reshape(s_rep, (-1, sample_num, s_rep.shape[1], s_rep.shape[2]))
         return s_rep
+
+class BinSinkhorn(Sinkhorn):
+    """
+    Sinkhorn algorithm with a prompt bucket for binary matching. The prompt bucket is a dummy node that can be matched to any node in the other graph
+    with a fixed cost.
+    """
+    def __init__(self, max_iter: int=10, tau: float=0.1, epsilon: float=1e-4,
+                 log_forward: bool=True, batched_operation: bool=False):
+        super(BinSinkhorn, self).__init__()
+        self.scale = tau
+
+    def log_sinkhorn_iterations(self, Z: torch.Tensor, log_mu: torch.Tensor, log_nu: torch.Tensor,
+                                sinkhorn_iterations: int) -> torch.Tensor:
+        """ Perform Sinkhorn Normalization in Log-space for stability"""
+        u, v = torch.zeros_like(log_mu), torch.zeros_like(log_nu)
+        for _ in range(sinkhorn_iterations):
+            u = log_mu - torch.logsumexp(Z + v.unsqueeze(1), dim=2)
+            v = log_nu - torch.logsumexp(Z + u.unsqueeze(2), dim=1)
+        return Z + u.unsqueeze(2) + v.unsqueeze(1)
+
+    def log_optimal_transport_prompt(self, scores: torch.Tensor, sinkhorn_iterations: int, P: torch.Tensor) -> torch.Tensor:
+        """ Perform Differentiable Optimal Transport in Log-space for stability, with dummy node
+
+        Args:
+          scores: similarity matrix
+          sinkhorn_iterations: number of iterations to run sinkhorn
+          P: value of prompt bucket
+        Returns:
+            Z: transport assignment matrix (log probabilities)
+        """
+
+        scores = scores / self.scale
+        P = P / self.scale
+
+        b, m, n = scores.shape
+        one = scores.new_tensor(1)
+        ms, ns = (m * one).to(scores), (n * one).to(scores)
+
+        bins0 = P.expand(b, m, 1)
+        bins1 = P.expand(b, 1, n)
+        P = P.expand(b, 1, 1)
+
+        # append the prompt bucket to the scores matrix
+        couplings = torch.cat([torch.cat([scores, bins0], -1),
+                               torch.cat([bins1, P], -1)], 1)
+
+        norm = - (ms + ns).log()
+        log_mu = torch.cat([norm.expand(m), ns.log()[None] + norm])
+        log_nu = torch.cat([norm.expand(n), ms.log()[None] + norm])
+        log_mu, log_nu = log_mu[None].expand(b, -1), log_nu[None].expand(b, -1)
+
+        Z = self.log_sinkhorn_iterations(couplings, log_mu, log_nu, sinkhorn_iterations)
+        Z = Z - norm  # multiply probabilities by M+N
+
+        return Z.exp()
+
+
+    def forward(self, s: Tensor, P:Tensor, nrows: Tensor=None, ncols: Tensor=None, max_iter=50) -> Tensor:
+        b = s.shape[0]
+        s_bin = torch.zeros((b, s.shape[1]+1, s.shape[2]+1), device=s.device)
+        ss = torch.zeros((b, s.shape[1], s.shape[2]), device=s.device)
+        for index in range(b):
+            s_bin[index,:nrows[index]+1,:ncols[index]+1] = self.log_optimal_transport_prompt(s[index,:nrows[index],:ncols[index]].unsqueeze(0), max_iter, P)
+            ss[index,:nrows[index],:ncols[index]] = s_bin[index,:nrows[index],:ncols[index]]
+        return s_bin, ss
+
 
 
 if __name__ == '__main__':

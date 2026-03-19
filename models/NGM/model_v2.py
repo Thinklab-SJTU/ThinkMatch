@@ -95,6 +95,7 @@ class Net(CNN):
                                                sk_channel=cfg.NGM.SK_EMB, sk_tau=tau, edge_emb=cfg.NGM.EDGE_EMB)
                     self.add_module('gnn_layer_{}'.format(i), gnn_layer)
         self.classifier = nn.Linear(cfg.NGM.GNN_FEAT[-1] + cfg.NGM.SK_EMB, 1)
+        self.projection = nn.Linear(1000, 768)
 
     def forward(
         self,
@@ -111,10 +112,14 @@ class Net(CNN):
         orig_graph_list = []
         for image, p, n_p, graph in zip(images, points, n_points, graphs):
             # extract feature
-            nodes = self.node_layers(image)
-            edges = self.edge_layers(nodes)
+            if cfg.BACKBONE.startswith("Vit"):
+                nodes, edges, glb = self.node_edge_layer(image)
+                global_list.append(self.projection(glb))
+            else:
+                nodes = self.node_layers(image)
+                edges = self.edge_layers(nodes)
 
-            global_list.append(self.final_layers(edges).reshape((nodes.shape[0], -1)))
+                global_list.append(self.final_layers(edges).reshape((nodes.shape[0], -1)))
             nodes = normalize_over_channels(nodes)
             edges = normalize_over_channels(edges)
 

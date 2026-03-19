@@ -1,21 +1,20 @@
-MODEL_NAME: vgg16_gcan_varied
-DATASET_NAME: imcpt_100
+MODEL_NAME: vgg16_commonplus
+DATASET_NAME: voc
 
-DATASET_FULL_NAME: IMC_PT_SparseGM
+DATASET_FULL_NAME: PascalVOC
 
-MODULE: models.GCAN.GCAN_model
+MODULE: models.COMMONPLUS.model
 
 BACKBONE: VGG16_bn_final
 
-BATCH_SIZE: 2
-DATALOADER_NUM: 1
+BATCH_SIZE: 8
+DATALOADER_NUM: 2
 FP16: False
 
 RANDOM_SEED: 123
 
-IMC_PT_SparseGM:
-  ROOT_DIR_NPZ: data/IMC-PT-SparseGM/annotations_100
-  MAX_KPT_NUM: 100
+#PRETRAINED_PATH: ./output/vgg16_commonplus_voc/params/params_0020.pt
+
 
 # available GPU ids
 GPUS:
@@ -28,6 +27,7 @@ PROBLEM:
   RESCALE:  # rescaled image size
     - 256
     - 256
+#  FILTER: 'intersection'
   FILTER: 'unfiltered'
 
 # Graph construction settings
@@ -40,45 +40,38 @@ GRAPH:
 TRAIN:
   # start, end epochs
   START_EPOCH: 0
-  NUM_EPOCHS: 20
+  NUM_EPOCHS: 80
 
-  LOSS_FUNC: ilp
-
+  LOSS_FUNC: custom
   OPTIMIZER: Adam
 
   # learning rate
-  LR: 2.e-3  # 2.e-3
+  LR: 3.e-4 # 2.e-3
   SEPARATE_BACKBONE_LR: True
-  BACKBONE_LR: 2.e-5  # 2.e-5
+  BACKBONE_LR: 2.e-5
   MOMENTUM: 0.9
   LR_DECAY: 0.5
   LR_STEP:  # (in epochs)
-    - 2
-    - 4
-#    - 6
-#    - 8
-#    - 10
-#    - 1
-#    - 3
-#    - 5
-#    - 7
-#    - 9
+    - 8
+    - 16
+    - 24
+    - 32
+#    - 40
 
-  EPOCH_ITERS: 2000  # iterations per epoch
+  EPOCH_ITERS: 500  # iterations per epoch
 
   CLASS: none
 
 # Evaluation settings
 EVAL:
-  EPOCH: 16  # epoch to be tested
+  EPOCH: 20  # epoch to be tested
   SAMPLES: 1000  # number of tested pairs for each class
 
-GCAN:
+# model parameters
+COMMONPLUS:
   FEATURE_CHANNEL: 512
-  NODE_FEATURE_DIM: 1024
-  NODE_HIDDEN_SIZE: [1024]
-  SK_ITER_NUM: 20
-  SK_EPSILON: 1.0e-10
-  CROSS_ITER: False
-  SK_TAU: 0.05
-
+  ALPHA: 0.4
+  DISTILL: True
+  WARMUP_STEP: 2000 # usually set to EPOCH_ITERS
+  MOMENTUM: 0.995
+  QUEUE_SIZE: 0

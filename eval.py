@@ -25,7 +25,7 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
     model.module.trainings = False
 
     dataloaders = []
-
+    newclasses = [] # use for evalution on Spair71k dataset
     for cls in classes:
         image_dataset = GMDataset(cfg.DATASET_FULL_NAME,
                                   bm,
@@ -35,10 +35,11 @@ def eval_model(model, classes, bm, last_epoch=True, verbose=False, xls_sheet=Non
                                   cfg.PROBLEM.TYPE)
 
         torch.manual_seed(cfg.RANDOM_SEED)  # Fix fetched data in test-set to prevent variance
-
-        dataloader = get_dataloader(image_dataset, shuffle=True)
-        dataloaders.append(dataloader)
-
+        if len(image_dataset) !=0:
+            newclasses.append(cls)
+            dataloader = get_dataloader(image_dataset, shuffle=True)
+            dataloaders.append(dataloader)
+    classes = newclasses
     recalls = []
     precisions = []
     f1s = []
